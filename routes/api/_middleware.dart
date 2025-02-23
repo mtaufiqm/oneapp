@@ -20,13 +20,14 @@ Handler middleware(Handler handler){
       var connection = context.read<MyConnectionPool>();
       String username = jwtToken!.payload["username"] as String;
       List<String> roles = (jwtToken!.payload["roles"] as List).cast<String>();
-      print(roles);
       var userRepository = UserRepository(connection);
       try{
         User myUser = await userRepository.getById(jwtToken!.payload["username"]);
         myUser.roles = roles;
         return myUser;
       } catch(e){
+        //IF FAIL GET THAT USERNAME IN DB, PREVENT IT FOR ACCESS 
+        ////THIS PREVENT FOR DELETED ACCOUNT TO ACCESS APIs
         return null;
       }
     }

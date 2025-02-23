@@ -24,7 +24,7 @@ Future<Response> onGet(RequestContext con) async {
 
   //AUTHORIZATION
   User user = con.read<User>();
-  if(!user.isContainOne(["SUPERADMIN","ADMIN","PEGAWAI","GET_PRODUCTS"])){
+  if(!user.isContainOne(["SUPERADMIN","ADMIN","ADMIN_INVENTORIES","PEGAWAI","GET_PRODUCTS"])){
     return Response.json(statusCode: HttpStatus.unauthorized,body: {"message":"You Have No Access For This"});
   }
   //AUTHORIZATION
@@ -54,9 +54,19 @@ Future<Response> onPost(RequestContext ctx) async {
   //AUTHORIZATION
 
   try{
+    var jsonMap = await ctx.request.json();
+    if(!(jsonMap is Map<String,dynamic>)){
+      return RespHelper.message(statusCode: HttpStatus.badRequest,message: "Invalid JSON Body");
+    }
     
-  } catch(e){
+    jsonMap["created_at"] = DateTime.now().toIso8601String();
+    jsonMap["created_by"] = user.username;
 
+    Products products = Products.fromMap(jsonMap as Map<String,dynamic>);
+    var result = await productsRepo.create(products);
+    return Response.json(body: result.toJson());
+  } catch(e){
+    print(e);
+    return RespHelper.message(statusCode: HttpStatus.badRequest,message: "Error Occured");
   }
-  return Future.value(Response.json());
 }

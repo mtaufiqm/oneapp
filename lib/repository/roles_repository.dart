@@ -49,6 +49,5 @@ class RolesRepository implements MyRepository<Roles>{
   Future<void> delete(dynamic id) async{
     //NO NEDD TO DELETE ROLES
     return;
-  }
-  
+  }  
 }
