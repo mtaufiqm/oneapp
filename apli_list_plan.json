@@ -1,0 +1,24 @@
+{
+    "lists":[
+        {
+            "method":"GET",
+            "url":"/api/mitra/[mitraId]",
+            "body":{
+                "roles":["ROLES1","ROLES2"]
+            }
+        },
+        {
+            "method":"POST",
+            "url":"/api/mitra",
+            "body":{
+                "mitra":{
+                    "fullname":"FULLNAME",
+                    "nickname":"NICKNAME",
+                    "date_of_birth":"DATE",
+                    "city_of_birth":"CITY OF BIRTH",
+                    "username":"username"
+                }
+            }
+        }
+    ]
+}
