@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
-class Products {
+class ProductsAvailableStocks {
   String? uuid;
   String name;
   String image_link;
@@ -9,7 +9,7 @@ class Products {
   int stock_quantity;
   String created_at;
   String created_by;
-  Products({
+  ProductsAvailableStocks({
     this.uuid,
     required this.name,
     required this.image_link,
@@ -31,8 +31,8 @@ class Products {
     };
   }
 
-  factory Products.fromJson(Map<String, dynamic> map) {
-    return Products(
+  factory ProductsAvailableStocks.fromJson(Map<String, dynamic> map) {
+    return ProductsAvailableStocks(
       uuid: map['uuid'] != null ? map['uuid'] as String : null,
       name: map['name'] as String,
       image_link: map['image_link'] as String,
@@ -45,7 +45,6 @@ class Products {
 
   @override
   String toString() {
-    return 'Products(uuid: $uuid, name: $name, image_link: $image_link, unit: $unit, stock_quantity: $stock_quantity, created_at: $created_at, created_by: $created_by)';
+    return 'ProductsAvailableStocks(uuid: $uuid, name: $name, image_link: $image_link, unit: $unit, stock_quantity: $stock_quantity, created_at: $created_at, created_by: $created_by)';
   }
-
 }

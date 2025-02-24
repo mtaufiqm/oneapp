@@ -14,7 +14,7 @@ class CategoriesRepository extends MyRepository<Categories>{
         throw Exception("There is No Data with uuid ${uuid}");
       }
       var resultMap = result.first.toColumnMap();
-      Categories categories = Categories.fromMap(resultMap);
+      Categories categories = Categories.fromJson(resultMap);
       return categories;
     });
   }
@@ -51,7 +51,7 @@ class CategoriesRepository extends MyRepository<Categories>{
       var result = await tx.execute(r"SELECT * FROM categories");
       List<Categories> listCategories = [];
       for(var item in result){
-        var itemCategories = Categories.fromMap(item.toColumnMap());
+        var itemCategories = Categories.fromJson(item.toColumnMap());
         listCategories.add(itemCategories);
       }
       return listCategories;

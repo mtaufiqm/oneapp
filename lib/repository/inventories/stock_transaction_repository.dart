@@ -14,18 +14,19 @@ class StockTransactionRepository extends MyRepository<StockTransactions>{
         throw Exception("There is No Data with uuid ${uuid}");
       }
       var resultMap = result.first.toColumnMap();
-      StockTransactions stock_transactions = StockTransactions.fromMap(resultMap);
+      StockTransactions stock_transactions = StockTransactions.fromJson(resultMap);
       return stock_transactions;
     });
   }
 
   Future<StockTransactions> update(dynamic uuid, StockTransactions object) async {
     return this.conn.connectionPool.runTx((tx) async {
-      var result = await tx.execute(r"UPDATE stock_transactions SET product_uuid = $1, quantity = $2, status = $3, created_at = $4, created_by = $5 WHERE uuid = $6",parameters: [
+      var result = await tx.execute(r"UPDATE stock_transactions SET product_uuid = $1, quantity = $2, status = $3, created_at = $4, last_updated = $5,created_by = $6 WHERE uuid = $7",parameters: [
         object.product_uuid,
         object.quantity,
         object.status,
         object.created_at,
+        object.last_updated,
         object.created_by,
         uuid as String
       ]);
@@ -59,7 +60,7 @@ class StockTransactionRepository extends MyRepository<StockTransactions>{
       var result = await tx.execute(r"SELECT * FROM stock_transactions");
       List<StockTransactions> listTransactions = [];
       for(var item in result){
-        var itemTransactions = StockTransactions.fromMap(item.toColumnMap());
+        var itemTransactions = StockTransactions.fromJson(item.toColumnMap());
         listTransactions.add(itemTransactions);
       }
       return listTransactions;

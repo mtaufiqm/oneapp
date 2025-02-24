@@ -115,6 +115,25 @@
                 "title":"VALUES",
                 "description":"VALUES"
             }
+        },
+        {
+            "method":"GET",
+            "url":"/api/inventories/products",
+            "response":[
+                {
+                    "uuid":"uuid"
+                },{
+                    "uuid":"uuid2"
+                }
+            ]
+        },
+        {
+            "method":"POST",
+            "url":"/api/inventories/products",
+            "body":{
+                "name":"name",
+                "image_link":"image_link"
+            }
         }
     ]
 }

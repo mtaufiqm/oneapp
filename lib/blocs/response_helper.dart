@@ -12,4 +12,16 @@ class RespHelper{
       headers: headers
     );
   }
+
+  static Response badRequest({String? message}){
+    return RespHelper.message(statusCode: HttpStatus.badRequest,message: message);
+  }
+
+  static Response unauthorized(){
+    return RespHelper.message(statusCode: HttpStatus.unauthorized,message: "Your Are Not Allowed Access This Resources!");
+  }
+
+  static Response methodNotAllowed(){
+    return RespHelper.message(statusCode: HttpStatus.methodNotAllowed,message: "Method Not Allowed");
+  }
 }

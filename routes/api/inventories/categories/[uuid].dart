@@ -2,12 +2,10 @@ import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 import 'package:my_first/blocs/response_helper.dart';
-import 'package:my_first/models/inventories/products.dart';
+import 'package:my_first/models/inventories/categories.dart';
 import 'package:my_first/models/user.dart';
-import 'package:my_first/repository/inventories/products_repository.dart';
+import 'package:my_first/repository/inventories/categories_repository.dart';
 
-
-//GET PRODUCTS
 Future<Response> onRequest(
   RequestContext context,
   String uuid,
@@ -16,25 +14,25 @@ Future<Response> onRequest(
   return (switch(context.request.method){
     HttpMethod.get => onGet(context,uuid),
     HttpMethod.post => onPost(context,uuid),
-    HttpMethod.delete => onDelete(context,uuid),
+    HttpMethod.delete => onDelete(context, uuid),
     _ => Future.value(RespHelper.message(statusCode: HttpStatus.methodNotAllowed,message: "Method Not Allowed"))
   });
 }
 
 //GET DATA
 Future<Response> onGet(RequestContext ctx,String uuid) async {
-  ProductsRepository productRepo = ctx.read<ProductsRepository>();
+  CategoriesRepository categoriesRepo = ctx.read<CategoriesRepository>();
 
   //AUTHORIZATION
   User user = ctx.read<User>();
-  if(!user.isContainOne(["SUPERADMIN","ADMIN","ADMIN_INVENTORIES","PEGAWAI","GET_PRODUCTS"])){
+  if(!user.isContainOne(["SUPERADMIN","ADMIN","ADMIN_INVENTORIES","PEGAWAI","GET_CATEGORIES"])){
     return Response.json(statusCode: HttpStatus.unauthorized,body: {"message":"You Have No Access For This"});
   }
   //AUTHORIZATION
 
   try{
-    Products product = await productRepo.getById(uuid);
-    return Response.json(body: product);
+    Categories categories = await categoriesRepo.getById(uuid);
+    return Response.json(body: categories);
   } catch(e){
     return RespHelper.message(statusCode: HttpStatus.badRequest,message: "Error Get Data ${uuid}");
   }
@@ -44,11 +42,11 @@ Future<Response> onGet(RequestContext ctx,String uuid) async {
 
 //UPDATE DATA
 Future<Response> onPost(RequestContext ctx,String uuid) async {
-  ProductsRepository productRepo = ctx.read<ProductsRepository>();
+  CategoriesRepository categoriesRepo = ctx.read<CategoriesRepository>();
 
   //AUTHORIZATION
   User user = ctx.read<User>();
-  if(!user.isContainOne(["SUPERADMIN","ADMIN","ADMIN_INVENTORIES"])){
+  if(!user.isContainOne(["SUPERADMIN","ADMIN","ADMIN_INVENTORIES","POST_REPOSITORIES"])){
     return Response.json(statusCode: HttpStatus.unauthorized,body: {"message":"You Have No Access For This"});
   }
   //AUTHORIZATION
@@ -56,11 +54,10 @@ Future<Response> onPost(RequestContext ctx,String uuid) async {
   try{
     var jsonBody = await ctx.request.json();
     if(!(jsonBody is Map<String,dynamic>)){
-      return RespHelper.message(statusCode: HttpStatus.badRequest,message: "Invalid Input Products ${uuid}");
+      return RespHelper.message(statusCode: HttpStatus.badRequest,message: "Invalid Input Categories ${uuid}");
     }
-    jsonBody["created_at"] = DateTime.now().toIso8601String();
-    var object = Products.fromJson(jsonBody);
-    var result = await productRepo.update(uuid,object);
+    var object = Categories.fromJson(jsonBody);
+    var result = await categoriesRepo.update(uuid,object);
     return Response.json(body: result);
   } catch(e){
     print(e);
@@ -69,7 +66,7 @@ Future<Response> onPost(RequestContext ctx,String uuid) async {
 }
 
 Future<Response> onDelete(RequestContext ctx,String uuid) async{
-  ProductsRepository productRepo = ctx.read<ProductsRepository>();
+  CategoriesRepository categoriesRepo = ctx.read<CategoriesRepository>();
 
   //AUTHORIZATION
   User user = ctx.read<User>();
@@ -79,10 +76,11 @@ Future<Response> onDelete(RequestContext ctx,String uuid) async{
   //AUTHORIZATION
 
   try{
-    await productRepo.delete(uuid);
+    await categoriesRepo.delete(uuid);
     return RespHelper.message(message: "success delete ${uuid}");
   } catch(e){
     print(e);
-    return RespHelper.message(statusCode: HttpStatus.badRequest,message: "Failed to Delete Products ${uuid}");
+    return RespHelper.message(statusCode: HttpStatus.badRequest,message: "Failed to Delete Categories ${uuid}");
   }
 }
+

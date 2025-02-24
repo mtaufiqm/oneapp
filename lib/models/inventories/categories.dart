@@ -9,23 +9,19 @@ class Categories {
     required this.name,
   });
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'uuid': uuid,
       'name': name,
     };
   }
 
-  factory Categories.fromMap(Map<String, dynamic> map) {
+  factory Categories.fromJson(Map<String, dynamic> map) {
     return Categories(
       uuid: map['uuid'] != null ? map['uuid'] as String : null,
       name: map['name'] as String,
     );
   }
-
-  String toJson() => json.encode(toMap());
-
-  factory Categories.fromJson(String source) => Categories.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() => 'Categories(uuid: $uuid, name: $name)';

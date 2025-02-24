@@ -25,7 +25,7 @@ Future<Response> onGet(RequestContext con) async {
   //AUTHORIZATION
   User user = con.read<User>();
   if(!user.isContainOne(["SUPERADMIN","ADMIN","ADMIN_INVENTORIES","PEGAWAI","GET_PRODUCTS"])){
-    return Response.json(statusCode: HttpStatus.unauthorized,body: {"message":"You Have No Access For This"});
+    return RespHelper.unauthorized();
   }
   //AUTHORIZATION
 
@@ -35,38 +35,34 @@ Future<Response> onGet(RequestContext con) async {
     return Response.json(body: list_object);
   } catch(e){
     print(e);
-    return RespHelper.message(statusCode: HttpStatus.badRequest,message: "Fail To Get All Data");
+    return RespHelper.badRequest(message: "Fail to Get All Data");
   }
 }
 
-
-//CONTINUE THIS
-
-//CREATE PRODUCTS
 Future<Response> onPost(RequestContext ctx) async {
   ProductsRepository productsRepo = ctx.read<ProductsRepository>();
 
   //AUTHORIZATION
   User user = ctx.read<User>();
   if(!user.isContainOne(["SUPERADMIN","ADMIN","ADMIN_INVENTORIES","CREATE_PRODUCTS"])){
-    return Response.json(statusCode: HttpStatus.unauthorized,body: {"message":"You Have No Access For This"});
+    return RespHelper.unauthorized();
   }
   //AUTHORIZATION
 
   try{
     var jsonMap = await ctx.request.json();
     if(!(jsonMap is Map<String,dynamic>)){
-      return RespHelper.message(statusCode: HttpStatus.badRequest,message: "Invalid JSON Body");
+      return RespHelper.badRequest(message: "Invalid JSON Body");
     }
     
     jsonMap["created_at"] = DateTime.now().toIso8601String();
     jsonMap["created_by"] = user.username;
 
-    Products products = Products.fromMap(jsonMap as Map<String,dynamic>);
+    Products products = Products.fromJson(jsonMap as Map<String,dynamic>);
     var result = await productsRepo.create(products);
-    return Response.json(body: result.toJson());
+    return Response.json(body: result);
   } catch(e){
     print(e);
-    return RespHelper.message(statusCode: HttpStatus.badRequest,message: "Error Occured");
+    return RespHelper.badRequest(message: "Error Occured");
   }
 }
