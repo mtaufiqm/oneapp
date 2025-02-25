@@ -14,6 +14,7 @@ class MyConnectionPool{
       Endpoint endpoint = Endpoint(host: host, database: databaseName,username: user,password: password);
       connectionPool = Pool.withEndpoints([endpoint],settings: PoolSettings(maxConnectionCount: 10,connectTimeout: Duration(seconds: 5),sslMode: SslMode.disable));
     } catch(e){
+      print(e);
     }
   }
 

@@ -77,7 +77,7 @@ Future<Response> handleXlsxFile(RequestContext context) async{
     Excel excelFile = Excel.decodeBytes(listBytes);
     var sheet = excelFile.tables["Mitra"];
     if(sheet == null){
-      return Future.value(RespHelper.message(statusCode: HttpStatus.badRequest,message: "There is no 'mitra' sheet. First Column must be email of 'pemeriksa', Second Column must be email of 'mitra', Third colun must be Role of Mitra (PPL/PML)"));
+      return Future.value(RespHelper.message(statusCode: HttpStatus.badRequest,message: "There is no 'mitra' sheet. First Column must be email of 'pemeriksa', Second Column must be email of 'mitra', Third column must be Role of Mitra (PPL/PML)"));
     }
     var rows = sheet.rows;
     var rowIndex = 0;

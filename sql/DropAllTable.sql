@@ -14,3 +14,4 @@ drop table if exists  products cascade;
 drop table if exists  categories cascade;
 drop table if exists  categories_products cascade;
 drop table if exists  stock_transactions cascade;
+drop table if exists  files;

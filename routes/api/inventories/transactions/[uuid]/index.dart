@@ -43,8 +43,9 @@ Future<Response> onGet(RequestContext ctx,String uuid) async {
 
 }
 
+
 //CONTINUE THIS
-//UPDATED BY
+//UPDATED/APPROVE TRANSACTION
 Future<Response> onPost(RequestContext ctx,String uuid) async {
   StockTransactionRepository transactionRepo = ctx.read<StockTransactionRepository>();
   ProductsRepository productRepo = ctx.read<ProductsRepository>();
@@ -55,6 +56,8 @@ Future<Response> onPost(RequestContext ctx,String uuid) async {
     return RespHelper.unauthorized();
   }
   //AUTHORIZATION
+
+  StockTransactions transactions = await transactionRepo.getById(uuid);
   return Response.json();
 
 }

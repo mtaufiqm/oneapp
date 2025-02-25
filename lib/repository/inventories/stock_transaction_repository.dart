@@ -42,12 +42,13 @@ class StockTransactionRepository extends MyRepository<StockTransactions>{
     return this.conn.connectionPool.runTx((tx) async {
       String uuid =  Uuid().v1();
       object.uuid = uuid;
-      var result = await tx.execute(r"INSERT INTO stock_transactions VALUES($1,$2,$3,$4,$5,$6)", parameters: [
+      var result = await tx.execute(r"INSERT INTO stock_transactions VALUES($1,$2,$3,$4,$5,$6,$7)", parameters: [
         object.uuid,
         object.product_uuid,
         object.quantity,
         object.status,
         object.created_at,
+        object.last_updated,
         object.created_by
       ]);
       var result2 = await this.getById(object.uuid);
