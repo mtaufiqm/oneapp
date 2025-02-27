@@ -35,7 +35,10 @@ class MitraRepository extends MyRepository<Mitra>{
   Future<Mitra> create(Mitra mitra) async {
     return this.connection.connectionPool.withConnection((conn) async{
       return conn.runTx<Mitra>((tx) async{
-        Result result = await tx.execute(r'INSERT INTO mitra VALUES($1,$2,$3,$4,$5,$6)',parameters: [mitra.mitraId, mitra.fullname,mitra.nickname,mitra.date_of_birth,mitra.city_of_birth,mitra.username]);
+        Result result = await tx.execute(r'INSERT INTO mitra VALUES($1,$2,$3,$4,$5,$6) RETURNING mitraId',parameters: [mitra.mitraId, mitra.fullname,mitra.nickname,mitra.date_of_birth,mitra.city_of_birth,mitra.username]);
+        if(result.isEmpty){
+          throw Exception("Error Create Mitra ${mitra.mitraId}");
+        }
         return mitra;
       });
     });
@@ -45,7 +48,7 @@ class MitraRepository extends MyRepository<Mitra>{
     return this.connection.connectionPool.runTx<List<Mitra>>((tx) async {
       List<Mitra> returnList = <Mitra>[];
       for(Mitra item in listOfMitra){
-        Result hasil = await tx.execute(r"INSERT INTO mitra values($1,$2,$3,$4,$5,$6)",parameters: [item.mitraId, item.fullname,item.nickname,item.date_of_birth,item.city_of_birth,item.username]);
+        Result hasil = await tx.execute(r"INSERT INTO mitra values($1,$2,$3,$4,$5,$6) RETURNING mitraId",parameters: [item.mitraId, item.fullname,item.nickname,item.date_of_birth,item.city_of_birth,item.username]);
         returnList.add(item);
       }
       return returnList;

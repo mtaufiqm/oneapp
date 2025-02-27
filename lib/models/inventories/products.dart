@@ -1,3 +1,6 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:convert';
+
 
 class Products {
   String? uuid;
@@ -7,6 +10,7 @@ class Products {
   int stock_quantity;
   String created_at;
   String created_by;
+  String last_updated;
   Products({
     this.uuid,
     required this.name,
@@ -15,6 +19,7 @@ class Products {
     required this.stock_quantity,
     required this.created_at,
     required this.created_by,
+    required this.last_updated,
   });
 
   Map<String, dynamic> toJson() {
@@ -26,6 +31,7 @@ class Products {
       'stock_quantity': stock_quantity,
       'created_at': created_at,
       'created_by': created_by,
+      'last_updated': last_updated,
     };
   }
 
@@ -38,12 +44,12 @@ class Products {
       stock_quantity: map['stock_quantity'] as int,
       created_at: map['created_at'] as String,
       created_by: map['created_by'] as String,
+      last_updated: map['last_updated'] as String,
     );
   }
 
   @override
   String toString() {
-    return 'Products(uuid: $uuid, name: $name, image_link: $image_link, unit: $unit, stock_quantity: $stock_quantity, created_at: $created_at, created_by: $created_by)';
+    return 'Products(uuid: $uuid, name: $name, image_link: $image_link, unit: $unit, stock_quantity: $stock_quantity, created_at: $created_at, created_by: $created_by, last_updated: $last_updated)';
   }
-
 }

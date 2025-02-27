@@ -107,7 +107,8 @@ CREATE TABLE "products" (
   "unit" text,
   "stock_quantity" integer,
   "created_at" text,
-  "created_by" text
+  "created_by" text,
+  "last_updated" text
 );
 
 CREATE TABLE "categories" (

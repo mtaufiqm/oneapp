@@ -5,6 +5,8 @@ import 'package:my_first/blocs/response_helper.dart';
 import 'package:my_first/models/files.dart';
 import 'package:my_first/models/user.dart';
 import 'package:my_first/repository/files_repository.dart';
+import 'package:uuid/uuid.dart';
+import 'package:path/path.dart' as p;
 
 Future<Response> onRequest(RequestContext context) async {
   
@@ -36,7 +38,12 @@ Future<Response> onGet(RequestContext con) async {
   }
 }
 
+
+//CONTINUE THISS
+//CREATE FILES IMAGE
 Future<Response> onPost(RequestContext ctx) async {
+  print("ON POST EXEUTED");
+
   FilesRepository filesRepo = ctx.read<FilesRepository>();
 
   //AUTHORIZATION
@@ -46,13 +53,56 @@ Future<Response> onPost(RequestContext ctx) async {
   }
   //AUTHORIZATION
 
+
+
   try{
-    var jsonMap = await ctx.request.json();
-    if(!(jsonMap is Map<String,dynamic>)){
-      return RespHelper.badRequest(message: "Invalid JSON Body!");
+    var formData = await ctx.request.formData(); 
+    var files = await formData.files["files"];
+    if(files == null){
+      return RespHelper.badRequest(message: "There is no Image File in Request Body");
     }
-    Files files = Files.fromJson(jsonMap as Map<String,dynamic>);
-    var result = await filesRepo.create(files);
+    String uuid = Uuid().v1();
+    String file_name = files.name;
+    String extension = p.extension(file_name);
+    String location = "";
+    List<int> file_bytes = await files.readAsBytes();
+    if(file_bytes.length >= 1024 * 1024 * 2){
+      return RespHelper.badRequest(message: "Image Size Exceeded 2 Mb!");
+    }
+
+    //DIRECTORY FOR Windows is in app folder files/images
+    //DIRECTORY FOR Linus is in /opt/files/images
+    String windows_dir = "files\\images";
+    String linux_dir = "/opt/files/images";
+    if(Platform.isWindows){
+      Directory dirFile = Directory(windows_dir);
+      if(!dirFile.existsSync()){
+        await dirFile.create(recursive: true);
+      }
+      File file  = File("${windows_dir}\\${uuid}${extension}");
+      await file.writeAsBytes(file_bytes);
+      location = file.absolute.path;
+    } else if(Platform.isLinux){
+      Directory dirFile = Directory(linux_dir);
+      if(!dirFile.existsSync()){
+        await dirFile.create(recursive: true);
+      }
+      File file  = File("${windows_dir}/${uuid}${extension}");
+      await file.writeAsBytes(file_bytes);
+      location = file.absolute.path;
+    } else{
+      return RespHelper.badRequest(message: "Platform Not Supported");
+    }
+    // uuid,name,extension,location,created_at,created_by
+    Files files_object = Files.fromJson({
+      "uuid":uuid,
+      "name":file_name,
+      "extension":extension,
+      "location":location,
+      "created_at":DateTime.now().toIso8601String(),
+      "created_by":user.username
+    });
+    var result = await filesRepo.create(files_object);
     return Response.json(body: result.toJson());
   } catch(e){
     print(e);

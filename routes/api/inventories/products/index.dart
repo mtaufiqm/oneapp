@@ -55,7 +55,9 @@ Future<Response> onPost(RequestContext ctx) async {
       return RespHelper.badRequest(message: "Invalid JSON Body");
     }
     
-    jsonMap["created_at"] = DateTime.now().toIso8601String();
+    String now = DateTime.now().toIso8601String();
+    jsonMap["created_at"] = now;
+    jsonMap["last_updated"] = now;
     jsonMap["created_by"] = user.username;
 
     Products products = Products.fromJson(jsonMap as Map<String,dynamic>);

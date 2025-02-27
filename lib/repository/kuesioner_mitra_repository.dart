@@ -38,12 +38,16 @@ class KuesionerMitraRepository extends MyRepository<KuesionerMitra>{
   Future<KuesionerMitra> create(KuesionerMitra object) async {
     return await this.conn.connectionPool.runTx((tx) async {
       String uuid = Uuid().v1();
-      Result result = await tx.execute(r"INSERT INTO kuesioner_mitra(uuid,kegiatan_id,title,description) VALUES($1,$2,$3,$4)",parameters: [
-        uuid,
+      object.uuid = uuid;
+      Result result = await tx.execute(r"INSERT INTO kuesioner_mitra(uuid,kegiatan_id,title,description) VALUES($1,$2,$3,$4) RETURNING uuid",parameters: [
+        object.uuid,
         object.kegiatan_id,
         object.title,
         object.description
       ]);
+      if(result.isEmpty){
+        throw Exception("Error Create Kuesioner ${uuid}");
+      }
       return object;
     });
   }

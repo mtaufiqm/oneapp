@@ -58,7 +58,7 @@ Future<Response> onPost(RequestContext ctx,String uuid) async {
     if(!(jsonBody is Map<String,dynamic>)){
       return RespHelper.message(statusCode: HttpStatus.badRequest,message: "Invalid Input Products ${uuid}");
     }
-    jsonBody["created_at"] = DateTime.now().toIso8601String();
+    jsonBody["last_updated"] = DateTime.now().toIso8601String();
     var object = Products.fromJson(jsonBody);
     var result = await productRepo.update(uuid,object);
     return Response.json(body: result);

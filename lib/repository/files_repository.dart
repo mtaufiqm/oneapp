@@ -43,7 +43,7 @@ class FilesRepository extends MyRepository<Files>{
     return this.conn.connectionPool.runTx((tx) async {
       String uuid =  Uuid().v1();
       object.uuid = uuid;
-      var result = await tx.execute(r"INSERT INTO files VALUES($1,$2,$3,$4,$5,$6)", parameters: [
+      var result = await tx.execute(r"INSERT INTO files VALUES($1,$2,$3,$4,$5,$6) RETURNING uuid", parameters: [
         object.uuid,
         object.name,
         object.extension,
@@ -51,8 +51,10 @@ class FilesRepository extends MyRepository<Files>{
         object.created_at,
         object.created_by
       ]);
-      var result2 = await this.getById(object.uuid);
-      return result2;
+      if(result.isEmpty){
+        throw Exception("Error Create Files ${uuid}");
+      }
+      return object;
     });
   }
 

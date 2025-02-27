@@ -9,6 +9,7 @@ class ProductsAvailableStocks {
   int stock_quantity;
   String created_at;
   String created_by;
+  String last_updated;
   ProductsAvailableStocks({
     this.uuid,
     required this.name,
@@ -17,6 +18,7 @@ class ProductsAvailableStocks {
     required this.stock_quantity,
     required this.created_at,
     required this.created_by,
+    required this.last_updated,
   });
 
   Map<String, dynamic> toJson() {
@@ -28,6 +30,7 @@ class ProductsAvailableStocks {
       'stock_quantity': stock_quantity,
       'created_at': created_at,
       'created_by': created_by,
+      'last_updated': last_updated,
     };
   }
 
@@ -40,11 +43,13 @@ class ProductsAvailableStocks {
       stock_quantity: map['stock_quantity'] as int,
       created_at: map['created_at'] as String,
       created_by: map['created_by'] as String,
+      last_updated: map['last_updated'] as String,
     );
   }
 
   @override
   String toString() {
-    return 'ProductsAvailableStocks(uuid: $uuid, name: $name, image_link: $image_link, unit: $unit, stock_quantity: $stock_quantity, created_at: $created_at, created_by: $created_by)';
+    return 'ProductsAvailableStocks(uuid: $uuid, name: $name, image_link: $image_link, unit: $unit, stock_quantity: $stock_quantity, created_at: $created_at, created_by: $created_by, last_updated: $last_updated)';
   }
+  
 }

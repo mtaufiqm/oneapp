@@ -37,7 +37,7 @@ class StructureKuesionerMitraRepository extends MyRepository<StructureKuesionerM
       return this.conn.connectionPool.runTx<StructureKuesionerMitra>((tx) async {
         String uuid = Uuid().v1();
         object.uuid = uuid;
-        var result = await tx.execute(r"INSERT INTO structure_kuesioner_mitra(uuid,kuesioner_mitra,penilai_username,mitra_username,mitra_role,versi_kuesioner) VALUES($1,$2,$3,$4,$5,$6)",parameters: [
+        var result = await tx.execute(r"INSERT INTO structure_kuesioner_mitra(uuid,kuesioner_mitra,penilai_username,mitra_username,mitra_role,versi_kuesioner) VALUES($1,$2,$3,$4,$5,$6) RETURNING uuid",parameters: [
           object.uuid,
           object.kuesioner_mitra,
           object.penilai_username,
@@ -45,6 +45,9 @@ class StructureKuesionerMitraRepository extends MyRepository<StructureKuesionerM
           object.mitra_role,
           object.versi_kuesioner
         ]);
+        if(result.isEmpty){
+          throw Exception("Error Create Structure Kuesioner");
+        }
         return object;
       });
     }

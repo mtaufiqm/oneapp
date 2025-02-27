@@ -51,9 +51,10 @@ class KegiatanRepository extends MyRepository<Kegiatan>{
       return conn.runTx<Kegiatan>((tx) async{
         Uuid uuid = Uuid();
         String id = uuid.v1();
-        Result result = await tx.execute(r'INSERT INTO kegiatan VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)',
+        kegiatan.id = id;
+        Result result = await tx.execute(r'INSERT INTO kegiatan VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id',
         parameters: [
-          id,
+          kegiatan.id,
           kegiatan.name,
           kegiatan.description,
           kegiatan.start,
@@ -65,6 +66,9 @@ class KegiatanRepository extends MyRepository<Kegiatan>{
           kegiatan.mitra_number,
           kegiatan.createdby
         ]);
+        if(result.isEmpty){
+          throw Exception("Error Create Kegiatan ${uuid}");
+        }
         return kegiatan;
       });
     });

@@ -24,13 +24,14 @@ class ProductsRepository extends MyRepository<Products>{
 
   Future<Products> update(dynamic uuid, Products object) async {
     return this.conn.connectionPool.runTx((tx) async {
-      var result = await tx.execute(r"UPDATE products SET name = $1, image_link = $2, unit = $3, stock_quantity = $4, created_at = $5, created_by = $6 WHERE uuid = $7",parameters: [
+      var result = await tx.execute(r"UPDATE products SET name = $1, image_link = $2, unit = $3, stock_quantity = $4, created_at = $5, created_by = $6, last_updated = $7  WHERE uuid = $8",parameters: [
         object.name,
         object.image_link,
         object.unit,
         object.stock_quantity,
         object.created_at,
         object.created_by,
+        object.last_updated,
         uuid as String
       ]);
       if(result.affectedRows <= 0){
@@ -45,17 +46,20 @@ class ProductsRepository extends MyRepository<Products>{
     return this.conn.connectionPool.runTx((tx) async {
       String uuid =  Uuid().v1();
       object.uuid = uuid;
-      var result = await tx.execute(r"INSERT INTO products VALUES($1,$2,$3,$4,$5,$6,$7)", parameters: [
+      var result = await tx.execute(r"INSERT INTO products VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING uuid", parameters: [
         object.uuid,
         object.name,
         object.image_link,
         object.unit,
         object.stock_quantity,
         object.created_at,
-        object.created_by
+        object.created_by,
+        object.last_updated
       ]);
-      var result2 = await this.getById(object.uuid);
-      return result2;
+      if(result.isEmpty){
+        throw Exception("Error Create Products ${object.uuid}");
+      }
+      return object;
     });
   }
 
@@ -93,7 +97,8 @@ class ProductsRepository extends MyRepository<Products>{
               p.unit as unit,
               p.stock_quantity  - COALESCE(SUM(o.quantity), 0) AS stock_quantity,
               p.created_at as created_at,
-              p.created_by as created_by
+              p.created_by as created_by,
+              p.last_updated as last_updated
           FROM products p
           LEFT JOIN stock_transactions o ON p.uuid = o.product_uuid AND o.status = 'PENDING'
           group by p."uuid"
@@ -119,7 +124,8 @@ class ProductsRepository extends MyRepository<Products>{
               p.unit as unit,
               p.stock_quantity  - COALESCE(SUM(o.quantity), 0) AS stock_quantity,
               p.created_at as created_at,
-              p.created_by as created_by
+              p.created_by as created_by,
+              p.last_updated as last_updated
           FROM products p
           LEFT JOIN stock_transactions o ON p.uuid = o.product_uuid AND o.status = 'PENDING' AND p.uuid = $1
           group by p.uuid
