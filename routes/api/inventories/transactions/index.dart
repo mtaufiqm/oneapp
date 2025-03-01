@@ -20,9 +20,12 @@ Future<Response> onRequest(RequestContext context) async {
 Future<Response> onGet(RequestContext con) async {
   StockTransactionRepository transactionsRepo = con.read<StockTransactionRepository>();
 
+  //This API for get All Transactions, only Admin can do it. 
+  //try access specific username transaction at "api/inventories/transactions/user/[username]"
+
   //AUTHORIZATION
   User user = con.read<User>();
-  if(!user.isContainOne(["SUPERADMIN","ADMIN","ADMIN_INVENTORIES","PEGAWAI","GET_TRANSACTIONS"])){
+  if(!user.isContainOne(["SUPERADMIN","ADMIN","ADMIN_INVENTORIES"])){
     return Response.json(statusCode: HttpStatus.unauthorized,body: {"message":"You Have No Access For This"});
   }
   //AUTHORIZATION

@@ -60,7 +60,19 @@ class StockTransactionRepository extends MyRepository<StockTransactions>{
 
   Future<List<StockTransactions>> readAll() async {
     return this.conn.connectionPool.runTx((tx) async {
-      var result = await tx.execute(r"SELECT * FROM stock_transactions");
+      var result = await tx.execute(r"SELECT * FROM stock_transactions ORDER BY last_updated DESC");
+      List<StockTransactions> listTransactions = [];
+      for(var item in result){
+        var itemTransactions = StockTransactions.fromJson(item.toColumnMap());
+        listTransactions.add(itemTransactions);
+      }
+      return listTransactions;
+    });
+  }
+
+  Future<List<StockTransactions>> readByUserCreator(dynamic username) async {
+    return this.conn.connectionPool.runTx((tx) async {
+      var result = await tx.execute(r"SELECT * FROM stock_transactions WHERE created_by = $1 ORDER BY last_updated DESC",parameters: [username as String]);
       List<StockTransactions> listTransactions = [];
       for(var item in result){
         var itemTransactions = StockTransactions.fromJson(item.toColumnMap());
