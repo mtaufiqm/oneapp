@@ -42,7 +42,7 @@ Future<Response> onGet(RequestContext con) async {
 //CONTINUE THISS
 //CREATE FILES IMAGE
 Future<Response> onPost(RequestContext ctx) async {
-  print("ON POST EXEUTED");
+  print("ON POST EXECUTED");
 
   FilesRepository filesRepo = ctx.read<FilesRepository>();
 
@@ -87,7 +87,7 @@ Future<Response> onPost(RequestContext ctx) async {
       if(!dirFile.existsSync()){
         await dirFile.create(recursive: true);
       }
-      File file  = File("${windows_dir}/${uuid}${extension}");
+      File file  = File("${linux_dir}/${uuid}${extension}");
       await file.writeAsBytes(file_bytes);
       location = file.absolute.path;
     } else{

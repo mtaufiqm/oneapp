@@ -87,4 +87,3 @@ Future<Response> onDelete(RequestContext ctx,String uuid) async{
     return RespHelper.badRequest(message: "Error Delete Files ${uuid}");
   }
 }
-

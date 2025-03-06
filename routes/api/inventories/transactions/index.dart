@@ -57,6 +57,10 @@ Future<Response> onPost(RequestContext ctx) async {
       return RespHelper.message(statusCode: HttpStatus.badRequest,message: "Invalid JSON Body");
     }
     String now = DateTime.now().toIso8601String();
+
+    //at first, transactions status must be "PENDING"
+    jsonMap["status"] = "PENDING";
+    
     jsonMap["created_at"] = now;
     jsonMap["last_updated"] = now;
     jsonMap["created_by"] = user.username;

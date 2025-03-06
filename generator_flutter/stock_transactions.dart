@@ -1,12 +1,14 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:convert';
+
 class StockTransactions {
   String? uuid;
   String product_uuid;
-  String quantity;
+  int quantity;
   String status;
   String created_at;
   String last_updated;
   String created_by;
-
   StockTransactions({
     this.uuid,
     required this.product_uuid,
@@ -34,7 +36,7 @@ class StockTransactions {
     return StockTransactions(
       uuid: map['uuid'] != null ? map['uuid'] as String : null,
       product_uuid: map['product_uuid'] as String,
-      quantity: map['quantity'] as String,
+      quantity: map['quantity'] as int,
       status: map['status'] as String,
       created_at: map['created_at'] as String,
       last_updated: map['last_updated'] as String,
@@ -42,4 +44,8 @@ class StockTransactions {
     );
   }
 
+  @override
+  String toString() {
+    return 'StockTransactions(uuid: $uuid, product_uuid: $product_uuid, quantity: $quantity, status: $status, created_at: $created_at, last_updated: $last_updated, created_by: $created_by)';
+  }
 }

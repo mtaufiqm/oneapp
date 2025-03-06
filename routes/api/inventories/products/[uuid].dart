@@ -58,8 +58,16 @@ Future<Response> onPost(RequestContext ctx,String uuid) async {
     if(!(jsonBody is Map<String,dynamic>)){
       return RespHelper.message(statusCode: HttpStatus.badRequest,message: "Invalid Input Products ${uuid}");
     }
+    
     jsonBody["last_updated"] = DateTime.now().toIso8601String();
     var object = Products.fromJson(jsonBody);
+
+    //validate if updated quantity stock less than available stock, it will fail. ensure to cancel pending transaction.
+    var pendingStockProduct = await productRepo.getProductStockByStatus(uuid, "PENDING");
+    int pending_quantity = pendingStockProduct["status_quantity"] as int;
+    if(pending_quantity > object.stock_quantity){
+      return RespHelper.badRequest(message: "Input Quantity Less Than Pending Quantity. Ensure to Cancel All Pending Before");
+    }
     var result = await productRepo.update(uuid,object);
     return Response.json(body: result);
   } catch(e){

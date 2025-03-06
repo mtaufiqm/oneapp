@@ -139,4 +139,30 @@ class ProductsRepository extends MyRepository<Products>{
       return product;
     });
   }
+
+  Future<Map<String,dynamic>> getProductStockByStatus(dynamic uuid,dynamic status) async {
+    return await this.conn.connectionPool.runTx((tx) async {
+      var result = await tx.execute(r"""
+                      SELECT 
+                          p.uuid as uuid, 
+                          p.name as name, 
+                          p.image_link as image_link,
+                          p.unit as unit,
+                          COALESCE(SUM(o.quantity), 0) AS status_quantity,
+                          p.created_at as created_at,
+                          p.created_by as created_by,
+                          p.last_updated as last_updated
+                      FROM products p
+                      LEFT JOIN stock_transactions o ON p.uuid = o.product_uuid AND o.status = $1 WHERE p.uuid = $2
+                      group by p.uuid
+      """,parameters: [
+        status as String,
+        uuid as String
+        ]);
+        if(result.isEmpty){
+          throw Exception("There is no Certain Data ${uuid}");
+        }
+        return result.first.toColumnMap();
+    });
+  }
 }

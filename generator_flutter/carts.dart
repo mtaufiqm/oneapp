@@ -37,5 +37,5 @@ class Carts {
   String toString() {
     return 'Carts(uuid: $uuid, product_uuid: $product_uuid, quantity: $quantity, created_at: $created_at, created_by: $created_by)';
   }
-
+  
 }

@@ -18,6 +18,7 @@ Future<Response> onRequest(
   return (switch(context.request.method){
     HttpMethod.get => onGet(context,uuid),
     HttpMethod.post => onPost(context,uuid),
+    HttpMethod.delete => onDelete(context, uuid),
     _ => Future.value(RespHelper.message(statusCode: HttpStatus.methodNotAllowed,message: "Method Not Allowed"))
   });
 }
@@ -81,6 +82,9 @@ Future<Response> onPost(RequestContext ctx,String uuid) async {
       }
     }
 
+    //if input transaction is pending, all can do it (superadmin,admin,admin_inventories, transactions creator)
+    //after this update will execute in db, ensure update the updated_at time
+    inputTransactions.last_updated = DateTime.now().toIso8601String();
 
     //To Cancel a Transaction, Administrators and User Creator can Cancel it, this already filtered since first filter above this method; 
     StockTransactions result = await transactionRepo.update(uuid,inputTransactions);
