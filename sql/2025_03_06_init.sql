@@ -156,6 +156,7 @@ CREATE TABLE "innovation" (
   "alias" text NOT NULL,
   "description" text NOT NULL,
   "files_uuid" text NOT NULL,
+  "innovation_link" text NOT NULL,
   "is_locked" boolean NOT NULL,
   "pwd" text,
   "created_at" text NOT NULL,

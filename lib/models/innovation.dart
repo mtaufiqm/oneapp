@@ -1,3 +1,6 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:convert';
+
 // uuid: text pk not null
 // name: text not null
 // alias: text not null
@@ -15,6 +18,7 @@ class Innovation {
   String alias;
   String description;
   String files_uuid;
+  String innovation_link;
   bool is_locked;
   String? pwd;
   String created_at;
@@ -26,6 +30,7 @@ class Innovation {
     required this.alias,
     required this.description,
     required this.files_uuid,
+    required this.innovation_link,
     required this.is_locked,
     this.pwd,
     required this.created_at,
@@ -33,13 +38,13 @@ class Innovation {
     required this.last_updated,
   });
 
-
   Innovation copyWith({
     String? uuid,
     String? name,
     String? alias,
     String? description,
     String? files_uuid,
+    String? innovation_link,
     bool? is_locked,
     String? pwd,
     String? created_at,
@@ -52,6 +57,7 @@ class Innovation {
       alias: alias ?? this.alias,
       description: description ?? this.description,
       files_uuid: files_uuid ?? this.files_uuid,
+      innovation_link: innovation_link ?? this.innovation_link,
       is_locked: is_locked ?? this.is_locked,
       pwd: pwd ?? this.pwd,
       created_at: created_at ?? this.created_at,
@@ -67,6 +73,7 @@ class Innovation {
       'alias': alias,
       'description': description,
       'files_uuid': files_uuid,
+      'innovation_link': innovation_link,
       'is_locked': is_locked,
       'pwd': pwd,
       'created_at': created_at,
@@ -82,6 +89,7 @@ class Innovation {
       alias: map['alias'] as String,
       description: map['description'] as String,
       files_uuid: map['files_uuid'] as String,
+      innovation_link: map['innovation_link'] as String,
       is_locked: map['is_locked'] as bool,
       pwd: map['pwd'] != null ? map['pwd'] as String : null,
       created_at: map['created_at'] as String,
@@ -89,10 +97,4 @@ class Innovation {
       last_updated: map['last_updated'] as String,
     );
   }
-
-  @override
-  String toString() {
-    return 'Innovation(uuid: $uuid, name: $name, alias: $alias, description: $description, files_uuid: $files_uuid, is_locked: $is_locked, pwd: $pwd, created_at: $created_at, created_by: $created_by, last_updated: $last_updated)';
-  }
-
 }

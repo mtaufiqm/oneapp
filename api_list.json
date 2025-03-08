@@ -194,4 +194,43 @@
             }
         }
     ]
-}]
+},
+{
+    "list":[
+        {
+            "method":"GET",
+            "url":"/api/pegawai",
+            "response":[
+                {                
+                      "uuid": "value",
+                      "fullname": "value",
+                      "fullname_with_title": "value",
+                      "nickname": "value",
+                      "date_of_birth": "value",
+                      "city_of_birth": "value",
+                      "nip": "value",
+                      "old_nip": "value",
+                      "age": "value",
+                      "username":"value",
+                      "status_pegawai":"value"
+                },
+                {                
+                      "uuid": "value",
+                      "fullname": "value",
+                      "fullname_with_title": "value",
+                      "nickname": "value",
+                      "date_of_birth": "value",
+                      "city_of_birth": "value",
+                      "nip": "value",
+                      "old_nip": "value",
+                      "age": "value",
+                      "username":"value",
+                      "status_pegawai":"value"
+                }
+            ]
+        }
+    ]
+}
+
+
+]

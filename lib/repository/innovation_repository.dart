@@ -22,11 +22,12 @@ class InnovationRepository extends MyRepository<Innovation>{
 
   Future<Innovation> update(dynamic uuid, Innovation object) async {
     return this.conn.connectionPool.runTx((tx) async {
-      var result = await tx.execute(r"UPDATE innovation SET name = $1, alias = $2, description = $3, files_uuid = $4, is_locked = $5, pwd = $6, created_at = $7, created_by = $8, last_updated = $9 WHERE uuid = $10",parameters: [
+      var result = await tx.execute(r"UPDATE innovation SET name = $1, alias = $2, description = $3, files_uuid = $4, innovation_link = $5, is_locked = $6, pwd = $7, created_at = $8, created_by = $9, last_updated = $10 WHERE uuid = $11",parameters: [
         object.name,
         object.alias,
         object.description,
         object.files_uuid,
+        object.innovation_link,
         object.is_locked,
         object.pwd,
         object.created_at,
@@ -46,12 +47,13 @@ class InnovationRepository extends MyRepository<Innovation>{
     return this.conn.connectionPool.runTx((tx) async {
       String uuid =  Uuid().v1();
       object.uuid = uuid;
-      var result = await tx.execute(r"INSERT INTO innovation VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING uuid", parameters: [
+      var result = await tx.execute(r"INSERT INTO innovation(uuid, name, alias, description, files_uuid, innovation_link, is_locked, pwd, created_at, created_by, last_updated) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING uuid", parameters: [
         object.uuid,
         object.name,
         object.alias,
         object.description,
         object.files_uuid,
+        object.innovation_link,
         object.is_locked,
         object.pwd,
         object.created_at,
