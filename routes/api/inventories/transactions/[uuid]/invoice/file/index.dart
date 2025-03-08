@@ -56,6 +56,12 @@ Future<Response> onGet(RequestContext ctx,String uuid) async {
 
 
 Future<Uint8List> getBytesPdfTransactions(StockTransactions transactions, Products products, Pegawai transactionCreator,Pegawai admin) async {
+  String pathLogo = "";
+  if(Platform.isWindows){
+    pathLogo = "logo_bps_luwu.png";
+  } else if(Platform.isLinux){
+    pathLogo = "/opt/oneapp/logo_bps_luwu.png";
+  }
   File logo_file = File("logo_bps_luwu.png");
   print("File Exists : ${logo_file.existsSync()}");
   var listBytesLogo = logo_file.readAsBytesSync();
