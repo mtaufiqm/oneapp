@@ -69,25 +69,46 @@ Future<Response> onPost(RequestContext ctx,String uuid) async {
     //CONTINUE VERIFIY STATUS ALLOWED TO APPROVE
     StockTransactions inputTransactions = StockTransactions.fromJson(jsonBody);
 
-
     if(transactions.status == "COMPLETED" || transactions.status == "CANCELLED"){
       return RespHelper.badRequest(message: "You Cant Update This Transaction ${uuid}. Already Completed");
     }
 
     //AFTER THIS, ONLY TRANSACTIONS THAT "PENDING"
     //To Complete a Transaction, Only Administrators can do it
-    if(inputTransactions == "COMPLETED"){
+    if(inputTransactions.status == "COMPLETED"){
       if(!(user.isContainOne(["SUPERADMIN","ADMIN","ADMIN_INVENTORIES"]))){
         return RespHelper.unauthorized();
       }
+
+      //get products current condition;
+      Products currentConditionProducts = await productRepo.getById(transactions.product_uuid);
+      
+      //if requested stock larger than current real stock of product, return Error; 
+      if(currentConditionProducts.stock_quantity < inputTransactions.quantity){
+        return RespHelper.badRequest(message: "Products Out Of Stock");
+      }
+
+      //if its stock available for this transactions, continue the process
+      transactions.last_updated = DateTime.now().toIso8601String();
+      transactions.status = "COMPLETED";
+
+      StockTransactions result = await transactionRepo.update(uuid, transactions);
+
+      //this is important, update stock after completed!!!
+      int newStock = currentConditionProducts.stock_quantity - inputTransactions.quantity;
+      currentConditionProducts.stock_quantity = newStock;
+      Products productsResult = await productRepo.update(transactions.product_uuid,currentConditionProducts);
+
+      return Response.json(body: result.toJson());
     }
 
-    //if input transaction is pending, all can do it (superadmin,admin,admin_inventories, transactions creator)
+    //this for cancel transactions
+    //all can do it (superadmin,admin,admin_inventories, transactions creator)
     //after this update will execute in db, ensure update the updated_at time
-    inputTransactions.last_updated = DateTime.now().toIso8601String();
+    transactions.last_updated = DateTime.now().toIso8601String();
+    transactions.status = "CANCELLED";
 
-    //To Cancel a Transaction, Administrators and User Creator can Cancel it, this already filtered since first filter above this method; 
-    StockTransactions result = await transactionRepo.update(uuid,inputTransactions);
+    StockTransactions result = await transactionRepo.update(uuid,transactions);
     return Response.json(body: result.toJson());
   } catch(e){
     print(e);
