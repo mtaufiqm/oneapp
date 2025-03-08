@@ -62,7 +62,7 @@ Future<Uint8List> getBytesPdfTransactions(StockTransactions transactions, Produc
   } else if(Platform.isLinux){
     pathLogo = "/opt/oneapp/logo_bps_luwu.png";
   }
-  File logo_file = File("logo_bps_luwu.png");
+  File logo_file = File("${pathLogo}");
   print("File Exists : ${logo_file.existsSync()}");
   var listBytesLogo = logo_file.readAsBytesSync();
   wp.MemoryImage memoryLogo = wp.MemoryImage(listBytesLogo);
