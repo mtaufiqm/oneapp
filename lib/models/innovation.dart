@@ -97,4 +97,10 @@ class Innovation {
       last_updated: map['last_updated'] as String,
     );
   }
+
+  @override
+  String toString() {
+    return 'Innovation(uuid: $uuid, name: $name, alias: $alias, description: $description, files_uuid: $files_uuid, innovation_link: $innovation_link, is_locked: $is_locked, pwd: $pwd, created_at: $created_at, created_by: $created_by, last_updated: $last_updated)';
+  }
+
 }
