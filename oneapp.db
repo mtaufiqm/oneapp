@@ -82,6 +82,40 @@ CREATE TABLE public.categories_products (
 ALTER TABLE public.categories_products OWNER TO postgres;
 
 --
+-- Name: documentation; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.documentation (
+    uuid text NOT NULL,
+    name text,
+    details text,
+    documentation_time text,
+    files_uuid text,
+    created_at text,
+    created_by text,
+    updated_at text
+);
+
+
+ALTER TABLE public.documentation OWNER TO postgres;
+
+--
+-- Name: files; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.files (
+    uuid text NOT NULL,
+    name text,
+    extension text,
+    location text,
+    created_at text,
+    created_by text
+);
+
+
+ALTER TABLE public.files OWNER TO postgres;
+
+--
 -- Name: general_questions; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -121,6 +155,27 @@ ALTER TABLE public.general_questions_id_seq OWNER TO postgres;
 
 ALTER SEQUENCE public.general_questions_id_seq OWNED BY public.general_questions.id;
 
+
+--
+-- Name: innovation; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.innovation (
+    uuid text NOT NULL,
+    name text NOT NULL,
+    alias text NOT NULL,
+    description text NOT NULL,
+    files_uuid text NOT NULL,
+    is_locked boolean NOT NULL,
+    pwd text,
+    created_at text NOT NULL,
+    created_by text NOT NULL,
+    last_updated text NOT NULL,
+    innovation_link text NOT NULL
+);
+
+
+ALTER TABLE public.innovation OWNER TO postgres;
 
 --
 -- Name: kegiatan; Type: TABLE; Schema: public; Owner: postgres
@@ -201,11 +256,11 @@ ALTER TABLE public.mitra OWNER TO postgres;
 --
 
 CREATE TABLE public.pegawai (
-    id integer NOT NULL,
+    uuid text NOT NULL,
     fullname text,
     fullname_with_title text,
     nickname text,
-    date_of_birth date,
+    date_of_birth text,
     city_of_birth text,
     nip text,
     old_nip text,
@@ -236,7 +291,7 @@ ALTER TABLE public.pegawai_id_seq OWNER TO postgres;
 -- Name: pegawai_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public.pegawai_id_seq OWNED BY public.pegawai.id;
+ALTER SEQUENCE public.pegawai_id_seq OWNED BY public.pegawai.uuid;
 
 
 --
@@ -418,10 +473,10 @@ ALTER TABLE ONLY public.kuesioner_mitra ALTER COLUMN id SET DEFAULT nextval('pub
 
 
 --
--- Name: pegawai id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: pegawai uuid; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.pegawai ALTER COLUMN id SET DEFAULT nextval('public.pegawai_id_seq'::regclass);
+ALTER TABLE ONLY public.pegawai ALTER COLUMN uuid SET DEFAULT nextval('public.pegawai_id_seq'::regclass);
 
 
 --
@@ -463,10 +518,51 @@ COPY public.categories_products (product_uuid, categories_uuid) FROM stdin;
 
 
 --
+-- Data for Name: documentation; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.documentation (uuid, name, details, documentation_time, files_uuid, created_at, created_by, updated_at) FROM stdin;
+59766100-fa51-11ef-b7d9-3589e5842009	Pencanganan Desa Cantik 2024	Pencanangan Desa Cantik 2024	2024-08-22T06:03:46+0000	070c5910-fa42-11ef-89f8-f5fd257f0359	2025-03-06T14:07:57.194531	taufiq.mukhtar	2025-03-06T06:03:46+0000
+\.
+
+
+--
+-- Data for Name: files; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.files (uuid, name, extension, location, created_at, created_by) FROM stdin;
+22d1c950-f411-11ef-a18b-b7b8ddcf816a	LemKertas.jpg	.jpg	D:\\Coding\\dart\\dart_frog\\my_first\\files\\images\\22cfa670-f411-11ef-a18b-b7b8ddcf816a.jpg	2025-02-26T15:13:10.753407	taufiq.mukhtar
+29c2fa40-f411-11ef-a18b-b7b8ddcf816a	PenghapusPensil.jpg	.jpg	D:\\Coding\\dart\\dart_frog\\my_first\\files\\images\\29c20fe0-f411-11ef-a18b-b7b8ddcf816a.jpg	2025-02-26T15:13:22.403218	taufiq.mukhtar
+2eabb100-f411-11ef-a18b-b7b8ddcf816a	StaplerKecil.jpg	.jpg	D:\\Coding\\dart\\dart_frog\\my_first\\files\\images\\2eab14c0-f411-11ef-a18b-b7b8ddcf816a.jpg	2025-02-26T15:13:30.640917	taufiq.mukhtar
+32a3ed40-f411-11ef-a18b-b7b8ddcf816a	KertasLabel.jpg	.jpg	D:\\Coding\\dart\\dart_frog\\my_first\\files\\images\\32a302e0-f411-11ef-a18b-b7b8ddcf816a.jpg	2025-02-26T15:13:37.298559	taufiq.mukhtar
+36529d60-f411-11ef-a18b-b7b8ddcf816a	KertasHVSA3.jpg	.jpg	D:\\Coding\\dart\\dart_frog\\my_first\\files\\images\\3651da10-f411-11ef-a18b-b7b8ddcf816a.jpg	2025-02-26T15:13:43.477659	taufiq.mukhtar
+070c5910-fa42-11ef-89f8-f5fd257f0359	FotoDocumentation1.jpeg	.jpeg	D:\\Coding\\dart\\dart_frog\\my_first\\files\\images\\07077710-fa42-11ef-89f8-f5fd257f0359.jpeg	2025-03-06T12:18:16.479776	taufiq.mukhtar
+543aee60-faa9-11ef-af65-4bf594712011	sentadu7317.png	.png	D:\\Coding\\dart\\dart_frog\\my_first\\files\\images\\5437e120-faa9-11ef-af65-4bf594712011.png	2025-03-07T00:37:44.133468	taufiq.mukhtar
+5c02a930-faa9-11ef-af65-4bf594712011	SEPEKAN_7317.png	.png	D:\\Coding\\dart\\dart_frog\\my_first\\files\\images\\5c020cf0-faa9-11ef-af65-4bf594712011.png	2025-03-07T00:37:57.186789	taufiq.mukhtar
+5f658340-faa9-11ef-af65-4bf594712011	PPK7317.png	.png	D:\\Coding\\dart\\dart_frog\\my_first\\files\\images\\5f650e10-faa9-11ef-af65-4bf594712011.png	2025-03-07T00:38:02.867960	taufiq.mukhtar
+65626920-faa9-11ef-af65-4bf594712011	INDO_UGI.jpg	.jpg	D:\\Coding\\dart\\dart_frog\\my_first\\files\\images\\65621b00-faa9-11ef-af65-4bf594712011.jpg	2025-03-07T00:38:12.914541	taufiq.mukhtar
+693a9a40-faa9-11ef-af65-4bf594712011	ICKM.jpg	.jpg	D:\\Coding\\dart\\dart_frog\\my_first\\files\\images\\693a2510-faa9-11ef-af65-4bf594712011.jpg	2025-03-07T00:38:19.364694	taufiq.mukhtar
+6c6fd4a0-faa9-11ef-af65-4bf594712011	SIPANDU.jpg	.jpg	D:\\Coding\\dart\\dart_frog\\my_first\\files\\images\\6c6f8680-faa9-11ef-af65-4bf594712011.jpg	2025-03-07T00:38:24.745382	taufiq.mukhtar
+\.
+
+
+--
 -- Data for Name: general_questions; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.general_questions (id, uuid, version, "group", group_desc, order_in_group, question, description, type) FROM stdin;
+\.
+
+
+--
+-- Data for Name: innovation; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.innovation (uuid, name, alias, description, files_uuid, is_locked, pwd, created_at, created_by, last_updated, innovation_link) FROM stdin;
+f0229530-faa9-11ef-af65-4bf594712011	Sistem Integrasi Pengarsipan Dokumen	SIPANDU	Sistem Integrasi Pengarsipan Dokumen	6c6fd4a0-faa9-11ef-af65-4bf594712011	f	\N	2025-03-07T00:42:05.698431	taufiq.mukhtar	2025-03-07T00:42:05.698431	https://bps7317.wixsite.com/sipandu
+88dab180-faab-11ef-af65-4bf594712011	Sistem Informasi Capaian Kinerja Mitra Statistik	ICKM SICANTIK	Sistem Informasi Capaian Kinerja Mitra Statistik	693a9a40-faa9-11ef-af65-4bf594712011	f	\N	2025-03-07T00:53:31.416822	taufiq.mukhtar	2025-03-07T00:53:31.416822	https://public.tableau.com/app/profile/sintya.dwi.lestari/viz/FINALSICANTIK/Final?publish=yes
+75989eb0-faac-11ef-af65-4bf594712011	Sistem Informasi Pelayanan Statistik Terpadu	SENTADU	Sistem Informasi Pelayanan Statistik Terpadu	543aee60-faa9-11ef-af65-4bf594712011	f	\N	2025-03-07T01:00:08.602115	taufiq.mukhtar	2025-03-07T01:00:08.602115	http://s.bps.go.id/SENTADU7317
+164bbe60-fafc-11ef-a102-1f821e4a3c10	Portal Pengelola Keuangan	PPK	Portal Pengelola Keuangan	5f658340-faa9-11ef-af65-4bf594712011	t	ppk7317	2025-03-07T10:30:08.448583	taufiq.mukhtar	2025-03-07T10:30:08.448583	http://s.bps.go.id/ppk7317
 \.
 
 
@@ -498,7 +594,32 @@ COPY public.mitra ("mitraId", fullname, nickname, date_of_birth, city_of_birth, 
 -- Data for Name: pegawai; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.pegawai (id, fullname, fullname_with_title, nickname, date_of_birth, city_of_birth, nip, old_nip, age, username, status_pegawai) FROM stdin;
+COPY public.pegawai (uuid, fullname, fullname_with_title, nickname, date_of_birth, city_of_birth, nip, old_nip, age, username, status_pegawai) FROM stdin;
+f007de94-f9ae-11ef-9cd2-0242ac120002	Muh. Taufiq Mukhtar	Muh. Taufiq Mukhtar, A.Md. Stat.	Taufiq	2000-09-29	Pinrang	200009292022011004	340061012	24	taufiq.mukhtar	AKTIF
+4d6bd8d0-fbc4-11ef-ab16-c1fe69481576	Andi Cakra Atmajaya	Andi Cakra Atmajaya S.Pt	Andi Cakra	1978-10-22	UNKNOWN	197810222006041003	340018155	0	andicakra	AKTIF
+825bc9b0-fbc4-11ef-ab16-c1fe69481576	Ary Shanty	Ary Shanty SE	Ary Shanty	1974-08-02	UNKNOWN	197408022002122002	340016646	0	aryshanty	AKTIF
+ff1da770-fbc4-11ef-ab16-c1fe69481576	Nashif Satria Ramadhan	Nashif Satria Ramadhan S.Tr.Stat.	Rama	2002-11-10	UNKNOWN	200211102024121003	340063380	0	nashiframadhan	AKTIF
+3be61c00-fbc5-11ef-ab16-c1fe69481576	Ridwan	Ridwan S.Mn	Ridwan	1975-10-01	UNKNOWN	 197510012002121005	340016688	0	ridwan5	AKTIF
+76c4c1f0-fbc5-11ef-ab16-c1fe69481576	Mizar	Mizar S.E.	Mizar	1979-07-08	UNKNOWN	197907082011011004	340055464	0	mizar	AKTIF
+b726ff10-fbc5-11ef-ab16-c1fe69481576	Fadli Lantera	Fadli Lantera S.Si	Fadli	1990-01-29	UNKNOWN	199001292014031002	340056591	0	fadli.lantera	AKTIF
+df249360-fbc5-11ef-ab16-c1fe69481576	Saehal Fanchai Barahima	Saehal Fanchai Barahima A.Md.Kom	Saehal	1990-05-04	UNKNOWN	199005042022031007	340061516	0	saehal.fanchai	AKTIF
+0cc57be0-fbc6-11ef-ab16-c1fe69481576	Husnaini	Husnaini A.Md.Kom.	Husna	1991-05-05	UNKNOWN	199105052024212003	340062847	0	husnaini-pppk	AKTIF
+3aebe810-fbc6-11ef-ab16-c1fe69481576	Nurjannah Jabar	Nurjannah Jabar A.Md.Kom.	Jein	1993-09-05	UNKNOWN	199309052022032012	340061466	0	nurjannah.jabar	AKTIF
+723d2180-fbc6-11ef-ab16-c1fe69481576	Andi Fabiola Awalet	Andi Fabiola Awalet S.Si.	Ola	1994-04-02	UNKNOWN	199404022019032001	340059294	0	andi.fabiola	AKTIF
+9d992310-fbc6-11ef-ab16-c1fe69481576	Alfada Maghfiri Firdani	Alfada Maghfiri Firdani S.Tr.Stat.	Fada	1996-04-16	UNKNOWN	199604162019012002	340058578	0	alfada.firdani	AKTIF
+8729cfb0-fbc8-11ef-ab16-c1fe69481576	Syamsinar	Syamsinar A.Md.Stat	Sinar	1996-07-15	UNKNOWN	199607152022032014	340061553	0	syamsin	AKTIF
+ac80d510-fbc8-11ef-ab16-c1fe69481576	Dina Purnamasari	Dina Purnamasari S.Tr.Stat.	Dina	1996-11-24	UNKNOWN	199611242019012002	340058686	0	dinapurnama	AKTIF
+6dec3690-fbc9-11ef-ab16-c1fe69481576	Sintya Dwi Lestari	Sintya Dwi Lestari S.Tr.Stat.	Sintya	1997-11-22	UNKNOWN	199711222023022001	340062056	0	sintyadwil	AKTIF
+9dd9a720-fbc9-11ef-ab16-c1fe69481576	Fiqih Tri Mahendra	Fiqih Tri Mahendra S.Tr.Stat.	Mahen	1998-06-04	UNKNOWN	199806042022011001	340060646	0	mahen.fiqih	AKTIF
+c3166dc0-fbc9-11ef-ab16-c1fe69481576	Yanuar Krisna Pamuja	Yanuar Krisna Pamuja S.Tr.Stat.	Yanuar	1999-01-06	UNKNOWN	199901062022011003	340060959	0	krisna.pamuja	AKTIF
+ea612cd0-fbc9-11ef-ab16-c1fe69481576	Izza Annisa Ramadhani	Izza Annisa Ramadhani A.Md.Stat.	Izza	1999-12-08	UNKNOWN	199912082023022001	340062169	0	izzaannisa	AKTIF
+1639b160-fbca-11ef-ab16-c1fe69481576	Chaula Ramadhani Putri	Chaula Ramadhani Putri S.Tr.Stat.	Chaula ✨	1999-12-19	UNKNOWN	199912192023022002	340061722	0	chaulaputri	AKTIF
+4a7daad0-fbca-11ef-ab16-c1fe69481576	Firda Lailatun Naafi	Firda Lailatun Naafi S.Tr.Stat.	Naafi	2001-04-07	UNKNOWN	200104072023102001	340062456	0	firdanaafi	AKTIF
+6b660b70-fbca-11ef-ab16-c1fe69481576	Muhammad Ilyas	Muhammad Ilyas	Ilyas	1972-04-02	UNKNOWN	197204022012121004	340056176	0	muhammad.ilyas	AKTIF
+8f6e49b0-fbca-11ef-ab16-c1fe69481576	Azwar Muhtar	Azwar Muhtar	Azwar	1987-10-09	UNKNOWN	198710092008011001	340020252	0	azwar.muhtar	AKTIF
+e50b9ff0-fbc8-11ef-ab16-c1fe69481576	Isti Samrotul Hidayati	Isti Samrotul Hidayati S.Tr.Stat.	Isti	1997-04-13	UNKNOWN	199704132019122001	340059575	0	isti.samrotul	AKTIF
+bdb80410-fbc4-11ef-ab16-c1fe69481576	Andi Aulia Huseng	Andi Aulia Huseng A.Md.Stat.	Aulia	2002-04-12	UNKNOWN	200204122024122002	340063019	0	andi.aulia	AKTIF
+121c7d70-fbc9-11ef-ab16-c1fe69481576	Almuyasa Vidia Dinata	Almuyasa Vidia Dinata S.Tr.Stat.	Vidi	1997-06-03	UNKNOWN	199706032019121001	340059399	0	vidia.dinata	AKTIF
 \.
 
 
@@ -507,7 +628,11 @@ COPY public.pegawai (id, fullname, fullname_with_title, nickname, date_of_birth,
 --
 
 COPY public.products (uuid, name, image_link, unit, stock_quantity, created_at, created_by, last_updated) FROM stdin;
-teeafbjaef	Baju Bodo	google.com	Pasang	50	now	taufiq.mukhtar	now
+ca028980-f411-11ef-a18b-b7b8ddcf816a	Pengapus Pensil	/api/files/images/29c2fa40-f411-11ef-a18b-b7b8ddcf816a	pack	5	2025-02-26T15:17:51.255010	taufiq.mukhtar	2025-02-26T15:16:54.637053
+f42017a0-f411-11ef-a18b-b7b8ddcf816a	Stapler Kecil	/api/files/images/2eabb100-f411-11ef-a18b-b7b8ddcf816a	buah	4	2025-02-26T15:19:01.913550	taufiq.mukhtar	2025-02-26T15:16:54.637053
+20b61fd0-f412-11ef-a18b-b7b8ddcf816a	Kertas Label	/api/files/images/32a3ed40-f411-11ef-a18b-b7b8ddcf816a	pack	3	2025-02-26T15:20:16.716540	taufiq.mukhtar	2025-02-26T15:16:54.637053
+a84350e0-f411-11ef-a18b-b7b8ddcf816a	Lem Kertas	/api/files/images/22d1c950-f411-11ef-a18b-b7b8ddcf816a	pack	2	2025-02-26T15:16:54.637053	taufiq.mukhtar	2025-03-04T10:26:10.697508
+33b25a90-f412-11ef-a18b-b7b8ddcf816a	Kertas HVS 4	/api/files/images/36529d60-f411-11ef-a18b-b7b8ddcf816a	rim	1	2025-02-26T15:20:48.568592	taufiq.mukhtar	2025-03-05T06:00:18.859069
 \.
 
 
@@ -524,6 +649,10 @@ COPY public.response_assignment (id, uuid, structure_uuid, type_kuesioner, statu
 --
 
 COPY public.roles (description) FROM stdin;
+SUPERADMIN
+ADMIN
+ADMIN_INVENTORIES
+PEGAWAI
 \.
 
 
@@ -532,6 +661,10 @@ COPY public.roles (description) FROM stdin;
 --
 
 COPY public.status_pegawai (description) FROM stdin;
+AKTIF
+PINDAH
+PENSIUN
+TUGAS BELAJAR
 \.
 
 
@@ -540,8 +673,11 @@ COPY public.status_pegawai (description) FROM stdin;
 --
 
 COPY public.stock_transactions (uuid, product_uuid, quantity, status, created_at, last_updated, created_by) FROM stdin;
-dgdfgh	teeafbjaef	4	PENDING	hsdds	now	taufiq.mukhtar
-ssdfdf	teeafbjaef	5	COMPLETED	hsdds	now	taufiq.mukhtar
+47408040-f8a0-11ef-8b47-5ffeb57b6b6d	33b25a90-f412-11ef-a18b-b7b8ddcf816a	3	COMPLETED	2025-03-04T10:27:54.552896	2025-03-04T10:27:54.552896	taufiq.mukhtar
+685139b0-fb6f-11ef-a48e-d955041a9e45	a84350e0-f411-11ef-a18b-b7b8ddcf816a	1	CANCELLED	2025-03-08T00:15:38.175823	2025-03-08T00:16:13.293415	taufiq.mukhtar
+c1558150-fb70-11ef-a48e-d955041a9e45	20b61fd0-f412-11ef-a18b-b7b8ddcf816a	2	CANCELLED	2025-03-08T00:25:17.024523	2025-03-08T00:41:05.254553	taufiq.mukhtar
+088772c0-fb73-11ef-a48e-d955041a9e45	20b61fd0-f412-11ef-a18b-b7b8ddcf816a	1	PENDING	2025-03-08T00:41:35.462033	2025-03-08T00:41:35.462033	taufiq.mukhtar
+fd3f43c0-fb72-11ef-a48e-d955041a9e45	20b61fd0-f412-11ef-a18b-b7b8ddcf816a	1	CANCELLED	2025-03-08T00:41:16.536899	2025-03-08T00:42:09.461656	taufiq.mukhtar
 \.
 
 
@@ -558,7 +694,31 @@ COPY public.structure_kuesioner_mitra (id, uuid, kuesioner_mitra, penilai_userna
 --
 
 COPY public."user" (username, pwd) FROM stdin;
-taufiq.mukhtar	taufiq1729
+taufiq.mukhtar	2b0098825427fad882e711778013460fc5f54cff2ebde3810f0f77172f295b9b
+andicakra	d23062e4c9e15587ca3f91959467c520b1e6cf18d67dc465185a4fa1f393f2c3
+aryshanty	c6eba01421639db52f053597e574cdf4ca9eb34a3d33497eee884f0013636b16
+andi.aulia	f814da5a4992febd80ec4c9c7d5a22bb9a6f4be0ad1de1954a71a00dd4928b7d
+nashiframadhan	02da3df9da7694e2d7a089e6d70ba373f92a239894475f8563a8010bc99e3639
+ridwan5	c7bd3d3cf4ed9a94bc7196bdb5603ea208350115351460202abc72c4dc845818
+mizar	547bee34f0063701572eba80c29b3e938ccfe9d15f5669cd38e5c4ae9d8b0456
+fadli.lantera	c0b856f8280f588fe95f6677a83ea6c590b30ef0ce8458cf673e80ddd52083d3
+saehal.fanchai	fb5a40a2468abbc03fbbfbbff0a5114ddef8547acf4d6ca13955b2e12cbccda8
+husnaini-pppk	aa26f4c4a6cf2569d7ec7103399a6895ea99fcf56c06a5e0702db7578fdf5830
+nurjannah.jabar	6d76863d0eb83a88080d0a523efc3750f8f677a708bd2743c317447a9dbf2df2
+andi.fabiola	87afc34696ba979709dd52716f3cbd80a16c2f1e3f686d3cf99a51571e1454e7
+alfada.firdani	a2d59f6563f408cf190c42228a7081bc3561eb2ada1e886f20dce47d5ea8107b
+syamsin	0fee5a462f80c681203c0861a435b1584c331dad787df6ce893900ddcbdb0914
+dinapurnama	961e4acf3e6842bd615a5a6272ba345d39fc2915af268fef1493be16375dc792
+isti.samrotul	5ac1ee6b99c4073851107929c5f46c73f08b2ed47be60bfe4ea67175f22d72fa
+vidia.dinata	71b686a4dab0bc11cbab5f2f655d19d14a640d4193a1abc7f71eec18ed7acea6
+sintyadwil	0f3b88a51452e4ebd8697f7e7bbc9a74cdfd6f5170d3dd21928121a839b83573
+mahen.fiqih	53e0303457b5130df885fbe67fded64148d0e3e24f0fe2eca3a15e0f22dfe610
+krisna.pamuja	186428961c09d11d4e7b1395d1ae280bf530e5eea2b2972ea9e7860b737657f1
+izzaannisa	78d59d15d0262a0456d00fce89bc53d4ffb0ee9204a8528aa5304c02c88b0875
+chaulaputri	f9c0bf2df8823ca207c14f8a34b036eab7e240aed79204219f48bbcc4857eabc
+firdanaafi	804f70fc16db19fbceca03aa983f7f04a2faa7a09db409249bd9d51426b135e1
+muhammad.ilyas	01e954e3e9b1085d2ab1d29473da7b0d212139baed8c9758128e963224014533
+azwar.muhtar	987e199618d81bb7eec0a5a3c28c97c9cc9a3e7a18ab01cbc61238550d247f8b
 \.
 
 
@@ -567,6 +727,34 @@ taufiq.mukhtar	taufiq1729
 --
 
 COPY public.user_role_bridge (description, username) FROM stdin;
+ADMIN	taufiq.mukhtar
+SUPERADMIN	taufiq.mukhtar
+PEGAWAI	taufiq.mukhtar
+PEGAWAI	andicakra
+PEGAWAI	aryshanty
+PEGAWAI	andi.aulia
+PEGAWAI	nashiframadhan
+PEGAWAI	ridwan5
+PEGAWAI	mizar
+PEGAWAI	fadli.lantera
+PEGAWAI	saehal.fanchai
+PEGAWAI	husnaini-pppk
+PEGAWAI	nurjannah.jabar
+PEGAWAI	andi.fabiola
+PEGAWAI	alfada.firdani
+PEGAWAI	syamsin
+PEGAWAI	dinapurnama
+PEGAWAI	isti.samrotul
+PEGAWAI	vidia.dinata
+PEGAWAI	sintyadwil
+PEGAWAI	mahen.fiqih
+PEGAWAI	krisna.pamuja
+PEGAWAI	izzaannisa
+PEGAWAI	chaulaputri
+PEGAWAI	firdanaafi
+PEGAWAI	muhammad.ilyas
+PEGAWAI	azwar.muhtar
+ADMIN_INVENTORIES	nurjannah.jabar
 \.
 
 
@@ -637,6 +825,22 @@ ALTER TABLE ONLY public.categories
 
 
 --
+-- Name: documentation documentation_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.documentation
+    ADD CONSTRAINT documentation_pkey PRIMARY KEY (uuid);
+
+
+--
+-- Name: files files_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.files
+    ADD CONSTRAINT files_pkey PRIMARY KEY (uuid);
+
+
+--
 -- Name: general_questions general_questions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -650,6 +854,14 @@ ALTER TABLE ONLY public.general_questions
 
 ALTER TABLE ONLY public.general_questions
     ADD CONSTRAINT general_questions_uuid_key UNIQUE (uuid);
+
+
+--
+-- Name: innovation innovation_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.innovation
+    ADD CONSTRAINT innovation_pkey PRIMARY KEY (uuid);
 
 
 --
@@ -705,7 +917,7 @@ ALTER TABLE ONLY public.mitra
 --
 
 ALTER TABLE ONLY public.pegawai
-    ADD CONSTRAINT pegawai_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT pegawai_pkey PRIMARY KEY (uuid);
 
 
 --
@@ -826,6 +1038,46 @@ ALTER TABLE ONLY public.categories_products
 
 ALTER TABLE ONLY public.categories_products
     ADD CONSTRAINT categories_products_product_uuid_fkey FOREIGN KEY (product_uuid) REFERENCES public.products(uuid);
+
+
+--
+-- Name: documentation documentation_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.documentation
+    ADD CONSTRAINT documentation_created_by_fkey FOREIGN KEY (created_by) REFERENCES public."user"(username);
+
+
+--
+-- Name: documentation documentation_files_uuid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.documentation
+    ADD CONSTRAINT documentation_files_uuid_fkey FOREIGN KEY (files_uuid) REFERENCES public.files(uuid);
+
+
+--
+-- Name: files files_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.files
+    ADD CONSTRAINT files_created_by_fkey FOREIGN KEY (created_by) REFERENCES public."user"(username);
+
+
+--
+-- Name: innovation innovation_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.innovation
+    ADD CONSTRAINT innovation_created_by_fkey FOREIGN KEY (created_by) REFERENCES public."user"(username);
+
+
+--
+-- Name: innovation innovation_files_uuid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.innovation
+    ADD CONSTRAINT innovation_files_uuid_fkey FOREIGN KEY (files_uuid) REFERENCES public.files(uuid);
 
 
 --
