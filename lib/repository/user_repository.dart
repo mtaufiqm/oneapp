@@ -94,4 +94,19 @@ class UserRepository extends MyRepository<User>{
       return await this.getRolesByUserId(targetUser.username);
     });
   }
+
+  Future<List<User>> getUsersWithRole(dynamic role) async {
+    return await this.connection.connectionPool.runTx<List<User>>((tx) async {
+      var result = await tx.execute(r'select "user".username as username, "user".pwd as pwd from "user" LEFT JOIN user_role_bridge ON "user".username  = user_role_bridge.username where description = $1',parameters: [role as String]);
+      if(result.isEmpty){
+        throw Exception("There is User with ${role as String} role");
+      }
+      List<User> returnValue = [];
+      for(var item in result){
+        User itemUser = User.from(item.toColumnMap());
+        returnValue.add(itemUser);
+      }
+      return returnValue;
+    });
+  }
 }

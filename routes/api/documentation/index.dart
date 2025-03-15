@@ -51,7 +51,7 @@ Future<Response> onPost(RequestContext ctx) async {
     
     String now = DateTime.now().toIso8601String();
     jsonMap["created_at"] = now;
-    jsonMap["last_updated"] = now;
+    jsonMap["updated_at"] = now;
     jsonMap["created_by"] = user.username;
 
     Documentation documentation = Documentation.fromJson(jsonMap as Map<String,dynamic>);

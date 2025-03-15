@@ -13,6 +13,8 @@ Future<Response> onRequest(
   // TODO: implement route handler
   return (switch(context.request.method){
     HttpMethod.get => onGet(context,uuid),
+    HttpMethod.post => onUpdate(context,uuid),
+    HttpMethod.delete => onDelete(context,uuid),
     _ => Future.value(RespHelper.methodNotAllowed())
   });
 }
@@ -34,4 +36,56 @@ Future<Response> onGet(RequestContext ctx,String uuid) async {
   } catch(e){
     return RespHelper.message(statusCode: HttpStatus.badRequest,message: "Error Get Data ${uuid}");
   }
+}
+
+Future<Response> onUpdate(RequestContext ctx,String uuid) async {
+  DocumentationRepository documentationRepo = ctx.read<DocumentationRepository>();
+
+  //AUTHORIZATION
+  User user = ctx.read<User>();
+  if(!user.isContainOne(["SUPERADMIN","ADMIN","CREATE_DOCUMENTATIONS"])){
+    return RespHelper.unauthorized();
+  }
+  //AUTHORIZATION
+
+  try{
+    var jsonBody = await ctx.request.json();
+    if(!(jsonBody is Map<String,dynamic>)){
+      return RespHelper.badRequest(message: "Invalid JSON Body");
+    }
+
+    String now = DateTime.now().toLocal().toIso8601String();
+    jsonBody["updated_at"] = now;
+
+    var object = Documentation.fromJson(jsonBody as Map<String,dynamic>);
+
+    var result = await documentationRepo.update(uuid,object);
+    return Response.json(body: result);
+    
+  } catch(e){
+    print(e);
+    return RespHelper.badRequest(message: "Error Update Data ${uuid}");
+  }
+
+}
+
+
+Future<Response> onDelete(RequestContext ctx, String uuid) async{
+  DocumentationRepository documentationRepo = ctx.read<DocumentationRepository>();
+
+  //AUTHORIZATION
+  User user = ctx.read<User>();
+  if(!user.isContainOne(["SUPERADMIN","ADMIN","DELETE_DOCUMENTATIONS"])){
+    return RespHelper.unauthorized();
+  }
+  //AUTHORIZATION
+
+  try{
+    await documentationRepo.delete(uuid);
+    return RespHelper.message(message: "Success Delete Documentations ${uuid}");
+  } catch(e){
+    print(e);
+    return RespHelper.badRequest(message: "Error Delete Data ${uuid}");
+  }
+
 }

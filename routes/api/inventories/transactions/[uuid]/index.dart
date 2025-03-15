@@ -9,8 +9,6 @@ import 'package:my_first/repository/inventories/products_repository.dart';
 import 'package:my_first/repository/inventories/stock_transaction_repository.dart';
 import 'package:my_first/responses/products_available_stocks.dart';
 
-//CONTINUE THIS
-
 Future<Response> onRequest(
   RequestContext context,
   String uuid,
@@ -45,8 +43,6 @@ Future<Response> onGet(RequestContext ctx,String uuid) async {
 }
 
 
-//CONTINUE THIS
-//UPDATED/APPROVE TRANSACTION
 Future<Response> onPost(RequestContext ctx,String uuid) async {
   StockTransactionRepository transactionRepo = ctx.read<StockTransactionRepository>();
   ProductsRepository productRepo = ctx.read<ProductsRepository>();

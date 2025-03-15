@@ -38,7 +38,7 @@ class DocumentationRepository extends MyRepository<Documentation>{
   // "updated_at" text
   Future<Documentation> update(dynamic uuid, Documentation object) async {
     return this.conn.connectionPool.runTx((tx) async {
-      var result = await tx.execute(r"UPDATE files SET name = $1, details = $2, documentation_time = $3, files_uuid = $4, created_at = $5, created_by = $6, updated_at = $7 WHERE uuid = $8",parameters: [
+      var result = await tx.execute(r"UPDATE documentation SET name = $1, details = $2, documentation_time = $3, files_uuid = $4, created_at = $5, created_by = $6, updated_at = $7 WHERE uuid = $8",parameters: [
         object.name,
         object.details,
         object.documentation_time,
@@ -79,7 +79,7 @@ class DocumentationRepository extends MyRepository<Documentation>{
 
   Future<List<Documentation>> readAll() async {
     return this.conn.connectionPool.runTx((tx) async {
-      var result = await tx.execute(r"SELECT * FROM documentation");
+      var result = await tx.execute(r"SELECT * FROM documentation ORDER BY documentation_time DESC");
       List<Documentation> listDocumentation = [];
       for(var item in result){
         var itemDocumentation = Documentation.fromJson(item.toColumnMap());

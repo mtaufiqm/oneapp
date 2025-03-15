@@ -11,6 +11,7 @@ import 'package:my_first/models/user.dart';
 import 'package:my_first/repository/inventories/products_repository.dart';
 import 'package:my_first/repository/inventories/stock_transaction_repository.dart';
 import 'package:my_first/repository/pegawai_repository.dart';
+import 'package:my_first/repository/user_repository.dart';
 import 'package:uuid/uuid.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as wp;
@@ -31,9 +32,10 @@ Future<Response> onGet(RequestContext ctx,String uuid) async {
   StockTransactionRepository transactionsRepo = ctx.read<StockTransactionRepository>();
   PegawaiRepository pegawaiRepo = ctx.read<PegawaiRepository>();
   ProductsRepository productsRepo = ctx.read<ProductsRepository>();
+  UserRepository userRepo = ctx.read<UserRepository>();
 
   User authUser = ctx.read<User>();
-  if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_REPOSITORIES"]))){
+  if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_INVENTORIES"]))){
     return RespHelper.methodNotAllowed();
   }
 
@@ -41,9 +43,17 @@ Future<Response> onGet(RequestContext ctx,String uuid) async {
     StockTransactions transactions = await transactionsRepo.getById(uuid);
     Products products = await productsRepo.getById(transactions.product_uuid);
     Pegawai transactionCreator = await pegawaiRepo.getByUsername(transactions.created_by);
-    Pegawai admin = await pegawaiRepo.getByUsername(authUser.username);
-    var result = await getBytesPdfTransactions(transactions, products, transactionCreator, admin);
 
+    Pegawai approver;
+    try{
+      //get kasubbag user
+      User kasubbagUser = (await userRepo.getUsersWithRole("KASUBBAG_UMUM")).first;
+      approver = await pegawaiRepo.getByUsername(kasubbagUser.username);
+    } catch(e){
+      approver = await pegawaiRepo.getByUsername(authUser.username);
+    }
+
+    var result = await getBytesPdfTransactions(transactions, products, transactionCreator, approver);
     DateTime now = DateTime.now().toLocal();
     String fileName = "Transactions_${Uuid().v1()}.pdf";
     return Response.bytes(body:result,headers: {"Content-Type": "application/octet-stream",'Content-Disposition':'attachment; filename="${fileName}"'});
@@ -53,9 +63,7 @@ Future<Response> onGet(RequestContext ctx,String uuid) async {
   }
 }
 
-
-
-Future<Uint8List> getBytesPdfTransactions(StockTransactions transactions, Products products, Pegawai transactionCreator,Pegawai admin) async {
+Future<Uint8List> getBytesPdfTransactions(StockTransactions transactions, Products products, Pegawai transactionCreator,Pegawai approver) async {
   String pathLogo = "";
   if(Platform.isWindows){
     pathLogo = "logo_bps_luwu.png";
@@ -143,7 +151,7 @@ Future<Uint8List> getBytesPdfTransactions(StockTransactions transactions, Produc
                   children: [
                     wp.Text("Admin Inventories",style: wp.TextStyle(fontWeight: wp.FontWeight.bold)),
                     wp.SizedBox(height: 30.0),
-                    wp.Text("${admin.fullname}")
+                    wp.Text("${approver.fullname}")
                   ]
                 )
               )
@@ -155,5 +163,4 @@ Future<Uint8List> getBytesPdfTransactions(StockTransactions transactions, Produc
   });
   document.addPage(firstPage);
   return await document.save();
-
 }

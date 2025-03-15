@@ -1,6 +1,7 @@
 import 'package:my_first/models/inventories/stock_transactions.dart';
 import 'package:my_first/repository/myconnection.dart';
 import 'package:my_first/repository/myrepository.dart';
+import 'package:postgres/postgres.dart';
 import 'package:uuid/uuid.dart';
 
 class StockTransactionRepository extends MyRepository<StockTransactions>{
@@ -71,7 +72,7 @@ class StockTransactionRepository extends MyRepository<StockTransactions>{
   }
 
   Future<List<StockTransactions>> readByUserCreator(dynamic username) async {
-    return this.conn.connectionPool.runTx((tx) async {
+    return this.conn.connectionPool.runTx<List<StockTransactions>>((tx) async {
       var result = await tx.execute(r"SELECT * FROM stock_transactions WHERE created_by = $1 ORDER BY last_updated DESC",parameters: [username as String]);
       List<StockTransactions> listTransactions = [];
       for(var item in result){
@@ -90,5 +91,25 @@ class StockTransactionRepository extends MyRepository<StockTransactions>{
       }
       return;
     });
+  }
+
+  Future<List<Map<String,dynamic>>> getSummaryTransactionsByStatusYearMonth(dynamic status, dynamic year,dynamic month) async {
+    List<Map<String,dynamic>> returnValue = [];
+    await this.conn.connectionPool.runTx<void>((tx) async {
+
+      //month in String format (2 characters like '03' or '12')
+      //year in String format (4 characters like '2025' or '2020')
+      var summary = await tx.execute(r"SELECT products.name, query1.product_uuid, query1.transactions, query1.quantity, query1.month, query1.year FROM (SELECT stock_transactions.product_uuid as product_uuid, count(stock_transactions.uuid) as transactions, sum(stock_transactions.quantity) as quantity,substring(stock_transactions.last_updated,6,2) as month, substring(stock_transactions.last_updated,1,4) as year from stock_transactions WHERE status = $1 GROUP BY product_uuid, month, year) as query1 left join products on query1.product_uuid = products.uuid where month = $2 and year = $3 ORDER BY transactions DESC",parameters: [
+        status as String,
+        month as String,
+        year as String
+      ]); 
+      if(summary.isEmpty){
+      }
+      for(var item in summary){
+        returnValue.add(item.toColumnMap());
+      }
+    });
+    return returnValue;
   }
 }

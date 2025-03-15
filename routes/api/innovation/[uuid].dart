@@ -81,7 +81,7 @@ Future<Response> onDelete(RequestContext ctx,String uuid) async{
 
   try{
     await innovationRepo.delete(uuid);
-    return RespHelper.message(message: "success delete innovation${uuid}");
+    return RespHelper.message(message: "success delete innovation ${uuid}");
   } catch(e){
     print(e);
     return RespHelper.badRequest(message: "Failed to Delete innovations ${uuid}");

@@ -39,6 +39,9 @@ class FilesRepository extends MyRepository<Files>{
     });
   }
 
+  //current implementation is not create physics file, only record in database
+  //still considering best practice
+  //currently add physical file manually, see add image implementation post /api/files/images for reference
   Future<Files> create(Files object) async {
     return this.conn.connectionPool.runTx((tx) async {
       String uuid =  Uuid().v1();
@@ -71,6 +74,8 @@ class FilesRepository extends MyRepository<Files>{
   }
 
   Future<void> delete(dynamic uuid) async {
+    //current implementation is not delete Physical File, only record in Database
+    //still considering for best practice, if u want delete physics file implements it manually
     return this.conn.connectionPool.runTx((tx) async {
       var result = await tx.execute(r"DELETE FROM files WHERE uuid = $1",parameters: [uuid as String]);
       if(result.affectedRows <= 0){
