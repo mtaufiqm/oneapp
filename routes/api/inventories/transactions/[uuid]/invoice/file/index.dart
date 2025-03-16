@@ -149,7 +149,7 @@ Future<Uint8List> getBytesPdfTransactions(StockTransactions transactions, Produc
                 child: wp.Column(
                   crossAxisAlignment: wp.CrossAxisAlignment.center,
                   children: [
-                    wp.Text("Admin Inventories",style: wp.TextStyle(fontWeight: wp.FontWeight.bold)),
+                    wp.Text("Admin",style: wp.TextStyle(fontWeight: wp.FontWeight.bold)),
                     wp.SizedBox(height: 30.0),
                     wp.Text("${approver.fullname}")
                   ]
