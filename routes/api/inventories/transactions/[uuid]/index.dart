@@ -8,7 +8,7 @@ import 'package:my_first/models/user.dart';
 import 'package:my_first/repository/inventories/products_repository.dart';
 import 'package:my_first/repository/inventories/stock_transaction_repository.dart';
 import 'package:my_first/responses/products_available_stocks.dart';
-
+import 'package:timezone/standalone.dart' as tz;
 Future<Response> onRequest(
   RequestContext context,
   String uuid,
@@ -39,7 +39,6 @@ Future<Response> onGet(RequestContext ctx,String uuid) async {
     print(e);
     return RespHelper.badRequest(message: "Fail to Get All Data");
   }
-
 }
 
 
@@ -85,7 +84,9 @@ Future<Response> onPost(RequestContext ctx,String uuid) async {
       }
 
       //if its stock available for this transactions, continue the process
-      transactions.last_updated = DateTime.now().toIso8601String();
+      
+      DateTime currentTime = DateTime.now();
+      transactions.last_updated = currentTime.toIso8601String();
       transactions.status = "COMPLETED";
 
       StockTransactions result = await transactionRepo.update(uuid, transactions);
@@ -101,7 +102,8 @@ Future<Response> onPost(RequestContext ctx,String uuid) async {
     //this for cancel transactions
     //all can do it (superadmin,admin,admin_inventories, transactions creator)
     //after this update will execute in db, ensure update the updated_at time
-    transactions.last_updated = DateTime.now().toIso8601String();
+      DateTime currentTime = DateTime.now();
+    transactions.last_updated = currentTime.toIso8601String();
     transactions.status = "CANCELLED";
 
     StockTransactions result = await transactionRepo.update(uuid,transactions);

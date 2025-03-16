@@ -17,6 +17,7 @@ dependencies:
   path: 1.9.1
   pdf: 3.11.3
   intl: 0.20.2
+  timezone: 0.10.0
 
 
 dev_dependencies:

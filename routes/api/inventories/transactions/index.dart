@@ -8,6 +8,7 @@ import 'package:my_first/models/user.dart';
 import 'package:my_first/repository/inventories/products_repository.dart';
 import 'package:my_first/repository/inventories/stock_transaction_repository.dart';
 import 'package:my_first/responses/products_available_stocks.dart';
+import 'package:timezone/standalone.dart' as tz;
 
 Future<Response> onRequest(RequestContext context) async {
   return (switch(context.request.method){
@@ -56,7 +57,8 @@ Future<Response> onPost(RequestContext ctx) async {
     if(!(jsonMap is Map<String,dynamic>)){
       return RespHelper.message(statusCode: HttpStatus.badRequest,message: "Invalid JSON Body");
     }
-    String now = DateTime.now().toIso8601String();
+    DateTime currentTime = DateTime.now();
+    String now = currentTime.toIso8601String();
 
     //at first, transactions status must be "PENDING"
     jsonMap["status"] = "PENDING";
