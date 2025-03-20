@@ -140,7 +140,14 @@ Future<Uint8List> getBytesPdfTransactions(StockTransactions transactions, Produc
                   crossAxisAlignment: wp.CrossAxisAlignment.center,
                   children: [
                     wp.Text("Pemesan",style: wp.TextStyle(fontWeight: wp.FontWeight.bold)),
-                    wp.SizedBox(height: 30.0),
+                    wp.SizedBox(
+                      height: 30.0,
+                      child: wp.Column(
+                        mainAxisAlignment: wp.MainAxisAlignment.center,
+                        children: [
+                          wp.Text("ttd",style: wp.TextStyle(fontStyle: wp.FontStyle.italic,fontSize: 15.0))
+                        ]
+                      )),
                     wp.Text("${transactionCreator.fullname}")
                   ]
                 )
@@ -150,7 +157,15 @@ Future<Uint8List> getBytesPdfTransactions(StockTransactions transactions, Produc
                   crossAxisAlignment: wp.CrossAxisAlignment.center,
                   children: [
                     wp.Text("Admin",style: wp.TextStyle(fontWeight: wp.FontWeight.bold)),
-                    wp.SizedBox(height: 30.0),
+                    wp.SizedBox(
+                      height: 30.0,
+                      child: wp.Column(
+                        mainAxisAlignment: wp.MainAxisAlignment.center,
+                        children: [
+                          wp.Text("ttd",style: wp.TextStyle(fontStyle: wp.FontStyle.italic,fontSize: 15.0))
+                        ]
+                      )
+                    ),
                     wp.Text("${approver.fullname}")
                   ]
                 )

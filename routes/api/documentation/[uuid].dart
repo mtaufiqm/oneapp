@@ -5,6 +5,7 @@ import 'package:my_first/blocs/response_helper.dart';
 import 'package:my_first/models/documentation.dart';
 import 'package:my_first/models/user.dart';
 import 'package:my_first/repository/documentation_repository.dart';
+import 'package:my_first/repository/files_repository.dart';
 
 Future<Response> onRequest(
   RequestContext context,
@@ -72,6 +73,7 @@ Future<Response> onUpdate(RequestContext ctx,String uuid) async {
 
 Future<Response> onDelete(RequestContext ctx, String uuid) async{
   DocumentationRepository documentationRepo = ctx.read<DocumentationRepository>();
+  FilesRepository filesRepo = ctx.read<FilesRepository>();
 
   //AUTHORIZATION
   User user = ctx.read<User>();
