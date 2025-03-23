@@ -19,7 +19,6 @@ Future<Response> onRequest(
 }
 
 
-//NEED IMPLEMENTATIONS
 Future<Response> onGet(RequestContext ctx, String uuid, String itemUUID) async {
   TransactionsRepository transactionsRepo = ctx.read<TransactionsRepository>();
   TransactionsItemRepository transactionsItemRepo = ctx.read<TransactionsItemRepository>();
@@ -42,7 +41,6 @@ Future<Response> onGet(RequestContext ctx, String uuid, String itemUUID) async {
     return RespHelper.badRequest(message: "Error Occured");
   }
 }
-
 
 //NEED IMPLEMENTATIONS
 Future<Response> onPost(RequestContext ctx, String uuid, String itemUUID) async {

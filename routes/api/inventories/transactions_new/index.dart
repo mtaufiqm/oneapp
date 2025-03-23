@@ -26,7 +26,7 @@ Future<Response> onGet(RequestContext ctx) async {
   // AUTHORIZATION
 
   try{
-    var listObject = await transactionsRepo.readAll();
+    var listObject = await transactionsRepo.readAllWithItemDetails();
     return Response.json(body: listObject);
   } catch(e){
     print(e);
@@ -50,8 +50,8 @@ Future<Response> onPost(RequestContext ctx) async {
   //AUTHORIZATIONS
 
   try{
-    var jsonBody = ctx.request.json();
-    if(!(jsonBody is List)){
+    var jsonBody = await ctx.request.json();
+    if(!(jsonBody is List<dynamic>)){
       return RespHelper.badRequest(message: "Invalid JSON Body");
     }
     var jsonObject = (jsonBody as List);

@@ -23,7 +23,7 @@ Future<Response> onGet(RequestContext ctx,String username) async {
   }
   try{
     //read all username transactions
-    var listObject = await transactionsRepo.readByUserCreator(username);
+    var listObject = await transactionsRepo.readWithItemDetailsByUserCreator(username);
     return Response.json(body: listObject);
   } catch(e){
     print(e);

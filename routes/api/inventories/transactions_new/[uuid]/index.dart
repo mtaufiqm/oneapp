@@ -7,7 +7,7 @@ import 'package:my_first/models/user.dart';
 import 'package:my_first/repository/inventories/products_repository.dart';
 import 'package:my_first/repository/inventories/transactions_item_repository.dart';
 import 'package:my_first/repository/inventories/transactions_repository.dart';
-import 'package:my_first/responses/transtions_with_item.dart';
+import 'package:my_first/responses/transactions_with_item.dart';
 
 Future<Response> onRequest(
   RequestContext context,
@@ -16,6 +16,7 @@ Future<Response> onRequest(
   return (switch(context.request.method){
     HttpMethod.get => onGet(context,uuid),
     HttpMethod.post => onPost(context,uuid),
+    HttpMethod.delete => onDelete(context, uuid),
     _ => Future.value(RespHelper.methodNotAllowed())
   });
 }
@@ -34,8 +35,7 @@ Future<Response> onGet(RequestContext ctx, String uuid) async {
     }
     //AUTHORIZATIONS
 
-    var txItems = await transactionsItemRepo.readByTransactionsUuid(tx.uuid);
-
+    var txItems = await transactionsItemRepo.readDetailsByTransactionsUuid(tx.uuid);
 
 
     //create response
@@ -43,7 +43,6 @@ Future<Response> onGet(RequestContext ctx, String uuid) async {
     //   "transactions":{},
     //   "items":[{transactions_item_1},{transactions_item_2},..]
     // }
-
     var response = TransactionsWithItem(transactions: tx, items: txItems);
 
     return Response.json(body: response);
@@ -133,5 +132,26 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
   } catch(e){
     print(e);
     return RespHelper.badRequest(message: "Fail to Update Transaction Data ${uuid}");
+  }
+}
+
+
+Future<Response> onDelete(RequestContext ctx, String uuid) async {
+  TransactionsRepository transactionsRepo = ctx.read<TransactionsRepository>();
+  User authUser = ctx.read<User>();
+
+  //AUTHORIZATION
+  if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_INVENTORIES"]))){
+    return RespHelper.unauthorized();
+  }
+  //AUTHORIZATION
+
+  try{
+    Transactions tx = await transactionsRepo.getById(uuid);
+    await transactionsRepo.delete(uuid);
+    return Response.json(body: "Success");
+  } catch (e){
+    print(e);
+    return RespHelper.badRequest(message: "Fail To Delete Transactions ${uuid}. Message ${e}");
   }
 }

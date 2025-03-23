@@ -25,8 +25,8 @@ Future<Response> onGet(RequestContext ctx,String uuid) async {
   //AUTHORIZATION
 
   try{
-    ProductsAvailableStocks product = await productRepo.getProductsWithAvailableStockNew(uuid);
-    return Response.json(body: product);
+    ProductsAvailableStocks products = await productRepo.getProductsWithAvailableStockNew(uuid);
+    return Response.json(body: products);
   } catch(e){
     print(e);
     return RespHelper.badRequest(message: "Error Get Data ${uuid}");

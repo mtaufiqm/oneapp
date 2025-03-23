@@ -65,7 +65,7 @@ class TransactionsItemRepository extends MyRepository<TransactionsItem> {
     });
   }
 
-  Future<List<TransactionsItem>> readByTransactionsUuid(dynamic transUuid) async {
+    Future<List<TransactionsItem>> readByTransactionsUuid(dynamic transUuid) async {
     return this.conn.connectionPool.runTx((tx) async {
       var result = await tx.execute(r"SELECT * FROM transactions_item WHERE transactions_uuid = $1",
       parameters: [transUuid as String]);
@@ -75,6 +75,20 @@ class TransactionsItemRepository extends MyRepository<TransactionsItem> {
         listTransactionsItem.add(objectTransactionsItem);
       }
       return listTransactionsItem;
+    });
+  }
+
+
+  Future<List<TransactionsItemDetails>> readDetailsByTransactionsUuid(dynamic transUuid) async {
+    return this.conn.connectionPool.runTx((tx) async {
+      var result = await tx.execute(r"SELECT ti.uuid, ti.transactions_uuid, ti.products_uuid, ti.quantity, p.name AS products_name, p.image_link AS products_image_link, p.unit AS products_unit FROM transactions_item ti LEFT JOIN products p ON ti.products_uuid = p.uuid WHERE transactions_uuid = $1",
+      parameters: [transUuid as String]);
+      List<TransactionsItemDetails> listTransactionsItemDetails = [];
+      for(var item in result){
+        var objectTransactionsItem = TransactionsItemDetails.fromJson(item.toColumnMap());
+        listTransactionsItemDetails.add(objectTransactionsItem);
+      }
+      return listTransactionsItemDetails;
     });
   }
 
@@ -89,7 +103,6 @@ class TransactionsItemRepository extends MyRepository<TransactionsItem> {
   }
 
 
-  //CONTINUE THIS
   Future<List<TransactionsItem>> createList(List<TransactionsItem> listObject) async {
     return await this.conn.connectionPool.runTx<List<TransactionsItem>>((tx) async {
       List<TransactionsItem> returnValue = [];
