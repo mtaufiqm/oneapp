@@ -20,7 +20,7 @@ Future<Response> onGet(RequestContext ctx) async {
   User authUser = ctx.read<User>();
 
   // AUTHORIZATION
-  if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","GET_TRANSACTIONS"]))){
+  if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_INVENTORIES","GET_TRANSACTIONS"]))){
     return RespHelper.unauthorized();
   }
   // AUTHORIZATION
