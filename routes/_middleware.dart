@@ -10,6 +10,7 @@ Handler middleware(Handler handler){
   return handler.
   use(provider<MyConnectionPool>((context) => connection)).
   use(fromShelfMiddleware(shelf.corsHeaders(headers: {
-    shelf.ACCESS_CONTROL_ALLOW_ORIGIN:"*"
+    shelf.ACCESS_CONTROL_ALLOW_ORIGIN:"*",
+    shelf.ACCESS_CONTROL_EXPOSE_HEADERS:"*"
   })));
 }
