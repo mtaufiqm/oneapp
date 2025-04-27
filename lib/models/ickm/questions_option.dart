@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
-class QuestionsOptions {
+class QuestionsOption {
   String? uuid;
   String title;
   String description;
@@ -9,7 +9,7 @@ class QuestionsOptions {
   int value;
   String tag;
   String questions_item_uuid;
-  QuestionsOptions({
+  QuestionsOption({
     this.uuid,
     required this.title,
     required this.description,
@@ -19,7 +19,7 @@ class QuestionsOptions {
     required this.questions_item_uuid,
   });
 
-  QuestionsOptions copyWith({
+  QuestionsOption copyWith({
     String? uuid,
     String? title,
     String? description,
@@ -28,7 +28,7 @@ class QuestionsOptions {
     String? tag,
     String? questions_item_uuid,
   }) {
-    return QuestionsOptions(
+    return QuestionsOption(
       uuid: uuid ?? this.uuid,
       title: title ?? this.title,
       description: description ?? this.description,
@@ -51,8 +51,8 @@ class QuestionsOptions {
     };
   }
 
-  factory QuestionsOptions.fromJson(Map<String, dynamic> map) {
-    return QuestionsOptions(
+  factory QuestionsOption.fromJson(Map<String, dynamic> map) {
+    return QuestionsOption(
       uuid: map['uuid'] != null ? map['uuid'] as String : null,
       title: map['title'] as String,
       description: map['description'] as String,

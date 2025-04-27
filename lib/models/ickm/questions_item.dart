@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 
-import 'package:my_first/models/ickm/questions_options.dart';
+import 'package:my_first/models/ickm/questions_option.dart';
 
 class QuestionsItem {
   String? uuid;
@@ -83,7 +83,7 @@ class QuestionItemWithOptions {
   int order;
   String questions_group_uuid;
   String tag;
-  List<QuestionsOptions> questions_options = [];
+  List<QuestionsOption> questions_options = [];
   QuestionItemWithOptions({
     this.uuid,
     required this.title,
@@ -103,7 +103,7 @@ class QuestionItemWithOptions {
     int? order,
     String? questions_group_uuid,
     String? tag,
-    List<QuestionsOptions>? questions_options,
+    List<QuestionsOption>? questions_options,
   }) {
     return QuestionItemWithOptions(
       uuid: uuid ?? this.uuid,
@@ -139,7 +139,7 @@ class QuestionItemWithOptions {
       order: map['order'] as int,
       questions_group_uuid: map['questions_group_uuid'] as String,
       tag: map['tag'] as String,
-      questions_options: List<QuestionsOptions>.from((map['questions_options'] as List<dynamic>).map<QuestionsOptions>((x) => QuestionsOptions.fromJson(x as Map<String,dynamic>)))
+      questions_options: List<QuestionsOption>.from((map['questions_options'] as List<dynamic>).map<QuestionsOption>((x) => QuestionsOption.fromJson(x as Map<String,dynamic>)))
     );
   }
 
