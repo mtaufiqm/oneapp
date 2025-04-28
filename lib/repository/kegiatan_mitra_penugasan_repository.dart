@@ -281,6 +281,64 @@ class KegiatanMitraPenugasanRepository extends MyRepository<KegiatanMitraPenugas
     });
   }
 
+  Future<List<KegiatanMitraPenugasanGroup>> readAllDetailsByStatusGroupedByKegiatan(List<dynamic> status) async {
+    return this.conn.connectionPool.runTx<List<KegiatanMitraPenugasanGroup>>((tx) async {
+      int counter = 0;
+      var sqlWhere = status.map((el){
+        counter++;
+        return "kmp.status = \$${counter}";
+      }).toList().join(" OR ");
+      var valueSqlWhere = status.map((el) {
+        return el as int;
+      }).toList();
+
+      //CURRENTLY LIMIT IT TO 100 ROWS
+      var response = await tx.execute("SELECT kmp.uuid as uuid, k.uuid as kegiatan_uuid,k.name as kegiatan_name,m.mitra_id as mitra_id, m.fullname as mitra_name,m.username as mitra_username,kmp.code as code, kmp.group as group,kmp.group_type_id as group_type_id,kmp.group_desc as group_desc,kmp.description as description,kmp.unit as unit,ps.id as status,ps.description as status_desc,kmp.started_time as started_time, kmp.ended_time as ended_time,kmp.location_latitude as location_latitude,kmp.location_longitude as location_longitude,kmp.notes as notes, kmp.created_at as created_at, kmp.last_updated as last_updated FROM kegiatan_mitra_penugasan kmp LEFT JOIN kegiatan_mitra_bridge kmb ON kmp.bridge_uuid = kmb.uuid LEFT JOIN penugasan_status ps ON kmp.status = ps.id LEFT JOIN kegiatan k ON kmb.kegiatan_uuid = k.uuid LEFT JOIN mitra m ON kmb.mitra_id = m.mitra_id WHERE # ORDER BY kmp.group ASC, kmp.code ASC LIMIT 100".replaceAll("#", "${sqlWhere}"),
+      parameters: valueSqlWhere);
+      Map<String,KegiatanMitraPenugasanGroup> mapGroup = {};
+      for(var item in response){
+        KegiatanMitraPenugasanDetails taskDetails = KegiatanMitraPenugasanDetails.fromJson(item.toColumnMap());
+        if(mapGroup.containsKey("${taskDetails.kegiatan_uuid}")){
+          mapGroup["${taskDetails.kegiatan_uuid}"]!.penugasan.add(taskDetails);
+          continue;
+        }
+        Map<String,dynamic> group = {
+          "kegiatan_uuid":taskDetails.kegiatan_uuid,
+          "kegiatan_name":taskDetails.kegiatan_name,
+        };
+        mapGroup["${taskDetails.group}"] = KegiatanMitraPenugasanGroup(group: group , penugasan: []);
+        mapGroup["${taskDetails.group}"]!.penugasan.add(taskDetails);
+      }
+      return mapGroup.values.toList();
+    });
+  }
+
+Future<List<KegiatanMitraPenugasanGroup>> readAllDetailsByMitraGroupedByKegiatan(dynamic mitra_id) async {
+    return this.conn.connectionPool.runTx<List<KegiatanMitraPenugasanGroup>>((tx) async {
+
+      //CURRENTLY LIMIT IT TO 100 ROWS
+      var response = await tx.execute(r"SELECT kmp.uuid as uuid, k.uuid as kegiatan_uuid,k.name as kegiatan_name,m.mitra_id as mitra_id, m.fullname as mitra_name,m.username as mitra_username,kmp.code as code, kmp.group as group,kmp.group_type_id as group_type_id,kmp.group_desc as group_desc,kmp.description as description,kmp.unit as unit,ps.id as status,ps.description as status_desc,kmp.started_time as started_time, kmp.ended_time as ended_time,kmp.location_latitude as location_latitude,kmp.location_longitude as location_longitude,kmp.notes as notes, kmp.created_at as created_at, kmp.last_updated as last_updated FROM kegiatan_mitra_penugasan kmp LEFT JOIN kegiatan_mitra_bridge kmb ON kmp.bridge_uuid = kmb.uuid LEFT JOIN penugasan_status ps ON kmp.status = ps.id LEFT JOIN kegiatan k ON kmb.kegiatan_uuid = k.uuid LEFT JOIN mitra m ON kmb.mitra_id = m.mitra_id WHERE m.mitra_id = $1 ORDER BY kmp.group ASC, kmp.code",
+      parameters: [mitra_id as String]);
+      Map<String,KegiatanMitraPenugasanGroup> mapGroup = {};
+      for(var item in response){
+        KegiatanMitraPenugasanDetails taskDetails = KegiatanMitraPenugasanDetails.fromJson(item.toColumnMap());
+        if(mapGroup.containsKey("${taskDetails.kegiatan_uuid}")){
+          mapGroup["${taskDetails.kegiatan_uuid}"]!.penugasan.add(taskDetails);
+          continue;
+        }
+        Map<String,dynamic> group = {
+          "kegiatan_uuid":taskDetails.kegiatan_uuid,
+          "kegiatan_name":taskDetails.kegiatan_name,
+        };
+        mapGroup["${taskDetails.group}"] = KegiatanMitraPenugasanGroup(group: group , penugasan: []);
+        mapGroup["${taskDetails.group}"]!.penugasan.add(taskDetails);
+      }
+      return mapGroup.values.toList();
+    });
+  }
+
+
+  //get all details by kegiatan and mitra, grouped by group
   Future<List<KegiatanMitraPenugasanGroup>> readAllDetailsByKegiatanAndMitraGrouped(dynamic kegiatan_id,dynamic mitra_id) async {
     return this.conn.connectionPool.runTx<List<KegiatanMitraPenugasanGroup>>((tx) async {
       var response = await tx.execute(r"SELECT kmp.uuid as uuid, k.uuid as kegiatan_uuid,k.name as kegiatan_name,m.mitra_id as mitra_id, m.fullname as mitra_name,m.username as mitra_username,kmp.code as code, kmp.group as group,kmp.group_type_id as group_type_id,kmp.group_desc as group_desc,kmp.description as description,kmp.unit as unit,ps.id as status,ps.description as status_desc,kmp.started_time as started_time, kmp.ended_time as ended_time,kmp.location_latitude as location_latitude,kmp.location_longitude as location_longitude,kmp.notes as notes, kmp.created_at as created_at, kmp.last_updated as last_updated FROM kegiatan_mitra_penugasan kmp LEFT JOIN kegiatan_mitra_bridge kmb ON kmp.bridge_uuid = kmb.uuid LEFT JOIN penugasan_status ps ON kmp.status = ps.id LEFT JOIN kegiatan k ON kmb.kegiatan_uuid = k.uuid LEFT JOIN mitra m ON kmb.mitra_id = m.mitra_id WHERE kmb.kegiatan_uuid = $1 AND kmb.mitra_id = $2 ORDER BY kmp.group ASC, kmp.code ASC",
