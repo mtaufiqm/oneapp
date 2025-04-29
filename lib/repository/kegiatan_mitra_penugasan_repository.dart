@@ -306,8 +306,8 @@ class KegiatanMitraPenugasanRepository extends MyRepository<KegiatanMitraPenugas
           "kegiatan_uuid":taskDetails.kegiatan_uuid,
           "kegiatan_name":taskDetails.kegiatan_name,
         };
-        mapGroup["${taskDetails.group}"] = KegiatanMitraPenugasanGroup(group: group , penugasan: []);
-        mapGroup["${taskDetails.group}"]!.penugasan.add(taskDetails);
+        mapGroup["${taskDetails.kegiatan_uuid}"] = KegiatanMitraPenugasanGroup(group: group , penugasan: []);
+        mapGroup["${taskDetails.kegiatan_uuid}"]!.penugasan.add(taskDetails);
       }
       return mapGroup.values.toList();
     });
@@ -330,8 +330,8 @@ Future<List<KegiatanMitraPenugasanGroup>> readAllDetailsByMitraGroupedByKegiatan
           "kegiatan_uuid":taskDetails.kegiatan_uuid,
           "kegiatan_name":taskDetails.kegiatan_name,
         };
-        mapGroup["${taskDetails.group}"] = KegiatanMitraPenugasanGroup(group: group , penugasan: []);
-        mapGroup["${taskDetails.group}"]!.penugasan.add(taskDetails);
+        mapGroup["${taskDetails.kegiatan_uuid}"] = KegiatanMitraPenugasanGroup(group: group , penugasan: []);
+        mapGroup["${taskDetails.kegiatan_uuid}"]!.penugasan.add(taskDetails);
       }
       return mapGroup.values.toList();
     });

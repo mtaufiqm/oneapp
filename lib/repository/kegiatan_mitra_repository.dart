@@ -135,5 +135,4 @@ class KegiatanMitraRepository {
       return listOfObject;
     });
   }
-
 }

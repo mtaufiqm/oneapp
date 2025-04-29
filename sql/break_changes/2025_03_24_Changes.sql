@@ -12,7 +12,8 @@ CREATE TABLE "mitra" (
   "nickname" text,
   "date_of_birth" text,
   "city_of_birth" text,
-  "username" text UNIQUE
+  "username" text UNIQUE,
+  "email" text
 );
 
 CREATE TABLE "kegiatan" (

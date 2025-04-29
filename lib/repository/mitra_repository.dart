@@ -45,11 +45,10 @@ class MitraRepository extends MyRepository<Mitra>{
       // 'username': username,
       // 'status_pegawai': status_pegawai,
 
-
   Future<Mitra> create(Mitra mitra) async {
     return this.connection.connectionPool.withConnection((conn) async{
       return conn.runTx<Mitra>((tx) async{
-        Result result = await tx.execute(r'INSERT INTO mitra VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING mitra_id',
+        Result result = await tx.execute(r'INSERT INTO mitra(mitra_id,fullname,nickname,date_of_birth,city_of_birth,username,email) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING mitra_id',
         parameters: mitra.toJson().values.toList());
         if(result.isEmpty){
           throw Exception("Error Create Mitra ${mitra.mitra_id}");
