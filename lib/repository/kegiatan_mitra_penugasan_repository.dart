@@ -313,6 +313,8 @@ class KegiatanMitraPenugasanRepository extends MyRepository<KegiatanMitraPenugas
     });
   }
 
+
+//FUTURE IMPLEMENTATIONS ADD DATE FILTER FOR KEGIATAN, (ONLY NOT ENDED)
 Future<List<KegiatanMitraPenugasanGroup>> readAllDetailsByMitraGroupedByKegiatan(dynamic mitra_id) async {
     return this.conn.connectionPool.runTx<List<KegiatanMitraPenugasanGroup>>((tx) async {
 
@@ -364,6 +366,7 @@ Future<List<KegiatanMitraPenugasanGroup>> readAllDetailsByMitraGroupedByKegiatan
       return mapGroup.values.toList();
     });
   }
+
 
   Future<void> delete(dynamic id) async {
     return this.conn.connectionPool.runTx<void>((tx) async {

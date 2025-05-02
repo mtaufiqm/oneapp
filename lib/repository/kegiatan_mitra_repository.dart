@@ -44,6 +44,39 @@ class KegiatanMitraRepository {
     });
   }
 
+  // String? uuid;
+  // String name;
+  // String description;
+  // String start;
+  // String end;
+  // String monitoring_link;
+  // bool organic_involved;
+  // int organic_number;
+  // bool mitra_involved;
+  // int mitra_number;
+  // String created_by;
+
+    Future<List<KegiatanMitraBridgeDetails>> getDetailsByMitraId(dynamic mitra_id) async {
+    return await this.conn.connectionPool.runTx<List<KegiatanMitraBridgeDetails>>((tx) async {
+      var listOfObject = <KegiatanMitraBridgeDetails>[];      
+      Result result = await tx.execute(r'''SELECT k.*, kmb.mitra_id, kmb.kegiatan_uuid, kmb.status FROM kegiatan_mitra_bridge kmb LEFT JOIN kegiatan k ON kmb.kegiatan_uuid = k.uuid 
+      WHERE kmb.mitra_id = $1''',parameters: [
+        mitra_id as String
+      ]);
+
+      for(var item in result){
+        Kegiatan kegiatan = Kegiatan.fromJson(item.toColumnMap());
+        KegiatanMitraBridge kmb = KegiatanMitraBridge.fromJson(item.toColumnMap()..remove("uuid"));
+        KegiatanMitraBridgeDetails kmbDetails = KegiatanMitraBridgeDetails(
+          kegiatan: kegiatan, 
+          status: kmb
+        );
+        listOfObject.add(kmbDetails);
+      }
+      return listOfObject;
+    });
+  }
+
   Future<List<KegiatanMitraBridge>> getByKegiatanId(dynamic kegiatan_id) async {
     return await this.conn.connectionPool.runTx<List<KegiatanMitraBridge>>((tx) async {
       var listOfObject = <KegiatanMitraBridge>[];

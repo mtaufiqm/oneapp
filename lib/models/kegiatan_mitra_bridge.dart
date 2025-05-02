@@ -1,3 +1,8 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+
+import 'dart:convert';
+
+import 'package:my_first/models/kegiatan.dart';
 
 class KegiatanMitraBridge {
   String? uuid;
@@ -47,5 +52,42 @@ class KegiatanMitraBridge {
   String toString() {
     return 'KegiatanMitraBridge(uuid: $uuid, kegiatan_uuid: $kegiatan_uuid, mitra_id: $mitra_id, status: $status)';
   }
+}
 
+
+class KegiatanMitraBridgeDetails {
+  Kegiatan kegiatan;
+  KegiatanMitraBridge status;
+  KegiatanMitraBridgeDetails({
+    required this.kegiatan,
+    required this.status,
+  });
+
+  KegiatanMitraBridgeDetails copyWith({
+    Kegiatan? kegiatan,
+    KegiatanMitraBridge? status,
+  }) {
+    return KegiatanMitraBridgeDetails(
+      kegiatan: kegiatan ?? this.kegiatan,
+      status: status ?? this.status,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'kegiatan': kegiatan.toJson(),
+      'status': status.toJson(),
+    };
+  }
+
+  factory KegiatanMitraBridgeDetails.fromJson(Map<String, dynamic> map) {
+    return KegiatanMitraBridgeDetails(
+      kegiatan: Kegiatan.fromJson(map['kegiatan'] as Map<String,dynamic>),
+      status: KegiatanMitraBridge.fromJson(map['status'] as Map<String,dynamic>),
+    );
+  }
+
+   @override
+  String toString() => 'KegiatanMitraBridgeDetails(kegiatan: $kegiatan, status: $status)';
+  
 }

@@ -27,10 +27,8 @@ Future<Response> onGet(RequestContext ctx, String username) async {
 
   try{
     Mitra mitra = await mitraRepo.getByUsername(username);
-    var listOfObject = await kmpRepo.readAllDetailsByMitraGroupedByKegiatan(mitra.mitra_id);
-    
+    var listOfObject = await kmpRepo.readAllDetailsByMitraGroupedByKegiatan(mitra.mitra_id); 
     return Response.json(body: listOfObject);
-
   } catch(e){
     print("Error ${e}");
     return RespHelper.badRequest(message: "Failed Get Data ${username}");

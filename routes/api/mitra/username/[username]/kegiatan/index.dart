@@ -1,6 +1,7 @@
 import 'package:dart_frog/dart_frog.dart';
 import 'package:my_first/blocs/response_helper.dart';
 import 'package:my_first/models/kegiatan.dart';
+import 'package:my_first/models/kegiatan_mitra_bridge.dart';
 import 'package:my_first/models/mitra.dart';
 import 'package:my_first/models/user.dart';
 import 'package:my_first/repository/kegiatan_mitra_repository.dart';
@@ -31,7 +32,8 @@ Future<Response> onGet(RequestContext ctx, String username) async {
 
   try{
     Mitra mitra = await mitraRepo.getByUsername(username); 
-    List<Kegiatan> listObject = await kegiatanRepo.readAllByMitra(mitra.mitra_id);
+    List<KegiatanMitraBridgeDetails> listObject = await kmRepo.getDetailsByMitraId(mitra.mitra_id);
+
     return Response.json(body: listObject); 
   } catch(e){
     print("Error : ${e}");
