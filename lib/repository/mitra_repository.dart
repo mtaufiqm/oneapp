@@ -21,7 +21,7 @@ class MitraRepository extends MyRepository<Mitra>{
   Future<List<Mitra>> readAll() async{
     return this.connection.connectionPool.withConnection<List<Mitra>>((conn) async {
       return conn.runTx((tx) async {
-        Result result = await tx.execute('SELECT * FROM mitra;');
+        Result result = await tx.execute('SELECT * FROM mitra');
         List<Mitra> listOfMitra = <Mitra>[];
         for(ResultRow i in result){
           Map<String,dynamic> mapRow = i.toColumnMap();

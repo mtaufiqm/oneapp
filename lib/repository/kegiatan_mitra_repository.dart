@@ -44,18 +44,6 @@ class KegiatanMitraRepository {
     });
   }
 
-  // String? uuid;
-  // String name;
-  // String description;
-  // String start;
-  // String end;
-  // String monitoring_link;
-  // bool organic_involved;
-  // int organic_number;
-  // bool mitra_involved;
-  // int mitra_number;
-  // String created_by;
-
     Future<List<KegiatanMitraBridgeDetails>> getDetailsByMitraId(dynamic mitra_id) async {
     return await this.conn.connectionPool.runTx<List<KegiatanMitraBridgeDetails>>((tx) async {
       var listOfObject = <KegiatanMitraBridgeDetails>[];      
@@ -63,7 +51,6 @@ class KegiatanMitraRepository {
       WHERE kmb.mitra_id = $1''',parameters: [
         mitra_id as String
       ]);
-
       for(var item in result){
         Kegiatan kegiatan = Kegiatan.fromJson(item.toColumnMap());
         KegiatanMitraBridge kmb = KegiatanMitraBridge.fromJson(item.toColumnMap()..remove("uuid"));
@@ -136,6 +123,18 @@ class KegiatanMitraRepository {
       Result response = await tx.execute(r"DELETE FROM kegiatan_mitra_bridge WHERE kegiatan_uuid = $1", parameters: [
         uuid as String
       ]);
+    });
+  }
+
+  //if error, rollback
+  Future<void> deleteList(List<KegiatanMitraBridge> list) async {
+    return await this.conn.connectionPool.runTx<void>((tx) async {
+      for(var item in list){
+        Result result = await tx.execute(r"DELETE FROM kegiatan_mitra_bridge WHERE kegiatan_uuid = $1 AND mitra_id = $2" ,parameters: [
+          item.kegiatan_uuid,
+          item.mitra_id
+        ]);
+      }
     });
   }
 
