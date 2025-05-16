@@ -41,7 +41,7 @@ Future<Response> onPost(RequestContext ctx) async {
   User authUser = ctx.read<User>();
   
   //AUTHORIZATION
-  if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","PEGAWAI"]))){
+  if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","PEGAWAI"]))){
     return RespHelper.unauthorized();
   }
   //AUTHORIZATION
@@ -53,7 +53,6 @@ Future<Response> onPost(RequestContext ctx) async {
     }
 
     jsonBody["created_by"] = authUser.username;
-
     Kegiatan kegiatan = Kegiatan.fromJson(jsonBody as Map<String,dynamic>);
     Kegiatan created = await kegiatanRepo.create(kegiatan);
     return Response.json(body: created);
@@ -61,6 +60,4 @@ Future<Response> onPost(RequestContext ctx) async {
     print("Error : ${e}");
     return RespHelper.badRequest(message: "Error Occured ${e}");
   }
-
-
 }

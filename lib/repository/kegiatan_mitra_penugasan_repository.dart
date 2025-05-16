@@ -1,8 +1,10 @@
 import 'package:my_first/blocs/datetime_helper.dart';
 import 'package:my_first/models/kegiatan_mitra_bridge.dart';
 import 'package:my_first/models/kegiatan_mitra_penugasan.dart';
+import 'package:my_first/models/penugasan_status.dart';
 import 'package:my_first/repository/myconnection.dart';
 import 'package:my_first/repository/myrepository.dart';
+import 'package:my_first/responses/kegiatan_mitra_penugasan_progress.dart';
 import 'package:uuid/uuid.dart';
 
 class KegiatanMitraPenugasanRepository extends MyRepository<KegiatanMitraPenugasan>{
@@ -401,5 +403,72 @@ Future<List<KegiatanMitraPenugasanGroup>> readAllDetailsByMitraGroupedByKegiatan
       ]);
 
     }); 
+  }
+
+
+  Future<List<KegiatanMitraPenugasanByMitraProgress>> getProgressKegiatan(dynamic kegiatan_uuid) async {
+    return this.conn.connectionPool.runTx<List<KegiatanMitraPenugasanByMitraProgress>>((tx) async {
+      List<KegiatanMitraPenugasanByMitraProgress> listObject = [];
+
+      var result = await tx.execute(r"SELECT * FROM penugasan_status");
+      List<PenugasanStatus> listStatus = result.map((el) {
+        return PenugasanStatus.fromJson(el.toColumnMap());
+      }).toList();
+
+      var result2 = await tx.execute(r"SELECT kmb.uuid as uuid, m.mitra_id as mitra_id, m.fullname as mitra_name, m.username as mitra_username, k.uuid as kegiatan_uuid, k.name as kegiatan_name, k.description as kegiatan_desc FROM kegiatan_mitra_bridge kmb LEFT JOIN mitra m ON m.mitra_id = kmb.mitra_id LEFT JOIN kegiatan k ON k.uuid = kmb.kegiatan_uuid WHERE kmb.kegiatan_uuid = $1",parameters: [kegiatan_uuid as String]);
+
+      if(result2.isEmpty){
+        return listObject;
+      }
+
+
+      Map<String,KegiatanMitraPenugasanByMitraProgress> mapMitraProgress = {};
+
+      result2.forEach((el) {
+        Map<String,dynamic> kmbMap = el.toColumnMap();
+        //bridge uuid, that unique for spesific mitra_id and kegiatan_uuid
+        var uuid = kmbMap["uuid"]! as String;
+        KegiatanMitraPenugasanByMitraProgress kmpMitraProgress = KegiatanMitraPenugasanByMitraProgress(
+          mitra_id: kmbMap["mitra_id"]! as String,
+          mitra_name: kmbMap["mitra_name"]! as String, 
+          mitra_username: kmbMap["mitra_username"]! as String, 
+          kegiatan_uuid: kmbMap["kegiatan_uuid"]! as String,
+          kegiatan_name: kmbMap["kegiatan_name"]! as String, 
+          kegiatan_desc: kmbMap["kegiatan_desc"]! as String, 
+          progress: listStatus.map((el) {
+            return StatusProgress(status: el.id!, status_desc: el.description, total: 0);
+          }).toList()
+          );
+          mapMitraProgress[uuid] = kmpMitraProgress;
+      });
+
+      var result3 = await tx.execute(r"SELECT kmp.*, kmb.mitra_id as mitra_id FROM kegiatan_mitra_penugasan kmp LEFT JOIN kegiatan_mitra_bridge kmb ON kmp.bridge_uuid = kmb.uuid WHERE kmb.kegiatan_uuid = $1",
+      parameters: [kegiatan_uuid as String]);
+      if(result3.isEmpty){
+        return mapMitraProgress.values.toList();
+      }
+
+      //if result 3 is not empty, iterate it through all
+      result3.forEach((el){
+        var kmpMap = el.toColumnMap();
+        var bridge_uuid = kmpMap["bridge_uuid"]! as String;
+        var status = kmpMap["status"]! as int;
+
+        //if there is no kmb related, just continue iterate
+        if(mapMitraProgress[bridge_uuid] == null){
+          return;
+        }
+
+        //if there
+        List<StatusProgress> listStatusProgress = mapMitraProgress[bridge_uuid]!.progress;
+        for(var item in listStatusProgress){
+          if(item.status == status){
+            item.total++;
+            return;
+          }
+        }
+      });
+      return mapMitraProgress.values.toList();
+    });
   }
 }

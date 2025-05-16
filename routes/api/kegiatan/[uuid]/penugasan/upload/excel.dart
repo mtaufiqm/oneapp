@@ -1,53 +1,37 @@
 import 'package:dart_frog/dart_frog.dart';
+import 'package:excel/excel.dart';
 import 'package:my_first/blocs/datetime_helper.dart';
 import 'package:my_first/blocs/response_helper.dart';
-import 'package:my_first/models/daerah_tingkat_3.dart';
-import 'package:my_first/models/daerah_tingkat_4.dart';
-import 'package:my_first/models/daerah_tingkat_5.dart';
 import 'package:my_first/models/kegiatan.dart';
 import 'package:my_first/models/kegiatan_mitra_bridge.dart';
 import 'package:my_first/models/kegiatan_mitra_penugasan.dart';
-import 'package:my_first/models/mitra.dart';
 import 'package:my_first/models/user.dart';
-import 'package:my_first/repository/daerah_tingkat_3_repository.dart';
-import 'package:my_first/repository/daerah_tingkat_4_repository.dart';
-import 'package:my_first/repository/daerah_tingkat_5_repository.dart';
 import 'package:my_first/repository/kegiatan_mitra_penugasan_repository.dart';
 import 'package:my_first/repository/kegiatan_mitra_repository.dart';
 import 'package:my_first/repository/kegiatan_repository.dart';
-import 'package:my_first/repository/myconnection.dart';
 
-import '../../../../../lib/blocs/web/penugasan_helper.dart';
+import '../../../../../../lib/blocs/web/penugasan_helper.dart';
 
 Future<Response> onRequest(
   RequestContext context,
   String uuid,
 ) async {
   return (switch(context.request.method){
-    HttpMethod.get => onGet(context,uuid),
     HttpMethod.post => onPost(context,uuid),
     _ => Future.value(RespHelper.methodNotAllowed())
   });
 }
 
-Future<Response> onGet(RequestContext ctx, String uuid) async {
-  KegiatanMitraPenugasanRepository kmpRepo = ctx.read<KegiatanMitraPenugasanRepository>();
-  KegiatanRepository kegiatanRepo = ctx.read<KegiatanRepository>();
-  User authUser = ctx.read<User>();
-  try{
-    Kegiatan kegiatan = await kegiatanRepo.getById(uuid);
-    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM"]) || authUser.username == kegiatan.created_by)){
-      return RespHelper.unauthorized();
-    }
-    List<KegiatanMitraPenugasanDetails> listObject = await kmpRepo.readAllDetailsByKegiatan(uuid);
-    return Response.json(body: listObject);
-  } catch(e){
-    return RespHelper.badRequest(message: "Error ${e}");
-  }
-}
 
 
-//CREATE PENUGASAN LIST
+//1-st Column : MitraID
+//2-nd Column : Mitra Name
+//3-rd Column : GroupCode, ex: kode bs, kode sls, kode desa, kode kec.
+//4-th Column : GroupType
+//5-th Column : Code for Sample, Like No.1, No.2, this distuingish sample inside same group
+//6-th Column : Sample Description, ex: household name, direktori name, corporate name
+//7-th Column : Sample Unit, ex: household, directory, corporate, etc
+
 Future<Response> onPost(RequestContext ctx, String uuid) async {
   KegiatanMitraPenugasanRepository kmpRepo = ctx.read<KegiatanMitraPenugasanRepository>();
   KegiatanMitraRepository kmRepo = ctx.read<KegiatanMitraRepository>();
@@ -59,33 +43,46 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
       return RespHelper.unauthorized();
     }
 
-    var jsonList = await ctx.request.json();
-    if(!(jsonList is List<dynamic>)){
-      return RespHelper.badRequest(message: "Invalid JSON Body");
+    var formData = await ctx.request.formData();
+    var uploadedFile = formData.files["files"];
+    if(uploadedFile == null){
+      return RespHelper.badRequest(message: "There is no Uploaded File 'file'");
     }
 
-    List<KegiatanMitraPenugasan> kmpList = [];
 
-    //group_code,group_type,code,mitra_id,mitra_name,desc,unit;
-    for(var item in jsonList){
-      try{
-        if(!(item is Map<String,dynamic>)){
+    // //verify uploaded file content type
+    // if(uploadedFile.contentType.mimeType != "application/vnd.ms-excel"){
+    //   return RespHelper.badRequest(message: "Invalid Uploaded File. Must be Excel File (application/vnd.ms-excel)");
+    // }
+
+    List<int> fileBytes = await uploadedFile.readAsBytes();
+
+    Excel excelFile = Excel.decodeBytes(fileBytes);
+
+    Sheet firstSheet = excelFile.sheets[excelFile.sheets.keys.first]!;
+    var rows = firstSheet.rows;
+
+    bool isFirstRow = true;
+    
+    List<KegiatanMitraPenugasan> kmpList = [];
+    for(var item in rows){
+      try {
+        if(isFirstRow == true){
+          isFirstRow = false;
           continue;
         }
-        var mapItem = item as Map<String,dynamic>;
-        
-        String mitra_id = mapItem["mitra_id"] as String;
+        String mitra_id = item[0]!.value.toString();
 
         KegiatanMitraBridge kmItem = await kmRepo.getByKegiatanAndMitra(uuid, mitra_id);
-        
-        String bridge_uuid = kmItem.uuid!;
-        String group_code = mapItem["group_code"] as String;
-        int group_type = mapItem["group_type"] as int;
-        String code = mapItem["code"] as String;
-        String desc = mapItem["desc"] as String;
-        String unit = mapItem["unit"] as String;
 
-        //generate group description
+        String bridge_uuid = kmItem.uuid!;
+        String group_code = item[2]!.value.toString();
+        int group_type = int.parse(item[3]!.value.toString());
+        String code = item[4]!.value.toString();
+        String desc = item[5]!.value.toString();
+        String unit = item[6]!.value.toString();
+
+        //generate group desc
         String group_desc = await generateGroupDesc(ctx, group_type, group_code);
 
         KegiatanMitraPenugasan kmpItem = KegiatanMitraPenugasan(
@@ -105,17 +102,18 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
           created_at: DatetimeHelper.getCurrentMakassarTime(), 
           last_updated: DatetimeHelper.getCurrentMakassarTime()
         );
-        
+
         //add to list if success
         kmpList.add(kmpItem);
-      } catch(ee){
-        print("Error ${ee}");
+      } catch(err) {
+        print(err);
         continue;
       }
     }
     List<KegiatanMitraPenugasan> successList = await kmpRepo.createList(kmpList);
     return Response.json(body: successList);
   } catch(e){
-    return RespHelper.badRequest(message: "Error ${e}");
+    print("Error ${e}");
+    return RespHelper.badRequest(message:"Error Occured ${e}");
   }
 }

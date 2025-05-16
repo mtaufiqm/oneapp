@@ -43,11 +43,10 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
       return KegiatanMitraBridge.fromJson(el as Map<String,dynamic>);
     }).toList();
 
-    
-
     await kegiatanMitraRepo.deleteList(kmbList);
 
     return RespHelper.message(message: "Success");
+    
   } catch(e){
     return RespHelper.badRequest(message: "Failed to Delete ${e}");
   }
