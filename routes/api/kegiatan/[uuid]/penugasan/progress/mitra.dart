@@ -17,7 +17,7 @@ Future<Response> onGet(RequestContext ctx, String uuid) async {
   KegiatanMitraPenugasanRepository kmpRepo = ctx.read<KegiatanMitraPenugasanRepository>();
   User authUser = ctx.read<User>();
   try{
-    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM"]))){
+    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","PEGAWAI"]))){
       return RespHelper.unauthorized();
     }
     List<KegiatanMitraPenugasanByMitraProgress> listObject = await kmpRepo.getProgressKegiatan(uuid as String);

@@ -105,6 +105,15 @@ class KegiatanMitraPenugasanRepository extends MyRepository<KegiatanMitraPenugas
       if(result.affectedRows < 1){
         throw Exception("Failed to Update");
       }
+
+      //insert also to penugasan_history
+      var uuid = Uuid().v1();
+      var result2 = await tx.execute(r"INSERT INTO penugasan_history VALUES($1,$2,$3,$4)",parameters: [
+        uuid,
+        id,
+        status,
+        last_updated
+      ]);
     });
   }
 

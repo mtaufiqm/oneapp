@@ -61,6 +61,11 @@ Future<Response> onPost(RequestContext ctx, String uuid, String mitra_id,String 
 
     KegiatanMitraPenugasan inputtedObject = KegiatanMitraPenugasan.fromJson(jsonObject as Map<String,dynamic>);
 
+    //check if penugasan_status changed, its not allowed for now, because it can affect penugasan_history
+    if(objectDetails.status != inputtedObject.status){
+      return RespHelper.unauthorized();
+    }
+
     inputtedObject.last_updated = DatetimeHelper.getCurrentMakassarTime();
 
     KegiatanMitraPenugasan object = await kmpRepo.update(id, inputtedObject);
@@ -74,19 +79,19 @@ Future<Response> onPost(RequestContext ctx, String uuid, String mitra_id,String 
 }
 
 
-Future<Response> onDelete(RequestContext ctx, String uuid, String mitra_id, String id) async {
+Future<Response> onDelete(RequestContext ctx, String kegiatan_uuid, String mitra_id, String uuid) async {
   KegiatanMitraPenugasanRepository kmpRepo = ctx.read<KegiatanMitraPenugasanRepository>();
   User authUser = ctx.read<User>();
 
   try{
-    KegiatanMitraPenugasanDetails objectDetails = await kmpRepo.getDetailsById(id);
+    KegiatanMitraPenugasanDetails objectDetails = await kmpRepo.getDetailsById(uuid);
 
     if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM"]))){
       return RespHelper.unauthorized();
     }
 
     //delete kegiatan_mitra_penugasan
-    await kmpRepo.delete(id);
+    await kmpRepo.delete(uuid);
 
     return Response.json(body: objectDetails);
   } catch(e){

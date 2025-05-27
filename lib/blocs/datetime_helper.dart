@@ -19,4 +19,8 @@ class DatetimeHelper {
   static String getCurrentMakassarTime(){
     return tz.TZDateTime.now(makassarLocation).toIso8601String();
   }
+
+  static DateTime parseMakassarTime(String makassarTime) {
+    return tz.TZDateTime.parse(DatetimeHelper.makassarLocation,makassarTime);
+  }
 }

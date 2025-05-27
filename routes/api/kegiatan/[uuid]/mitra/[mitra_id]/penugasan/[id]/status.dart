@@ -47,7 +47,7 @@ Future<Response> onGet(RequestContext ctx,String uuuid, String mitra_id,String i
 //1 : Dalam Proses
 //2 : Dijeda
 //3 : Selesai
-Future<Response> onPost(RequestContext ctx,String uuuid, String mitra_id,String id) async {
+Future<Response> onPost(RequestContext ctx,String uuid, String mitra_id,String id) async {
   KegiatanMitraPenugasanRepository kmpRepo = ctx.read<KegiatanMitraPenugasanRepository>();
   User authUser = ctx.read<User>();
 
