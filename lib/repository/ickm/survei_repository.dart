@@ -3,6 +3,11 @@ import 'package:my_first/repository/myconnection.dart';
 import 'package:my_first/repository/myrepository.dart';
 import 'package:uuid/uuid.dart';
 
+  // String? uuid;
+  // String survei_type;
+  // String description;
+  // int version;
+
 class SurveiRepository extends MyRepository<Survei> {
   MyConnectionPool conn;
 
@@ -22,9 +27,10 @@ class SurveiRepository extends MyRepository<Survei> {
 
   Future<Survei> update(dynamic uuid, Survei object) async {
     return this.conn.connectionPool.runTx((tx) async {
-      var result = await tx.execute(r"UPDATE survei SET survei_type = $1, description = $2 WHERE uuid = $11",parameters: [
+      var result = await tx.execute(r"UPDATE survei SET survei_type = $1, description = $2, version = $3 WHERE uuid = $4",parameters: [
         object.survei_type,
         object.description,
+        object.version,
         uuid as String
       ]);
       if(result.affectedRows <= 0){
@@ -39,7 +45,7 @@ class SurveiRepository extends MyRepository<Survei> {
     return this.conn.connectionPool.runTx((tx) async {
       String uuid =  Uuid().v1();
       object.uuid = uuid;
-      var result = await tx.execute(r"INSERT INTO survei(uuid, survei_type, description) VALUES($1,$2,$3) RETURNING uuid", parameters: [
+      var result = await tx.execute(r"INSERT INTO survei(uuid, survei_type, description, version) VALUES($1,$2,$3,$4) RETURNING uuid", parameters: [
         object.uuid,
         object.survei_type,
         object.description

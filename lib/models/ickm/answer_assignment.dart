@@ -12,12 +12,12 @@ class AnswerAssignment {
   String? uuid;
   String response_assignment_uuid;
   String questions_item_uuid;
-  String questions_option_uuid;
+  String? questions_option_uuid;
   AnswerAssignment({
     this.uuid,
     required this.response_assignment_uuid,
     required this.questions_item_uuid,
-    required this.questions_option_uuid,
+    this.questions_option_uuid,
   });
 
   AnswerAssignment copyWith({
@@ -48,7 +48,7 @@ class AnswerAssignment {
       uuid: map['uuid'] != null ? map['uuid'] as String : null,
       response_assignment_uuid: map['response_assignment_uuid'] as String,
       questions_item_uuid: map['questions_item_uuid'] as String,
-      questions_option_uuid: map['questions_option_uuid'] as String,
+      questions_option_uuid: map['questions_option_uuid'] != null ? map['questions_option_uuid'] as String : null,
     );
   }
 

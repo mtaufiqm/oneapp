@@ -36,7 +36,7 @@ Future<Response> onGet(RequestContext ctx, String uuid) async {
   User authUser = ctx.read<User>();
   try{
     Kegiatan kegiatan = await kegiatanRepo.getById(uuid);
-    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM"]) || authUser.username == kegiatan.created_by)){
+    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM","PEGAWAI"]) || authUser.username == kegiatan.created_by)){
       return RespHelper.unauthorized();
     }
     List<KegiatanMitraPenugasanDetails> listObject = await kmpRepo.readAllDetailsByKegiatan(uuid);

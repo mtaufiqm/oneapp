@@ -102,7 +102,9 @@ CREATE TABLE "kuesioner_penilaian_mitra" (
   "uuid" text PRIMARY KEY,
   "kegiatan_uuid" text UNIQUE NOT NULL,
   "title" text NOT NULL,
-  "description" text NOT NULL
+  "description" text NOT NULL,
+  "start_date" text,
+  "end_date" text
 );
 
 CREATE TABLE "survei_type" (
@@ -114,13 +116,14 @@ CREATE TABLE "structure_penilaian_mitra" (
   "kuesioner_penilaian_mitra_uuid" text,
   "penilai_username" text,
   "mitra_username" text,
-  "survei_type" text
+  "survei_uuid" text
 );
 
 CREATE TABLE "survei" (
   "uuid" text PRIMARY KEY,
   "survei_type" text UNIQUE,
-  "description" text
+  "description" text,
+  "version" integer
 );
 
 CREATE TABLE "questions_bloc" (
@@ -163,11 +166,12 @@ CREATE TABLE "questions_option" (
 
 CREATE TABLE "response_assignment" (
   "uuid" text PRIMARY KEY,
-  "structure_uuid" text,
+  "structure_uuid" text UNIQUE,
   "created_at" text,
   "updated_at" text,
   "is_completed" bool,
-  "survei_type" text
+  "survei_uuid" text,
+  "notes" text
 );
 
 CREATE TABLE "answer_assignment" (
@@ -328,31 +332,31 @@ ALTER TABLE "penugasan_history" ADD FOREIGN KEY ("penugasan_uuid") REFERENCES "k
 
 ALTER TABLE "penugasan_history" ADD FOREIGN KEY ("status") REFERENCES "penugasan_status" ("id");
 
-ALTER TABLE "kuesioner_penilaian_mitra" ADD FOREIGN KEY ("kegiatan_uuid") REFERENCES "kegiatan" ("uuid");
+ALTER TABLE "kuesioner_penilaian_mitra" ADD FOREIGN KEY ("kegiatan_uuid") REFERENCES "kegiatan" ("uuid") ON UPDATE CASCADE;
 
-ALTER TABLE "structure_penilaian_mitra" ADD FOREIGN KEY ("kuesioner_penilaian_mitra_uuid") REFERENCES "kuesioner_penilaian_mitra" ("uuid");
+ALTER TABLE "structure_penilaian_mitra" ADD FOREIGN KEY ("kuesioner_penilaian_mitra_uuid") REFERENCES "kuesioner_penilaian_mitra" ("uuid") ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE "structure_penilaian_mitra" ADD FOREIGN KEY ("penilai_username") REFERENCES "pegawai" ("username");
 
 ALTER TABLE "structure_penilaian_mitra" ADD FOREIGN KEY ("mitra_username") REFERENCES "mitra" ("username");
 
-ALTER TABLE "structure_penilaian_mitra" ADD FOREIGN KEY ("survei_type") REFERENCES "survei_type" ("description");
+ALTER TABLE "structure_penilaian_mitra" ADD FOREIGN KEY ("survei_uuid") REFERENCES "survei" ("uuid");
 
 ALTER TABLE "survei" ADD FOREIGN KEY ("survei_type") REFERENCES "survei_type" ("description");
 
-ALTER TABLE "questions_bloc" ADD FOREIGN KEY ("survei_uuid") REFERENCES "survei" ("uuid");
+ALTER TABLE "questions_bloc" ADD FOREIGN KEY ("survei_uuid") REFERENCES "survei" ("uuid") ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE "questions_group" ADD FOREIGN KEY ("questions_bloc_uuid") REFERENCES "questions_bloc" ("uuid");
+ALTER TABLE "questions_group" ADD FOREIGN KEY ("questions_bloc_uuid") REFERENCES "questions_bloc" ("uuid") ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE "questions_item" ADD FOREIGN KEY ("questions_group_uuid") REFERENCES "questions_group" ("uuid");
+ALTER TABLE "questions_item" ADD FOREIGN KEY ("questions_group_uuid") REFERENCES "questions_group" ("uuid") ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE "questions_option" ADD FOREIGN KEY ("questions_item_uuid") REFERENCES "questions_item" ("uuid");
+ALTER TABLE "questions_option" ADD FOREIGN KEY ("questions_item_uuid") REFERENCES "questions_item" ("uuid") ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE "response_assignment" ADD FOREIGN KEY ("structure_uuid") REFERENCES "structure_penilaian_mitra" ("uuid");
+ALTER TABLE "response_assignment" ADD FOREIGN KEY ("structure_uuid") REFERENCES "structure_penilaian_mitra" ("uuid") ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE "response_assignment" ADD FOREIGN KEY ("survei_type") REFERENCES "survei_type" ("description");
+ALTER TABLE "response_assignment" ADD FOREIGN KEY ("survei_uuid") REFERENCES "survei" ("uuid");
 
-ALTER TABLE "answer_assignment" ADD FOREIGN KEY ("response_assignment_uuid") REFERENCES "response_assignment" ("uuid");
+ALTER TABLE "answer_assignment" ADD FOREIGN KEY ("response_assignment_uuid") REFERENCES "response_assignment" ("uuid") ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE "answer_assignment" ADD FOREIGN KEY ("questions_item_uuid") REFERENCES "questions_item" ("uuid");
 

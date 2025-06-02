@@ -148,5 +148,86 @@ class QuestionItemWithOptions {
   String toString() {
     return 'QuestionItemWithOptions(uuid: $uuid, title: $title, description: $description, validation: $validation, order: $order, questions_group_uuid: $questions_group_uuid, tag: $tag, questions_options: $questions_options)';
   }
+}
 
+
+
+class QuestionsItemResponseStructure {
+  String? uuid;
+  String title;
+  String description;
+  String validation;
+  int order;
+  String questions_group_uuid;
+  String tag;
+  List<QuestionsOption> options;
+  QuestionsOption? answer;
+  QuestionsItemResponseStructure({
+    this.uuid,
+    required this.title,
+    required this.description,
+    required this.validation,
+    required this.order,
+    required this.questions_group_uuid,
+    required this.tag,
+    required this.options,
+    this.answer,
+  });
+
+  QuestionsItemResponseStructure copyWith({
+    String? uuid,
+    String? title,
+    String? description,
+    String? validation,
+    int? order,
+    String? questions_group_uuid,
+    String? tag,
+    List<QuestionsOption>? options,
+    QuestionsOption? answer,
+  }) {
+    return QuestionsItemResponseStructure(
+      uuid: uuid ?? this.uuid,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      validation: validation ?? this.validation,
+      order: order ?? this.order,
+      questions_group_uuid: questions_group_uuid ?? this.questions_group_uuid,
+      tag: tag ?? this.tag,
+      options: options ?? this.options,
+      answer: answer ?? this.answer,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'uuid': uuid,
+      'title': title,
+      'description': description,
+      'validation': validation,
+      'order': order,
+      'questions_group_uuid': questions_group_uuid,
+      'tag': tag,
+      'options': options.map((x) => x.toJson()).toList(),
+      'answer': answer?.toJson(),
+    };
+  }
+
+  factory QuestionsItemResponseStructure.fromJson(Map<String, dynamic> map) {
+    return QuestionsItemResponseStructure(
+      uuid: map['uuid'] != null ? map['uuid'] as String : null,
+      title: map['title'] as String,
+      description: map['description'] as String,
+      validation: map['validation'] as String,
+      order: map['order'] as int,
+      questions_group_uuid: map['questions_group_uuid'] as String,
+      tag: map['tag'] as String,
+      options: List<QuestionsOption>.from((map['options'] as List<dynamic>).map<QuestionsOption>((x) => QuestionsOption.fromJson(x as Map<String,dynamic>))),
+      answer: map['answer'] != null ? QuestionsOption.fromJson(map['answer'] as Map<String,dynamic>) : null,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'QuestionsItemResponseStructure(uuid: $uuid, title: $title, description: $description, validation: $validation, order: $order, questions_group_uuid: $questions_group_uuid, tag: $tag, options: $options, answer: $answer)';
+  }
 }

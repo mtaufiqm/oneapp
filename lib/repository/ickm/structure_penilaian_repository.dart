@@ -1,5 +1,4 @@
 import 'package:my_first/models/ickm/structure_penilaian_mitra.dart';
-import 'package:my_first/models/structure_kuesioner_mitra.dart';
 import 'package:my_first/repository/myconnection.dart';
 import 'package:my_first/repository/myrepository.dart';
 import 'package:uuid/uuid.dart';
@@ -8,7 +7,7 @@ import 'package:uuid/uuid.dart';
   // String kuesioner_penilaian_mitra_uuid;
   // String penilai_username;
   // String mitra_username;
-  // String survei_type;
+  // String survei_uuid;
 
 class StructurePenilaianRepository extends MyRepository<StructurePenilaianMitra>{
   final MyConnectionPool conn;
@@ -30,11 +29,11 @@ class StructurePenilaianRepository extends MyRepository<StructurePenilaianMitra>
 
   Future<StructurePenilaianMitra> update(dynamic uuid, StructurePenilaianMitra object) async {
     return this.conn.connectionPool.runTx((tx) async {
-      var result = await tx.execute(r"UPDATE structure_penilaian_mitra SET kuesioner_penilaian_mitra_uuid = $1, penilai_username = $2, mitra_username = $3, survei_type = $4 WHERE uuid = $8",parameters: [
+      var result = await tx.execute(r"UPDATE structure_penilaian_mitra SET kuesioner_penilaian_mitra_uuid = $1, penilai_username = $2, mitra_username = $3, survei_uuid = $4 WHERE uuid = $8",parameters: [
         object.kuesioner_penilaian_mitra_uuid,
         object.penilai_username,
         object.mitra_username,
-        object.survei_type,
+        object.survei_uuid,
         uuid as String
       ]);
       if(result.affectedRows <= 0){
@@ -54,10 +53,10 @@ class StructurePenilaianRepository extends MyRepository<StructurePenilaianMitra>
         object.kuesioner_penilaian_mitra_uuid,
         object.penilai_username,
         object.mitra_username,
-        object.survei_type
+        object.survei_uuid
       ]);
       if(result.isEmpty){
-        throw Exception("Error Create documentation ${uuid}");
+        throw Exception("Error Create structure ${uuid}");
       }
       return object;
     });

@@ -137,3 +137,72 @@ class QuestionsGroupWithItems {
     return 'QuestionsGroupWithItems(uuid: $uuid, title: $title, description: $description, order: $order, questions_bloc_uuid: $questions_bloc_uuid, tag: $tag, questions_items: $questions_items)';
   }
 }
+
+
+class QuestionsGroupResponseStructure {
+  String? uuid;
+  String title;
+  String description;
+  int order;
+  String questions_bloc_uuid;
+  String tag;
+  List<QuestionsItemResponseStructure> items;  
+  QuestionsGroupResponseStructure({
+    this.uuid,
+    required this.title,
+    required this.description,
+    required this.order,
+    required this.questions_bloc_uuid,
+    required this.tag,
+    required this.items,
+  });
+
+  QuestionsGroupResponseStructure copyWith({
+    String? uuid,
+    String? title,
+    String? description,
+    int? order,
+    String? questions_bloc_uuid,
+    String? tag,
+    List<QuestionsItemResponseStructure>? items,
+  }) {
+    return QuestionsGroupResponseStructure(
+      uuid: uuid ?? this.uuid,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      order: order ?? this.order,
+      questions_bloc_uuid: questions_bloc_uuid ?? this.questions_bloc_uuid,
+      tag: tag ?? this.tag,
+      items: items ?? this.items,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'uuid': uuid,
+      'title': title,
+      'description': description,
+      'order': order,
+      'questions_bloc_uuid': questions_bloc_uuid,
+      'tag': tag,
+      'items': items.map((x) => x.toJson()).toList(),
+    };
+  }
+
+  factory QuestionsGroupResponseStructure.fromJson(Map<String, dynamic> map) {
+    return QuestionsGroupResponseStructure(
+      uuid: map['uuid'] != null ? map['uuid'] as String : null,
+      title: map['title'] as String,
+      description: map['description'] as String,
+      order: map['order'] as int,
+      questions_bloc_uuid: map['questions_bloc_uuid'] as String,
+      tag: map['tag'] as String,
+      items: List<QuestionsItemResponseStructure>.from((map['items'] as List<dynamic>).map<QuestionsItemResponseStructure>((x) => QuestionsItemResponseStructure.fromJson(x as Map<String,dynamic>))),
+    );
+  }
+
+  @override
+  String toString() {
+    return 'QuestionsGroupResponseStructure(uuid: $uuid, title: $title, description: $description, order: $order, questions_bloc_uuid: $questions_bloc_uuid, tag: $tag, items: $items)';
+  }
+}
