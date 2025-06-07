@@ -23,7 +23,7 @@ class KegiatanRepository extends MyRepository<Kegiatan>{
   Future<List<Kegiatan>> readAll() async{
     return this.connection.connectionPool.withConnection<List<Kegiatan>>((conn) async {
       return conn.runTx((tx) async {
-        Result result = await tx.execute('SELECT * FROM kegiatan;');
+        Result result = await tx.execute('SELECT * FROM kegiatan ORDER BY "end" DESC');
         List<Kegiatan> listOfKegiatan = <Kegiatan>[];
         for(ResultRow i in result){
           Map<String,dynamic> mapRow = i.toColumnMap();

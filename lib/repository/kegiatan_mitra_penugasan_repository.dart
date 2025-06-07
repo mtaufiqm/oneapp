@@ -117,6 +117,61 @@ class KegiatanMitraPenugasanRepository extends MyRepository<KegiatanMitraPenugas
     });
   }
 
+  //continue this implementations
+  Future<void> updateLocationAndStatusAndNotes(int status, String started_time, String ended_time, String? location_latitude, String? location_longitude, String? notes, dynamic id) async {
+    return await this.conn.connectionPool.runTx<void>((tx) async {
+      String last_updated = DatetimeHelper.getCurrentMakassarTime();
+      var result = await tx.execute(r"UPDATE kegiatan_mitra_penugasan SET status = $1, started_time = $2, ended_time = $3, location_latitude = $4, location_longitude = $5, notes = $6, last_updated = $7 WHERE uuid = $8",parameters: [
+        status,
+        started_time,
+        ended_time,
+        location_latitude,
+        location_longitude,
+        notes,
+        last_updated,
+        id as String
+      ]);
+      if(result.affectedRows < 1){
+        throw Exception("Failed to Update");
+      }
+
+      //insert also to penugasan_history
+      var uuid = Uuid().v1();
+      var result2 = await tx.execute(r"INSERT INTO penugasan_history VALUES($1,$2,$3,$4,$5,$6)",parameters: [
+        uuid,
+        id,
+        status,
+        last_updated,
+        location_latitude??"",
+        location_longitude??""
+      ]);
+    });
+  }
+
+  //RESET STATUS
+  Future<void> resetStatusAndLocation(dynamic uuid) async {
+    return this.conn.connectionPool.runTx((tx) async {      
+      var result1 = await tx.execute(r"DELETE FROM penugasan_history WHERE penugasan_uuid = $1",parameters: [
+        uuid as String
+      ]);
+      if(result1.affectedRows <= 0){
+        throw Exception("Failed to Reset ${uuid as String}");
+      }
+      var last_updated = DatetimeHelper.getCurrentMakassarTime();
+      var result2 = await tx.execute(r"UPDATE kegiatan_mitra_penugasan SET status = $1, started_time = $2, ended_time = $3, notes = $4, last_updated = $5 WHERE uuid = $6",parameters: [
+        0,    //0: BELUM MULAI
+        "",
+        "",
+        "",
+        last_updated,
+        uuid as String
+      ]);
+      if(result2.affectedRows <= 0){
+        throw Exception("Failed to Reset ${uuid as String}");
+      }
+    });
+  }
+
   //CREATE OBJECT
   Future<KegiatanMitraPenugasan> create(KegiatanMitraPenugasan object) async {
       return this.conn.connectionPool.runTx<KegiatanMitraPenugasan>((tx) async {

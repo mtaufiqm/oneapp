@@ -83,4 +83,14 @@ class PenugasanHistoryRepository extends MyRepository<PenugasanHistory>{
     });
   }
 
+  Future<void> deleteByPenugasanUuid(dynamic id) async {
+    return this.conn.connectionPool.runTx<void>((tx) async {
+      var result = await tx.execute(r"DELETE FROM penugasan_history WHERE penugasan_uuid = $1",parameters: [
+        id as String
+      ]);
+      if(result.affectedRows <= 0){
+        throw Exception("Failed to Delete Penugasan History, Penugasan ${id as String}");
+      }
+    });
+  }
 }
