@@ -89,7 +89,7 @@ Future<Response> onDelete(RequestContext ctx, String kegiatan_uuid, String mitra
     if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM"]))){
       return RespHelper.unauthorized();
     }
-
+    
     //delete kegiatan_mitra_penugasan
     await kmpRepo.delete(uuid);
 

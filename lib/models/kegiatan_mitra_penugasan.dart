@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 
 import 'package:my_first/models/kegiatan_mitra_bridge.dart';
+import 'package:my_first/models/penugasan_history.dart';
 
 class KegiatanMitraPenugasan {
   String? uuid;
@@ -316,6 +317,40 @@ class KegiatanMitraPenugasanGroup {
 
   @override
   String toString() => 'KegiatanMitraPenugasanGroup(group: $group, penugasan: $penugasan)';
+}
 
+class KegiatanMitraPenugasanDetailsWithHistory {
+  KegiatanMitraPenugasanDetails details;
+  List<PenugasanHistoryDetails> history;
+  KegiatanMitraPenugasanDetailsWithHistory({
+    required this.details,
+    required this.history,
+  });
 
+  KegiatanMitraPenugasanDetailsWithHistory copyWith({
+    KegiatanMitraPenugasanDetails? details,
+    List<PenugasanHistoryDetails>? history,
+  }) {
+    return KegiatanMitraPenugasanDetailsWithHistory(
+      details: details ?? this.details,
+      history: history ?? this.history,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'details': details.toJson(),
+      'history': history.map((x) => x.toJson()).toList(),
+    };
+  }
+
+  factory KegiatanMitraPenugasanDetailsWithHistory.fromJson(Map<String, dynamic> map) {
+    return KegiatanMitraPenugasanDetailsWithHistory(
+      details: KegiatanMitraPenugasanDetails.fromJson(map['details'] as Map<String,dynamic>),
+      history: List<PenugasanHistoryDetails>.from((map['history'] as List<dynamic>).map<PenugasanHistoryDetails>((x) => PenugasanHistoryDetails.fromJson(x as Map<String,dynamic>)))
+    );
+  }
+
+  @override
+  String toString() => 'KegiatanMitraPenugasanDetailsWithHistory(details: $details, history: $history)';
 }

@@ -1,5 +1,6 @@
 import 'package:dart_frog/dart_frog.dart';
 import 'package:my_first/models/kegiatan_mitra_penugasan.dart';
+import 'package:my_first/repository/daerah_blok_sensus_repository.dart.dart';
 import 'package:my_first/repository/daerah_tingkat_1_repository.dart';
 import 'package:my_first/repository/daerah_tingkat_2_repository.dart';
 import 'package:my_first/repository/daerah_tingkat_3_repository.dart';
@@ -32,5 +33,8 @@ Handler middleware(Handler handler) {
   })).use(provider<DaerahTingkat5Repository>((ctx) {
     MyConnectionPool conn = ctx.read<MyConnectionPool>();
     return DaerahTingkat5Repository(conn);
+  })).use(provider<DaerahBlokSensusRepository>((ctx) {
+    MyConnectionPool conn = ctx.read<MyConnectionPool>();
+    return DaerahBlokSensusRepository(conn);
   }));
 }

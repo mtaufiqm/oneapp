@@ -1,10 +1,13 @@
+import 'package:intl/intl.dart';
 import 'package:my_first/blocs/datetime_helper.dart';
 import 'package:my_first/models/kegiatan_mitra_bridge.dart';
 import 'package:my_first/models/kegiatan_mitra_penugasan.dart';
+import 'package:my_first/models/penugasan_history.dart';
 import 'package:my_first/models/penugasan_status.dart';
 import 'package:my_first/repository/myconnection.dart';
 import 'package:my_first/repository/myrepository.dart';
 import 'package:my_first/responses/kegiatan_mitra_penugasan_progress.dart';
+import 'package:timezone/standalone.dart';
 import 'package:uuid/uuid.dart';
 
 class KegiatanMitraPenugasanRepository extends MyRepository<KegiatanMitraPenugasan>{
@@ -446,7 +449,6 @@ Future<List<KegiatanMitraPenugasanGroup>> readAllDetailsByMitraGroupedByKegiatan
     });
   }
 
-  //continue this
   //delete all penugasan related to kegiatan and mitra
   Future<void> deleteByKegiatanMitra(dynamic kegiatan_uuid,dynamic mitra_id) async {
     return await this.conn.connectionPool.runTx((tx) async {
@@ -467,6 +469,51 @@ Future<List<KegiatanMitraPenugasanGroup>> readAllDetailsByMitraGroupedByKegiatan
       ]);
 
     }); 
+  }
+
+  //this return all penugasan that active today (exclude status:0 BELUM MULAI where it is inactive)
+  Future<List<KegiatanMitraPenugasanDetailsWithHistory>> readAllDetailsByStatusActiveLastUpdatedToday() async {
+    return this.conn.connectionPool.runTx<List<KegiatanMitraPenugasanDetailsWithHistory>>((tx) async {
+      DateTime currentMakassateDateTime = TZDateTime.now(DatetimeHelper.makassarLocation);
+      var dateformatted = DateFormat("yyyy-MM-dd").format(currentMakassateDateTime);
+
+      List<KegiatanMitraPenugasanDetailsWithHistory> listObject = []; 
+
+      var result = await tx.execute(r"SELECT kmp.uuid as uuid, k.uuid as kegiatan_uuid,k.name as kegiatan_name,m.mitra_id as mitra_id, m.fullname as mitra_name,m.username as mitra_username,kmp.code as code, kmp.group as group,kmp.group_type_id as group_type_id,kmp.group_desc as group_desc,kmp.description as description,kmp.unit as unit,ps.id as status,ps.description as status_desc,kmp.started_time as started_time, kmp.ended_time as ended_time,kmp.location_latitude as location_latitude,kmp.location_longitude as location_longitude,kmp.notes as notes, kmp.created_at as created_at, kmp.last_updated as last_updated FROM kegiatan_mitra_penugasan kmp LEFT JOIN kegiatan_mitra_bridge kmb ON kmp.bridge_uuid = kmb.uuid LEFT JOIN penugasan_status ps ON kmp.status = ps.id LEFT JOIN kegiatan k ON kmb.kegiatan_uuid = k.uuid LEFT JOIN mitra m ON kmb.mitra_id = m.mitra_id WHERE to_date(kmp.last_updated, 'YYYY-MM-DD') = $1 AND kmp.status != 0",parameters: [
+        dateformatted
+      ]);
+
+      if(result.isEmpty){
+        return listObject;
+      }
+
+      for(var item in result){
+          // String? uuid;
+          // String penugasan_uuid;
+          // int status;
+          // String status_description;
+          // String created_at;
+        try {
+          KegiatanMitraPenugasanDetails kmpDetailsItem = KegiatanMitraPenugasanDetails.fromJson(item.toColumnMap());
+          List<PenugasanHistoryDetails> history = [];
+          var result1 = await tx.execute(r"SELECT ph.*,ps.description as status_description FROM penugasan_history ph LEFT JOIN penugasan_status ps ON ph.status = ps.id WHERE ph.penugasan_uuid = $1",parameters: [kmpDetailsItem.uuid!]);
+          result1.forEach((el) {
+            PenugasanHistoryDetails phDetails = PenugasanHistoryDetails.fromJson(el.toColumnMap());
+            history.add(phDetails);
+          });
+          KegiatanMitraPenugasanDetailsWithHistory kmpHistory = KegiatanMitraPenugasanDetailsWithHistory(
+            details: kmpDetailsItem, 
+            history: history
+            );
+          
+          listObject.add(kmpHistory);
+        } catch(e) {
+          print("Error ${e}");
+          continue;
+        }
+      }
+      return listObject;
+    });
   }
 
 

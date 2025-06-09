@@ -51,3 +51,60 @@ class PenugasanHistory {
   }
 
 }
+
+class PenugasanHistoryDetails {
+  String? uuid;
+  String penugasan_uuid;
+  int status;
+  String status_description;
+  String created_at;
+  PenugasanHistoryDetails({
+    this.uuid,
+    required this.penugasan_uuid,
+    required this.status,
+    required this.status_description,
+    required this.created_at,
+  });
+  
+
+  PenugasanHistoryDetails copyWith({
+    String? uuid,
+    String? penugasan_uuid,
+    int? status,
+    String? status_description,
+    String? created_at,
+  }) {
+    return PenugasanHistoryDetails(
+      uuid: uuid ?? this.uuid,
+      penugasan_uuid: penugasan_uuid ?? this.penugasan_uuid,
+      status: status ?? this.status,
+      status_description: status_description ?? this.status_description,
+      created_at: created_at ?? this.created_at,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'uuid': uuid,
+      'penugasan_uuid': penugasan_uuid,
+      'status': status,
+      'status_description': status_description,
+      'created_at': created_at,
+    };
+  }
+
+  factory PenugasanHistoryDetails.fromJson(Map<String, dynamic> map) {
+    return PenugasanHistoryDetails(
+      uuid: map['uuid'] != null ? map['uuid'] as String : null,
+      penugasan_uuid: map['penugasan_uuid'] as String,
+      status: map['status'] as int,
+      status_description: map['status_description'] as String,
+      created_at: map['created_at'] as String,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'PenugasanHistoryDetails(uuid: $uuid, penugasan_uuid: $penugasan_uuid, status: $status, status_description: $status_description, created_at: $created_at)';
+  }
+}

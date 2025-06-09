@@ -23,4 +23,5 @@ class DatetimeHelper {
   static DateTime parseMakassarTime(String makassarTime) {
     return tz.TZDateTime.parse(DatetimeHelper.makassarLocation,makassarTime);
   }
+
 }

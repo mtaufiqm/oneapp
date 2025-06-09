@@ -1,8 +1,10 @@
 //FUTURE CONTINUE THIS FOR BS
 import 'package:dart_frog/dart_frog.dart';
+import 'package:my_first/models/daerah_blok_sensus.dart';
 import 'package:my_first/models/daerah_tingkat_3.dart';
 import 'package:my_first/models/daerah_tingkat_4.dart';
 import 'package:my_first/models/daerah_tingkat_5.dart';
+import 'package:my_first/repository/daerah_blok_sensus_repository.dart.dart';
 import 'package:my_first/repository/daerah_tingkat_3_repository.dart';
 import 'package:my_first/repository/daerah_tingkat_4_repository.dart';
 import 'package:my_first/repository/daerah_tingkat_5_repository.dart';
@@ -27,7 +29,7 @@ Future<String> generateGroupDesc(RequestContext ctx, int group_type_id, String g
         return await generateDesc4(ctx, group_code);
       //blok_sensus
       case 5:
-        return "${group_code}";
+        return await generateDescBS(ctx, group_code);
       //nks
       case 6:
         return "${group_code}";
@@ -82,5 +84,22 @@ Future<String> generateDesc4(RequestContext ctx, String group_code) async {
   DaerahTingkat4 dt4 = await dt4_repo.getById(cleanedString.substring(0,10));
   DaerahTingkat5 daerah = await dt5_repo.getById("${cleanedString}");
   String desc = "[${daerah.id}] - Kec. ${dt3.name} - Desa/Kel ${dt4.name} - SLS ${daerah.name}";
+  return desc;    
+}
+
+//BS : 14 Character
+Future<String> generateDescBS(RequestContext ctx, String group_code) async {
+  DaerahTingkat3Repository dt3_repo = ctx.read<DaerahTingkat3Repository>();
+  DaerahTingkat4Repository dt4_repo = ctx.read<DaerahTingkat4Repository>();
+  DaerahBlokSensusRepository dbs_repo = ctx.read<DaerahBlokSensusRepository>();
+  String cleanedString = group_code.trim();
+  if(cleanedString.length != 14){
+    throw Exception("Invalid Code Length");
+  }
+  
+  DaerahTingkat3 dt3 = await dt3_repo.getById(cleanedString.substring(0,7));
+  DaerahTingkat4 dt4 = await dt4_repo.getById(cleanedString.substring(0,10));
+  DaerahBlokSensus daerah = await dbs_repo.getById("${cleanedString}");
+  String desc = "[${daerah.id}] - Kec. ${dt3.name} - Desa/Kel ${dt4.name} - BS ${daerah.name}";
   return desc;    
 }
