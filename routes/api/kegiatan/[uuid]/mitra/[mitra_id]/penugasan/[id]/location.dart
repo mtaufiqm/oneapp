@@ -57,10 +57,10 @@ Future<Response> onPost(RequestContext ctx,String uuuid, String mitra_id,String 
       return RespHelper.badRequest(message: "Invalid JSON Body");
     }
 
-    //update 'location only' only for status 1 : DALAM PROSES
-    if(objectDetails.status != 1) {
-      return RespHelper.badRequest(message:"Assignment not in process");
-    }
+    // //update 'location only' only for status 1 : DALAM PROSES
+    // if(objectDetails.status != 1) {
+    //   return RespHelper.badRequest(message:"Assignment not in process");
+    // }
 
     
     //string location_latitude, string location_longitude
