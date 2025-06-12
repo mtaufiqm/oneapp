@@ -48,7 +48,7 @@ class MitraRepository extends MyRepository<Mitra>{
   Future<Mitra> create(Mitra mitra) async {
     return this.connection.connectionPool.withConnection((conn) async{
       return conn.runTx<Mitra>((tx) async{
-        Result result = await tx.execute(r'INSERT INTO mitra(mitra_id,fullname,nickname,date_of_birth,city_of_birth,username,email) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING mitra_id',
+        Result result = await tx.execute(r'INSERT INTO mitra(mitra_id,fullname,nickname,date_of_birth,city_of_birth,username,email,phone_number,address_code,address_detail) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING mitra_id',
         parameters: mitra.toJson().values.toList());
         if(result.isEmpty){
           throw Exception("Error Create Mitra ${mitra.mitra_id}");
@@ -60,8 +60,20 @@ class MitraRepository extends MyRepository<Mitra>{
 
   Future<Mitra> update(dynamic mitraId,Mitra mitra) async{
     return this.connection.connectionPool.runTx<Mitra>((tx) async {
-      var result = await tx.execute(r"UPDATE mitra SET fullname = $1, nickname = $2, date_of_birth = $3, city_of_birth = $4, username = $5, email = $6 WHERE mitra_id = $7",
-      parameters: (mitra.toJson()..remove("mitra_id")).values.toList()..add(mitraId as String));
+      var result = await tx.execute(r"UPDATE mitra SET fullname = $1, nickname = $2, date_of_birth = $3, city_of_birth = $4, email = $5, username = $6, phone_number = $7, address_code = $8, address_detail = $9 WHERE mitra_id = $10",
+      parameters: [
+        mitra.fullname,
+        mitra.nickname,
+        mitra.nickname,
+        mitra.date_of_birth,
+        mitra.city_of_birth,
+        mitra.email,
+        mitra.username,
+        mitra.phone_number,
+        mitra.address_code,
+        mitra.address_detail,
+        mitraId as String
+      ]);
       if(result.affectedRows < 1){
         throw Exception("There is no row updated!");
       }

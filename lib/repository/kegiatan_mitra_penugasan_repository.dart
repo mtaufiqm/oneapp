@@ -89,7 +89,6 @@ class KegiatanMitraPenugasanRepository extends MyRepository<KegiatanMitraPenugas
       if(result.affectedRows < 1){
         throw Exception("Failed to Update ${id as String}");
       }
-
       return;
     });
   }

@@ -3,7 +3,6 @@
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
-
 import 'package:my_first/models/kegiatan.dart';
 
 class Mitra {
@@ -14,6 +13,10 @@ class Mitra {
   String city_of_birth;
   String username;
   String email;
+  String? phone_number;
+  String? address_code;
+  String? address_detail;
+
   Mitra({
     this.mitra_id,
     required this.fullname,
@@ -22,6 +25,9 @@ class Mitra {
     required this.city_of_birth,
     required this.username,
     required this.email,
+    this.phone_number,
+    this.address_code,
+    this.address_detail,
   });
 
   Mitra copyWith({
@@ -32,6 +38,9 @@ class Mitra {
     String? city_of_birth,
     String? username,
     String? email,
+    String? phone_number,
+    String? address_code,
+    String? address_detail,
   }) {
     return Mitra(
       mitra_id: mitra_id ?? this.mitra_id,
@@ -41,7 +50,15 @@ class Mitra {
       city_of_birth: city_of_birth ?? this.city_of_birth,
       username: username ?? this.username,
       email: email ?? this.email,
+      phone_number: phone_number ?? this.phone_number,
+      address_code: address_code ?? this.address_code,
+      address_detail: address_detail ?? this.address_detail,
     );
+  }
+  
+  @override
+  String toString() {
+    return 'Mitra(mitra_id: $mitra_id, fullname: $fullname, nickname: $nickname, date_of_birth: $date_of_birth, city_of_birth: $city_of_birth, username: $username, email: $email, phone_number: $phone_number, address_code: $address_code, address_detail: $address_detail)';
   }
 
   Map<String, dynamic> toJson() {
@@ -53,6 +70,9 @@ class Mitra {
       'city_of_birth': city_of_birth,
       'username': username,
       'email': email,
+      'phone_number': phone_number,
+      'address_code': address_code,
+      'address_detail': address_detail,
     };
   }
 
@@ -65,12 +85,10 @@ class Mitra {
       city_of_birth: map['city_of_birth'] as String,
       username: map['username'] as String,
       email: map['email'] as String,
+      phone_number: map['phone_number'] != null ? map['phone_number'] as String : null,
+      address_code: map['address_code'] != null ? map['address_code'] as String : null,
+      address_detail: map['address_detail'] != null ? map['address_detail'] as String : null,
     );
-  }
-
-  @override
-  String toString() {
-    return 'Mitra(mitra_id: $mitra_id, fullname: $fullname, nickname: $nickname, date_of_birth: $date_of_birth, city_of_birth: $city_of_birth, username: $username, email: $email)';
   }
 }
 
