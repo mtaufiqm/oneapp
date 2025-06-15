@@ -13,6 +13,7 @@ class Pegawai {
   // "age" integer,
   // "username" text UNIQUE,
   // "status_pegawai" text
+  // "phone_number" text
   String? uuid;
   String fullname;
   String fullname_with_title;
@@ -24,6 +25,7 @@ class Pegawai {
   int age;
   String username;
   String status_pegawai;
+  String? phone_number;
   Pegawai({
     this.uuid,
     required this.fullname,
@@ -36,6 +38,7 @@ class Pegawai {
     required this.age,
     required this.username,
     required this.status_pegawai,
+    this.phone_number,
   });
 
   Pegawai copyWith({
@@ -50,6 +53,7 @@ class Pegawai {
     int? age,
     String? username,
     String? status_pegawai,
+    String? phone_number,
   }) {
     return Pegawai(
       uuid: uuid ?? this.uuid,
@@ -63,6 +67,7 @@ class Pegawai {
       age: age ?? this.age,
       username: username ?? this.username,
       status_pegawai: status_pegawai ?? this.status_pegawai,
+      phone_number: phone_number ?? this.phone_number,
     );
   }
 
@@ -79,6 +84,7 @@ class Pegawai {
       'age': age,
       'username': username,
       'status_pegawai': status_pegawai,
+      'phone_number': phone_number,
     };
   }
 
@@ -95,13 +101,13 @@ class Pegawai {
       age: map['age'] as int,
       username: map['username'] as String,
       status_pegawai: map['status_pegawai'] as String,
+      phone_number: map['phone_number'] != null ? map['phone_number'] as String : null,
     );
   }
 
-  
   @override
   String toString() {
-    return 'Pegawai(uuid: $uuid, fullname: $fullname, fullname_with_title: $fullname_with_title, nickname: $nickname, date_of_birth: $date_of_birth, city_of_birth: $city_of_birth, nip: $nip, old_nip: $old_nip, age: $age, username: $username, status_pegawai: $status_pegawai)';
+    return 'Pegawai(uuid: $uuid, fullname: $fullname, fullname_with_title: $fullname_with_title, nickname: $nickname, date_of_birth: $date_of_birth, city_of_birth: $city_of_birth, nip: $nip, old_nip: $old_nip, age: $age, username: $username, status_pegawai: $status_pegawai, phone_number: $phone_number)';
   }
-
+  
 }

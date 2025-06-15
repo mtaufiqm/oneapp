@@ -27,7 +27,7 @@ class Mitra {
     required this.email,
     this.phone_number,
     this.address_code,
-    this.address_detail,
+    this.address_detail
   });
 
   Mitra copyWith({

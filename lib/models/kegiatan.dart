@@ -18,6 +18,7 @@ class Kegiatan {
   bool mitra_involved;
   int mitra_number;
   String created_by;
+  String? penanggung_jawab;
   Kegiatan({
     this.uuid,
     required this.name,
@@ -29,8 +30,10 @@ class Kegiatan {
     required this.organic_number,
     required this.mitra_involved,
     required this.mitra_number,
-    required this.created_by
+    required this.created_by,
+    this.penanggung_jawab,
   });
+
 
   Kegiatan copyWith({
     String? uuid,
@@ -44,6 +47,7 @@ class Kegiatan {
     bool? mitra_involved,
     int? mitra_number,
     String? created_by,
+    String? penanggung_jawab,
   }) {
     return Kegiatan(
       uuid: uuid ?? this.uuid,
@@ -57,6 +61,7 @@ class Kegiatan {
       mitra_involved: mitra_involved ?? this.mitra_involved,
       mitra_number: mitra_number ?? this.mitra_number,
       created_by: created_by ?? this.created_by,
+      penanggung_jawab: penanggung_jawab ?? this.penanggung_jawab,
     );
   }
 
@@ -73,6 +78,7 @@ class Kegiatan {
       'mitra_involved': mitra_involved,
       'mitra_number': mitra_number,
       'created_by': created_by,
+      'penanggung_jawab': penanggung_jawab,
     };
   }
 
@@ -89,12 +95,13 @@ class Kegiatan {
       mitra_involved: map['mitra_involved'] as bool,
       mitra_number: map['mitra_number'] as int,
       created_by: map['created_by'] as String,
+      penanggung_jawab: map['penanggung_jawab'] != null ? map['penanggung_jawab'] as String : null,
     );
   }
 
   @override
   String toString() {
-    return 'Kegiatan(uuid: $uuid, name: $name, description: $description, start: $start, end: $end, monitoring_link: $monitoring_link, organic_involved: $organic_involved, organic_number: $organic_number, mitra_involved: $mitra_involved, mitra_number: $mitra_number, created_by: $created_by)';
+    return 'Kegiatan(uuid: $uuid, name: $name, description: $description, start: $start, end: $end, monitoring_link: $monitoring_link, organic_involved: $organic_involved, organic_number: $organic_number, mitra_involved: $mitra_involved, mitra_number: $mitra_number, created_by: $created_by, penanggung_jawab: $penanggung_jawab)';
   }
 }
 
@@ -134,5 +141,4 @@ class KegiatanWithMitra {
 
   @override
   String toString() => 'KegiatanWithMitra(kegiatan: $kegiatan, mitra: $mitra)';
-
 }

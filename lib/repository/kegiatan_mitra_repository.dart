@@ -47,7 +47,7 @@ class KegiatanMitraRepository {
     Future<List<KegiatanMitraBridgeDetails>> getDetailsByMitraId(dynamic mitra_id) async {
     return await this.conn.connectionPool.runTx<List<KegiatanMitraBridgeDetails>>((tx) async {
       var listOfObject = <KegiatanMitraBridgeDetails>[];      
-      Result result = await tx.execute(r'''SELECT k.*, kmb.mitra_id, kmb.kegiatan_uuid, kmb.status FROM kegiatan_mitra_bridge kmb LEFT JOIN kegiatan k ON kmb.kegiatan_uuid = k.uuid 
+      Result result = await tx.execute(r'''SELECT k.*, kmb.mitra_id, kmb.kegiatan_uuid, kmb.status, kmb.pengawas FROM kegiatan_mitra_bridge kmb LEFT JOIN kegiatan k ON kmb.kegiatan_uuid = k.uuid 
       WHERE kmb.mitra_id = $1''',parameters: [
         mitra_id as String
       ]);
@@ -75,7 +75,7 @@ class KegiatanMitraRepository {
         KegiatanMitraBridge kmb = KegiatanMitraBridge.fromJson(item.toColumnMap());
         listOfObject.add(kmb);
       }
-
+      
       return listOfObject;
     });
   }
@@ -88,11 +88,12 @@ class KegiatanMitraRepository {
       for(var item in list){
         try{
           item.uuid = Uuid().v1();
-          Result result = await tx.execute(r"INSERT INTO kegiatan_mitra_bridge VALUES($1,$2,$3,$4) ON CONFLICT (kegiatan_uuid,mitra_id) DO NOTHING RETURNING uuid",parameters: [
+          Result result = await tx.execute(r"INSERT INTO kegiatan_mitra_bridge VALUES($1,$2,$3,$4,$5) ON CONFLICT (kegiatan_uuid,mitra_id) DO NOTHING RETURNING uuid",parameters: [
             item.uuid!,
             item.kegiatan_uuid,
             item.mitra_id,
-            item.status
+            item.status,
+            item.pengawas
           ]);
 
           //if there is conflict continue it;
@@ -143,9 +144,10 @@ class KegiatanMitraRepository {
       List<KegiatanMitraBridge> listOfObject = [];
       for(var item in list){
         try{
-          var hasil = await tx.execute(r"UPDATE kegiatan_mitra_bridge SET status = $1 WHERE kegiatan_uuid = $2 AND mitra_id = $3",
+          var hasil = await tx.execute(r"UPDATE kegiatan_mitra_bridge SET status = $1, pengawas = $2 WHERE kegiatan_uuid = $3 AND mitra_id = $4",
           parameters: [
             item.status,
+            item.pengawas,
             item.kegiatan_uuid,
             item.mitra_id
           ]);

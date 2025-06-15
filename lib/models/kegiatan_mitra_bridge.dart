@@ -9,11 +9,13 @@ class KegiatanMitraBridge {
   String kegiatan_uuid;
   String mitra_id;
   String status;
+  String? pengawas;
   KegiatanMitraBridge({
     this.uuid,
     required this.kegiatan_uuid,
     required this.mitra_id,
     required this.status,
+    this.pengawas,
   });
 
   KegiatanMitraBridge copyWith({
@@ -21,12 +23,14 @@ class KegiatanMitraBridge {
     String? kegiatan_uuid,
     String? mitra_id,
     String? status,
+    String? pengawas,
   }) {
     return KegiatanMitraBridge(
       uuid: uuid ?? this.uuid,
       kegiatan_uuid: kegiatan_uuid ?? this.kegiatan_uuid,
       mitra_id: mitra_id ?? this.mitra_id,
       status: status ?? this.status,
+      pengawas: pengawas ?? this.pengawas,
     );
   }
 
@@ -36,6 +40,7 @@ class KegiatanMitraBridge {
       'kegiatan_uuid': kegiatan_uuid,
       'mitra_id': mitra_id,
       'status': status,
+      'pengawas': pengawas,
     };
   }
 
@@ -45,12 +50,25 @@ class KegiatanMitraBridge {
       kegiatan_uuid: map['kegiatan_uuid'] as String,
       mitra_id: map['mitra_id'] as String,
       status: map['status'] as String,
+      pengawas: map['pengawas'] != null ? map['pengawas'] as String : null,
     );
   }
 
   @override
   String toString() {
-    return 'KegiatanMitraBridge(uuid: $uuid, kegiatan_uuid: $kegiatan_uuid, mitra_id: $mitra_id, status: $status)';
+    return 'KegiatanMitraBridge(uuid: $uuid, kegiatan_uuid: $kegiatan_uuid, mitra_id: $mitra_id, status: $status, pengawas: $pengawas)';
+  }
+
+  @override
+  bool operator ==(covariant KegiatanMitraBridge other) {
+    if (identical(this, other)) return true;
+  
+    return 
+      other.uuid == uuid &&
+      other.kegiatan_uuid == kegiatan_uuid &&
+      other.mitra_id == mitra_id &&
+      other.status == status &&
+      other.pengawas == pengawas;
   }
 }
 

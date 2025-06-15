@@ -4,6 +4,7 @@ import 'package:my_first/blocs/response_helper.dart';
 import 'package:my_first/models/kegiatan.dart';
 import 'package:my_first/models/kegiatan_mitra_bridge.dart';
 import 'package:my_first/models/mitra.dart';
+import 'package:my_first/models/mitra_role.dart';
 import 'package:my_first/models/user.dart';
 import 'package:my_first/repository/kegiatan_mitra_repository.dart';
 import 'package:my_first/repository/kegiatan_repository.dart';
@@ -109,26 +110,33 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
       }
 
       try{
-        //must be have two columns, (mitra_id and status)
+        //must be have two columns, (mitra_id and status and pengawas/pemeriksa)
         if(item.length < 2){
           continue;
         }
 
         var mitra_data = item[0]!.value;
+
         var status_data = item[1]!.value;
 
+        var pengawas_data = item[2]!.value;
 
-        //skip it if there is null cell
+        //if not one if mitra_role (PPL,PML,KOSEKA), it will Error
+        if(!MitraRole.values.contains(status_data!.toString().trim().toUpperCase())){
+          continue;
+        }
+
+        //skip it if there is null cell, pengawas data no need to check because can be null
         if(mitra_data == null || status_data == null){
           continue;
         }
 
         String mitra_id = mitra_data!.toString().trim();
         String status = status_data!.toString().toUpperCase().trim();
+        String? pengawas = pengawas_data!.toString().trim().isEmpty?null:pengawas_data!.toString().trim();
         String kegiatan_uuid = kegiatan.uuid!;
 
-
-        listOfMitra.add(KegiatanMitraBridge(kegiatan_uuid: kegiatan_uuid, mitra_id: mitra_id, status: status));
+        listOfMitra.add(KegiatanMitraBridge(kegiatan_uuid: kegiatan_uuid, mitra_id: mitra_id, status: status,pengawas: pengawas));
       } catch(e){
         print("Error ${e}");
       }

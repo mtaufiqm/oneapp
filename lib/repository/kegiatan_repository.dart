@@ -84,8 +84,21 @@ class KegiatanRepository extends MyRepository<Kegiatan>{
     return this.connection.connectionPool.withConnection((conn) async{
       return conn.runTx<Kegiatan>((tx) async{
         kegiatan.uuid = Uuid().v1();
-        Result result = await tx.execute(r'INSERT INTO kegiatan VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING uuid',
-        parameters: kegiatan.toJson().values.toList());
+        Result result = await tx.execute(r'INSERT INTO kegiatan VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING uuid',
+        parameters: [
+          kegiatan.uuid,
+          kegiatan.name,
+          kegiatan.description,
+          kegiatan.start,
+          kegiatan.end,
+          kegiatan.monitoring_link,
+          kegiatan.organic_involved,
+          kegiatan.organic_number,
+          kegiatan.mitra_involved,
+          kegiatan.mitra_number,
+          kegiatan.created_by,
+          kegiatan.penanggung_jawab
+        ]);
         if(result.isEmpty){
           throw Exception("Error Create Kegiatan ${kegiatan.uuid}");
         }
@@ -108,7 +121,7 @@ class KegiatanRepository extends MyRepository<Kegiatan>{
 
   Future<Kegiatan> update(dynamic uuid,Kegiatan kegiatan) async{
     return this.connection.connectionPool.runTx<Kegiatan>((tx) async {
-      var result = await tx.execute(r'''UPDATE kegiatan SET name = $1, description = $2, "start" = $3, "end" = $4, monitoring_link = $5, organic_involved = $6, organic_number = $7, mitra_involved = $8, mitra_number = $9, created_by = $10 WHERE uuid = $11''',
+      var result = await tx.execute(r'''UPDATE kegiatan SET name = $1, description = $2, "start" = $3, "end" = $4, monitoring_link = $5, organic_involved = $6, organic_number = $7, mitra_involved = $8, mitra_number = $9, created_by = $10, penanggung_jawab = $11 WHERE uuid = $12''',
 
       parameters: (kegiatan.toJson()..remove("uuid")).values.toList()..add(uuid as String));
       if(result.affectedRows < 1){

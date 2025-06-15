@@ -24,7 +24,8 @@ CREATE TABLE "pegawai" (
   "old_nip" text,
   "age" integer,
   "username" text UNIQUE,
-  "status_pegawai" text
+  "status_pegawai" text,
+  "phone_number" text
 );
 
 CREATE TABLE "status_pegawai" (
