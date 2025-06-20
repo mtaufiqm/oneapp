@@ -19,6 +19,7 @@ class Kegiatan {
   int mitra_number;
   String created_by;
   String? penanggung_jawab;
+  String? mode;
   Kegiatan({
     this.uuid,
     required this.name,
@@ -32,8 +33,8 @@ class Kegiatan {
     required this.mitra_number,
     required this.created_by,
     this.penanggung_jawab,
+    this.mode,
   });
-
 
   Kegiatan copyWith({
     String? uuid,
@@ -48,6 +49,7 @@ class Kegiatan {
     int? mitra_number,
     String? created_by,
     String? penanggung_jawab,
+    String? mode,
   }) {
     return Kegiatan(
       uuid: uuid ?? this.uuid,
@@ -62,6 +64,7 @@ class Kegiatan {
       mitra_number: mitra_number ?? this.mitra_number,
       created_by: created_by ?? this.created_by,
       penanggung_jawab: penanggung_jawab ?? this.penanggung_jawab,
+      mode: mode ?? this.mode,
     );
   }
 
@@ -79,6 +82,7 @@ class Kegiatan {
       'mitra_number': mitra_number,
       'created_by': created_by,
       'penanggung_jawab': penanggung_jawab,
+      'mode': mode,
     };
   }
 
@@ -96,16 +100,35 @@ class Kegiatan {
       mitra_number: map['mitra_number'] as int,
       created_by: map['created_by'] as String,
       penanggung_jawab: map['penanggung_jawab'] != null ? map['penanggung_jawab'] as String : null,
+      mode: map['mode'] != null ? map['mode'] as String : null,
     );
   }
 
   @override
   String toString() {
-    return 'Kegiatan(uuid: $uuid, name: $name, description: $description, start: $start, end: $end, monitoring_link: $monitoring_link, organic_involved: $organic_involved, organic_number: $organic_number, mitra_involved: $mitra_involved, mitra_number: $mitra_number, created_by: $created_by, penanggung_jawab: $penanggung_jawab)';
+    return 'Kegiatan(uuid: $uuid, name: $name, description: $description, start: $start, end: $end, monitoring_link: $monitoring_link, organic_involved: $organic_involved, organic_number: $organic_number, mitra_involved: $mitra_involved, mitra_number: $mitra_number, created_by: $created_by, penanggung_jawab: $penanggung_jawab, mode: $mode)';
+  }
+
+  @override
+  bool operator ==(covariant Kegiatan other) {
+    if (identical(this, other)) return true;
+  
+    return 
+      other.uuid == uuid &&
+      other.name == name &&
+      other.description == description &&
+      other.start == start &&
+      other.end == end &&
+      other.monitoring_link == monitoring_link &&
+      other.organic_involved == organic_involved &&
+      other.organic_number == organic_number &&
+      other.mitra_involved == mitra_involved &&
+      other.mitra_number == mitra_number &&
+      other.created_by == created_by &&
+      other.penanggung_jawab == penanggung_jawab &&
+      other.mode == mode;
   }
 }
-
-
 
 class KegiatanWithMitra {
   Kegiatan kegiatan;

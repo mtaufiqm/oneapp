@@ -1,6 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
+
+import 'package:my_first/models/ickm/structure_penilaian_mitra.dart';
 
 class KuesionerPenilaianMitra {
   String? uuid;
@@ -61,5 +64,51 @@ class KuesionerPenilaianMitra {
   @override
   String toString() {
     return 'KuesionerPenilaianMitra(uuid: $uuid, kegiatan_uuid: $kegiatan_uuid, title: $title, description: $description, start_date: $start_date, end_date: $end_date)';
+  }
+}
+
+class KuesionerPenilaianMitraWithStructure {
+  KuesionerPenilaianMitra penilaian;
+  List<StructurePenilaianMitra> structure;
+  KuesionerPenilaianMitraWithStructure({
+    required this.penilaian,
+    required this.structure,
+  });
+
+  KuesionerPenilaianMitraWithStructure copyWith({
+    KuesionerPenilaianMitra? penilaian,
+    List<StructurePenilaianMitra>? structure,
+  }) {
+    return KuesionerPenilaianMitraWithStructure(
+      penilaian: penilaian ?? this.penilaian,
+      structure: structure ?? this.structure,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'penilaian': penilaian.toJson(),
+      'structure': structure.map((x) => x.toJson()).toList(),
+    };
+  }
+
+  factory KuesionerPenilaianMitraWithStructure.fromJson(Map<String, dynamic> map) {
+    return KuesionerPenilaianMitraWithStructure(
+      penilaian: KuesionerPenilaianMitra.fromJson(map['penilaian'] as Map<String,dynamic>),
+      structure: List<StructurePenilaianMitra>.from((map['structure'] as List<dynamic>).map<StructurePenilaianMitra>((x) => StructurePenilaianMitra.fromJson(x as Map<String,dynamic>)))
+    );
+  }
+
+  @override
+  String toString() => 'KuesionerPenilaianMitraWithStructure(penilaian: $penilaian, structure: $structure)';
+
+  @override
+  bool operator ==(covariant KuesionerPenilaianMitraWithStructure other) {
+    if (identical(this, other)) return true;
+    final listEquals = const DeepCollectionEquality().equals;
+  
+    return 
+      other.penilaian == penilaian &&
+      listEquals(other.structure, structure);
   }
 }

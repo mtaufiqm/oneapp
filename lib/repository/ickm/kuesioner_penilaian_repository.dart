@@ -113,7 +113,7 @@ class KuesionerPenilaianRepository extends MyRepository<KuesionerPenilaianMitra>
 
   Future<List<KuesionerPenilaianMitra>> readAll() async {
     return this.conn.connectionPool.runTx((tx) async {
-      var result = await tx.execute(r"SELECT * FROM kuesioner_penilaian_mitra");
+      var result = await tx.execute(r"SELECT * FROM kuesioner_penilaian_mitra ORDER BY end_date DESC");
       List<KuesionerPenilaianMitra> listObject = [];
       for(var item in result){
         var object = KuesionerPenilaianMitra.fromJson(item.toColumnMap());

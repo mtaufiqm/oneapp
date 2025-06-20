@@ -141,68 +141,84 @@ class QuestionsBlocWithGroup {
 
 
 class QuestionsBlocResponseStructure {
-  String? uuid;
-  String title;
-  String description;
-  int order;
+  String? questions_bloc_uuid;
+  String questions_bloc_title;
+  String questions_bloc_description;
+  int questions_bloc_order;
   String survei_uuid;
-  String tag;
-  List<QuestionsGroupResponseStructure> groups;
+  String questions_bloc_tag;
+  List<QuestionsGroupResponseStructure>? groups;
   QuestionsBlocResponseStructure({
-    this.uuid,
-    required this.title,
-    required this.description,
-    required this.order,
+    this.questions_bloc_uuid,
+    required this.questions_bloc_title,
+    required this.questions_bloc_description,
+    required this.questions_bloc_order,
     required this.survei_uuid,
-    required this.tag,
-    required this.groups,
+    required this.questions_bloc_tag,
+    this.groups,
   });
 
   QuestionsBlocResponseStructure copyWith({
-    String? uuid,
-    String? title,
-    String? description,
-    int? order,
+    String? questions_bloc_uuid,
+    String? questions_bloc_title,
+    String? questions_bloc_description,
+    int? questions_bloc_order,
     String? survei_uuid,
-    String? tag,
+    String? questions_bloc_tag,
     List<QuestionsGroupResponseStructure>? groups,
   }) {
     return QuestionsBlocResponseStructure(
-      uuid: uuid ?? this.uuid,
-      title: title ?? this.title,
-      description: description ?? this.description,
-      order: order ?? this.order,
+      questions_bloc_uuid: questions_bloc_uuid ?? this.questions_bloc_uuid,
+      questions_bloc_title: questions_bloc_title ?? this.questions_bloc_title,
+      questions_bloc_description: questions_bloc_description ?? this.questions_bloc_description,
+      questions_bloc_order: questions_bloc_order ?? this.questions_bloc_order,
       survei_uuid: survei_uuid ?? this.survei_uuid,
-      tag: tag ?? this.tag,
+      questions_bloc_tag: questions_bloc_tag ?? this.questions_bloc_tag,
       groups: groups ?? this.groups,
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
-      'uuid': uuid,
-      'title': title,
-      'description': description,
-      'order': order,
+      'questions_bloc_uuid': questions_bloc_uuid,
+      'questions_bloc_title': questions_bloc_title,
+      'questions_bloc_description': questions_bloc_description,
+      'questions_bloc_order': questions_bloc_order,
       'survei_uuid': survei_uuid,
-      'tag': tag,
-      'groups': groups.map((x) => x.toJson()).toList(),
+      'questions_bloc_tag': questions_bloc_tag,
+      'groups': groups?.map((x) => x?.toJson()).toList(),
     };
   }
 
-  factory QuestionsBlocResponseStructure.fromMap(Map<String, dynamic> map) {
+  factory QuestionsBlocResponseStructure.fromJson(Map<String, dynamic> map) {
     return QuestionsBlocResponseStructure(
-      uuid: map['uuid'] != null ? map['uuid'] as String : null,
-      title: map['title'] as String,
-      description: map['description'] as String,
-      order: map['order'] as int,
+      questions_bloc_uuid: map['questions_bloc_uuid'] != null ? map['questions_bloc_uuid'] as String : null,
+      questions_bloc_title: map['questions_bloc_title'] as String,
+      questions_bloc_description: map['questions_bloc_description'] as String,
+      questions_bloc_order: map['questions_bloc_order'] as int,
       survei_uuid: map['survei_uuid'] as String,
-      tag: map['tag'] as String,
-      groups: List<QuestionsGroupResponseStructure>.from((map['groups'] as List<dynamic>).map<QuestionsGroupResponseStructure>((x) => QuestionsGroupResponseStructure.fromJson(x as Map<String,dynamic>)))
+      questions_bloc_tag: map['questions_bloc_tag'] as String,
+      groups: map['groups'] != null ? List<QuestionsGroupResponseStructure>.from((map['groups'] as List<dynamic>).map<QuestionsGroupResponseStructure?>((x) => QuestionsGroupResponseStructure.fromJson(x as Map<String,dynamic>))) : null,
     );
   }
+
   @override
   String toString() {
-    return 'QuestionsBlocResponseStructure(uuid: $uuid, title: $title, description: $description, order: $order, survei_uuid: $survei_uuid, tag: $tag, groups: $groups)';
+    return 'QuestionsBlocResponseStructure(questions_bloc_uuid: $questions_bloc_uuid, questions_bloc_title: $questions_bloc_title, questions_bloc_description: $questions_bloc_description, questions_bloc_order: $questions_bloc_order, survei_uuid: $survei_uuid, questions_bloc_tag: $questions_bloc_tag, groups: $groups)';
+  }
+
+  @override
+  bool operator ==(covariant QuestionsBlocResponseStructure other) {
+    if (identical(this, other)) return true;
+    final listEquals = const DeepCollectionEquality().equals;
+  
+    return 
+      other.questions_bloc_uuid == questions_bloc_uuid &&
+      other.questions_bloc_title == questions_bloc_title &&
+      other.questions_bloc_description == questions_bloc_description &&
+      other.questions_bloc_order == questions_bloc_order &&
+      other.survei_uuid == survei_uuid &&
+      other.questions_bloc_tag == questions_bloc_tag &&
+      listEquals(other.groups, groups);
   }
 }

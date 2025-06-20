@@ -1,7 +1,15 @@
+import 'dart:developer';
+
+import 'package:my_first/models/ickm/questions_bloc.dart';
+import 'package:my_first/models/ickm/questions_group.dart';
+import 'package:my_first/models/ickm/questions_item.dart';
+import 'package:my_first/models/ickm/questions_option.dart';
 import 'package:my_first/models/ickm/response_assignment.dart';
 import 'package:my_first/models/ickm/survei.dart';
+import 'package:my_first/models/kegiatan_mitra_bridge.dart';
 import 'package:my_first/repository/myconnection.dart';
 import 'package:my_first/repository/myrepository.dart';
+import 'package:my_first/responses/ickm/response_assignment_structure.dart';
 import 'package:uuid/uuid.dart';
 
   // String? uuid;
@@ -86,6 +94,221 @@ class ResponseAssignmentRepository extends MyRepository<ResponseAssignment>{
         throw Exception("Fail to delete Survei ${uuid}");
       }
       return;
+    });
+  }
+
+  Future<ResponseAssignmentStructure> generateResponseStructure(dynamic uuid) async {
+    return await this.conn.connectionPool.runTx((tx) async {
+      try {
+        var result = await tx.execute(r"select ra.*, k.uuid as kegiatan_uuid, k.name as kegiatan_name, k.start as kegiatan_start, k.end  as kegiatan_end, kpm.start_date as kuesioner_penilaian_start, kpm.end_date as kuesioner_penilaian_mitra_end, p.username as penilai_username, p.fullname as penilai_name, m.mitra_id as mitra_id, m.username  as mitra_username, m.fullname as mitra_name from response_assignment ra left join structure_penilaian_mitra spm on ra.structure_uuid = spm.uuid left join kuesioner_penilaian_mitra kpm on spm.kuesioner_penilaian_mitra_uuid  = kpm.uuid left join kegiatan k on kpm.kegiatan_uuid = k.uuid left join mitra m on spm.mitra_username = m.username left join pegawai p on spm.penilai_username = p.username WHERE ra.uuid = $1",parameters: [uuid as String]);
+        if(result.isEmpty){
+          throw Exception("There is No Response Assignment ${uuid as String}");
+        }
+        ResponseAssignmentStructure structure = ResponseAssignmentStructure.fromMap(result.first.toColumnMap());
+        ResponseAssignment response = ResponseAssignment.fromJson(result.first.toColumnMap());
+        structure.response = response;
+
+        //add implementations to get others field froms structure : 
+        //status
+        var result2 = await tx.execute(r"SELECT * FROM kegiatan_mitra_bridge kmb WHERE kmb.kegiatan_uuid = $1 AND kmb.mitra_id = $2",parameters: [
+          structure.kegiatan_uuid!,
+          structure.mitra_id!
+        ]);
+        if(result2.isEmpty){
+          throw Exception("This Mitra Not Have Relation For That Kegiatan, Maybe Deleted. Try to add again");
+        }
+        KegiatanMitraBridge kmb = KegiatanMitraBridge.fromJson(result2.first.toColumnMap());
+        structure.mitra_status = kmb.status;
+
+        //List<String> : List Penugasan Group
+        var result3 = await tx.execute(r"SELECT kmp.group, kmp.group_desc FROM kegiatan_mitra_penugasan kmp LEFT JOIN kegiatan_mitra_bridge kmb ON kmp.bridge_uuid = kmb.uuid WHERE kmb.kegiatan_uuid = $1 AND kmb.mitra_id = $2 GROUP BY kmp.group,kmp.group_desc",parameters: [structure.kegiatan_uuid!,structure.mitra_id!]);
+        List<String> mitra_penugasan = [];
+        result3.forEach((el){
+          mitra_penugasan.add((el.toColumnMap()["group_desc"] as String?)??"");
+        });
+        structure.mitra_penugasan = mitra_penugasan;
+
+        //SurveiResponseStructure
+        var resultSurvei = await tx.execute(r'SELECT s.uuid as survei_uuid, s.survei_type as survei_type, s.description as survei_description, s.version as survei_version,  qb.uuid as questions_bloc_uuid, qb.title as questions_bloc_title, qb.description as questions_bloc_description, qb."order" as questions_bloc_order, qb.tag as questions_bloc_tag, qg.uuid as questions_group_uuid, qg.title as questions_group_title, qg.description as questions_group_description, qg."order" as questions_group_order, qg.tag as questions_group_tag, qi.uuid as questions_item_uuid, qi.title as questions_item_title, qi.description as questions_item_description, qi."order" as questions_item_order, qi.tag as questions_item_tag, qi.validation as questions_item_validation, qo.uuid as questions_option_uuid, qo.title as questions_option_title, qo.description as questions_option_description, qo."order" as questions_option_order, qo.value as questions_option_value, qo.tag as questions_option_tag FROM survei s left join questions_bloc qb ON s.uuid = qb.survei_uuid left join questions_group qg on qb.uuid = qg.questions_bloc_uuid left join questions_item qi on qg.uuid = qi.questions_group_uuid left join questions_option qo on qi.uuid = qo.questions_item_uuid where s.uuid = $1 order by qo."order" ASC, qi."order" ASC, qg."order" ASC, qb."order" ASC',parameters: [
+          structure.response!.survei_uuid
+        ]);
+
+        if(resultSurvei.isEmpty){
+          throw Exception("There is No Data For This Survei ${structure.response!.survei_uuid}");
+        }
+
+        var resultCurrentResponse = await tx.execute(r"SELECT * FROM answer_assignment aa WHERE aa.response_assignment_uuid = $1",parameters: [structure.response!.uuid!]);
+
+        //iterate for survei
+        Map<String,SurveiResponseStructure> surveiStructureMap = {};
+        for(var item in resultSurvei){
+          try {
+            Map<String,dynamic> itemMap = item.toColumnMap();
+            String survei_uuid = itemMap["survei_uuid"] as String;
+            if(!surveiStructureMap.containsKey(survei_uuid)){
+              String survei_type = itemMap["survei_type"] as String;
+              String survei_description = itemMap["survei_description"] as String;
+              int survei_version = itemMap["survei_version"] as int;
+              List<QuestionsBlocResponseStructure> questions_bloc = [];
+              SurveiResponseStructure surveiStructure = SurveiResponseStructure(
+                survei_uuid: survei_uuid,
+                survei_type: survei_type, 
+                survei_description: survei_description, 
+                survei_version: survei_version, 
+                blocs: questions_bloc
+              );
+              surveiStructureMap[survei_uuid] = surveiStructure;
+              continue;
+            }
+          } catch(e){
+            print("Error ${e}");
+          }
+        }
+
+        // String? uuid;
+        // String title;
+        // String description;
+        // int order;
+        // int value;
+        // String tag;
+        // String questions_item_uuid;
+
+        //iterate options
+        Map<String,List<QuestionsOption>> mapQI = {};
+        for(var item in resultSurvei){
+          try {
+            Map<String,dynamic> mapItem = item.toColumnMap();
+            QuestionsItemResponseStructure qi = QuestionsItemResponseStructure.fromJson(item.toColumnMap());
+
+
+            String? questions_option_uuid = mapItem["questions_option_uuid"] as String?; 
+            String questions_option_title = mapItem["questions_option_title"] as String;
+            String questions_option_description = mapItem["questions_option_description"] as String;
+            int questions_option_order = mapItem["questions_option_order"] as int;
+            int questions_option_value = mapItem["questions_option_value"] as int;
+            String questions_option_tag = mapItem["questions_option_tag"] as String;
+
+            QuestionsOption qo = QuestionsOption(uuid:questions_option_uuid,title: questions_option_title, description: questions_option_description, order: questions_option_order, value: questions_option_value, tag: questions_option_tag, questions_item_uuid: qi.questions_item_uuid!);
+
+            if(qo.uuid == null){
+              continue;
+            }
+
+            if(mapQI.containsKey(qi.questions_item_uuid)){
+              List<QuestionsOption> listQO = mapQI[qi.questions_item_uuid]??[];
+              listQO.add(qo);
+              continue;
+            }
+            mapQI[qi.questions_item_uuid!] = [qo];
+          } catch(e){
+            print(e);
+            continue;
+          }
+        }
+
+        // String? uuid;
+        // String title;
+        // String description;
+        // String validation;
+        // int order;
+        // String questions_group_uuid;
+        // String tag;
+        // List<QuestionsOption> options;
+        // AnswerAssignment? answer;
+
+        //iterate item
+        Map<String,List<QuestionsItemResponseStructure>> mapQG = {};
+        List<String> doneQI = [];
+        for(var item in resultSurvei){
+          try {
+            Map<String,dynamic> mapItem = item.toColumnMap();
+            QuestionsGroupResponseStructure qg = QuestionsGroupResponseStructure.fromJson(mapItem);
+            if(qg.questions_group_uuid == null) {continue;}
+            QuestionsItemResponseStructure qi = QuestionsItemResponseStructure.fromJson(mapItem);
+            if(doneQI.contains(qi.questions_item_uuid)){
+              continue;
+            }
+            if(mapQG.containsKey(qg.questions_group_uuid)){
+              qi.questions_options = mapQI[qi.questions_item_uuid]??[];
+              mapQG[qg.questions_group_uuid]!.add(qi);
+              doneQI.add(qi.questions_item_uuid!);
+              continue;
+            }
+            qi.questions_options = mapQI[qi.questions_item_uuid]??[];
+            mapQG[qg.questions_group_uuid!] = [qi];
+            doneQI.add(qi.questions_item_uuid!);
+          } catch(e){
+            print("Error Iterate ${e}");
+            continue;
+          }
+        }
+
+        //iterate group
+        Map<String,List<QuestionsGroupResponseStructure>> mapQB = {};
+        List<String> doneQG = [];
+        for(var item in resultSurvei){
+            try {
+              Map<String,dynamic> mapItem = item.toColumnMap();
+              QuestionsBlocResponseStructure qb = QuestionsBlocResponseStructure.fromJson(mapItem);
+              if(qb.questions_bloc_uuid == null){
+                continue;
+              }
+              QuestionsGroupResponseStructure qg = QuestionsGroupResponseStructure.fromJson(mapItem);
+              if(doneQG.contains(qg.questions_group_uuid)){
+                continue;
+              }
+              if(mapQB.containsKey(qb.questions_bloc_uuid)){
+                qg.items = mapQG[qg.questions_group_uuid]??[];
+                mapQB[qb.questions_bloc_uuid]!.add(qg);
+                doneQG.add(qg.questions_group_uuid!);
+                continue;
+              }
+              qg.items = mapQG[qg.questions_group_uuid]??[];
+              // qb.groups!.add(qg);
+              mapQB[qb.questions_bloc_uuid!] = [qg];
+              doneQG.add(qg.questions_group_uuid!);
+            } catch(e){
+              log("Error Iterate ${e}");
+              continue;
+            }
+        }
+
+        //iterate bloc
+        List<String> doneQB = [];
+        Map<String,List<QuestionsBlocResponseStructure>> mapSurvei = {};
+        for(var item in resultSurvei){
+            try {
+              Map<String,dynamic> mapItem = item.toColumnMap();
+              SurveiResponseStructure survei = SurveiResponseStructure.fromJson(mapItem);
+              if(survei.survei_uuid == null){
+                continue;
+              }
+              QuestionsBlocResponseStructure qb = QuestionsBlocResponseStructure.fromJson(mapItem);
+              if(doneQB.contains(qb.questions_bloc_uuid)){
+                continue;
+              }
+              if(mapSurvei.containsKey(survei.survei_uuid)){
+                qb.groups = mapQB[qb.questions_bloc_uuid]??[];
+                mapSurvei[qb.questions_bloc_uuid]!.add(qb);
+                doneQB.add(qb.questions_bloc_uuid!);
+                continue;
+              }
+              qb.groups = mapQB[qb.questions_bloc_uuid]??[];
+              // qb.groups!.add(qb);     
+              mapSurvei[survei.survei_uuid!] = [qb];
+              doneQB.add(qb.questions_bloc_uuid!);
+            } catch(e){
+              print("Error Iterate ${e}");
+              continue;
+            }
+          
+        }
+        structure.survei = surveiStructureMap.values.first..blocs = mapSurvei.values.first;
+        return structure;
+      } catch(err){
+        log("Error Generate Response Assignment ${err}");
+        throw Exception("Error Generate Response Assignment ${err}");
+      }
     });
   }
 }

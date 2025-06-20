@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:my_first/models/ickm/structure_penilaian_mitra.dart';
 import 'package:my_first/repository/myconnection.dart';
 import 'package:my_first/repository/myrepository.dart';
@@ -5,9 +7,9 @@ import 'package:uuid/uuid.dart';
 
   // String? uuid;
   // String kuesioner_penilaian_mitra_uuid;
-  // String penilai_username;
-  // String mitra_username;
-  // String survei_uuid;
+  // String? penilai_username;
+  // String? mitra_username;
+  // String? survei_uuid;
 
 class StructurePenilaianRepository extends MyRepository<StructurePenilaianMitra>{
   final MyConnectionPool conn;
@@ -74,6 +76,36 @@ class StructurePenilaianRepository extends MyRepository<StructurePenilaianMitra>
     });
   }
 
+  // String? uuid;
+  // String kuesioner_penilaian_mitra_uuid;
+  // String? penilai_username;
+  // String? mitra_username;
+  // String? survei_uuid;
+  Future<List<StructurePenilaianMitra>> insertList(List<StructurePenilaianMitra> listObject) async {
+    return this.conn.connectionPool.runTx<List<StructurePenilaianMitra>>((tx) async {
+      for(var item in listObject){
+        try {
+          String uuid = Uuid().v1();
+          item.uuid = uuid;
+          var result = await tx.execute(r"INSERT INTO structure_penilaian_mitra VALUES($1,$2,$3,$4,$5) returning uuid",parameters: [
+            item.uuid,
+            item.kuesioner_penilaian_mitra_uuid,
+            item.penilai_username,
+            item.mitra_username,
+            item.survei_uuid
+          ]);
+          if(result.isEmpty){
+            throw Exception("Failed Insert Structure Penilaian Item");
+          }
+        } catch(err){
+          log("Error Create Structure Penilaian ${item.kuesioner_penilaian_mitra_uuid}, Mitra ${item.mitra_username}");
+          throw Exception(err);
+        }
+      }
+      return listObject;
+    });
+  }
+
   Future<void> delete(dynamic uuid) async {
     return this.conn.connectionPool.runTx((tx) async {
       var result = await tx.execute(r"DELETE FROM structure_penilaian_mitra WHERE uuid = $1",parameters: [uuid as String]);
@@ -81,6 +113,71 @@ class StructurePenilaianRepository extends MyRepository<StructurePenilaianMitra>
         throw Exception("Fail to delete structure ${uuid}");
       }
       return;
+    });
+  }
+
+  // String? uuid;
+  // String kuesioner_penilaian_mitra_uuid;
+  // String kuesioner_penilaian_mitra_title;
+  // String kuesioner_penilaian_mitra_start_date;
+  // String kuesioner_penilaian_mitra_end_date;
+  // String kegiatan_name;
+  // String? penilai_username;
+  // String? penilai_fullname;
+  // String? mitra_username;
+  // String? mitra_id;
+  // String? mitra_fullname;
+  // String? survei_uuid;
+  // String? survei_name;
+  // String? survei_type;
+  // bool? isHaveResponse;
+  // String? response_uuid;
+  // bool? response_is_completed;
+  // String? response_updated_at;
+  Future<List<StructurePenilaianMitraDetails>> readDetailsByPenilaian(dynamic penilaian_uuid) async {
+    return this.conn.connectionPool.runTx((tx) async {
+      var result = await tx.execute(r"select spm.uuid as uuid, kpm.uuid as kuesioner_penilaian_mitra_uuid, kpm.title as kuesioner_penilaian_mitra_titel, kpm.start_date as kuesioner_penilaian_mitra_start_date, kpm.end_date as kuesioner_penilaian_mitra_end_date, k.uuid as kegiatan_uuid, k.name as kegiatan_name, spm.penilai_username as penilai_username, p.fullname as penilai_fullname, spm.mitra_username as mitra_username, m.mitra_id as mitra_id, p.fullname as mitra_fullname, s.uuid as survei_uuid, s.description as survei_name, s.survei_type as survei_type  , ra.uuid as response_uuid, ra.is_completed as response_is_completed, ra.updated_at as response_updated_at from structure_penilaian_mitra spm left join kuesioner_penilaian_mitra kpm on spm.kuesioner_penilaian_mitra_uuid = kpm.uuid left join kegiatan k on kpm.kegiatan_uuid = k.uuid  left join mitra m on spm.mitra_username = m.username left join pegawai p on spm.penilai_username = p.username left join survei s on spm.survei_uuid = s.uuid left join response_assignment ra on spm.uuid = ra.structure_uuid WHERE kpm.uuid = $1",parameters: [penilaian_uuid as String]);
+      List<StructurePenilaianMitraDetails> listObject = [];
+      for(var item in result){
+        try {
+          StructurePenilaianMitraDetails spmDetails = StructurePenilaianMitraDetails.fromJson(item.toColumnMap());
+          if(spmDetails.response_uuid == null || spmDetails.response_uuid!.isEmpty){
+            spmDetails.isHaveResponse = false;
+          } else {
+            spmDetails.isHaveResponse = true;
+          }
+          listObject.add(spmDetails);
+        } catch(err){
+          log("Error read Details By Penilaian ${penilaian_uuid} : ${err}");
+          continue;
+        }
+      }
+      return listObject;
+    });
+  }
+
+  Future<List<StructurePenilaianMitraDetails>> readDetailsByPenilaianAndPenilai(dynamic penilaian_uuid, dynamic penilai_username) async {
+    return this.conn.connectionPool.runTx((tx) async {
+      var result = await tx.execute(r"select spm.uuid as uuid, kpm.uuid as kuesioner_penilaian_mitra_uuid, kpm.title as kuesioner_penilaian_mitra_titel, kpm.start_date as kuesioner_penilaian_mitra_start_date, kpm.end_date as kuesioner_penilaian_mitra_end_date, k.uuid as kegiatan_uuid, k.name as kegiatan_name, spm.penilai_username as penilai_username, p.fullname as penilai_fullname, spm.mitra_username as mitra_username, m.mitra_id as mitra_id, p.fullname as mitra_fullname, s.uuid as survei_uuid, s.description as survei_name, s.survei_type as survei_type  , ra.uuid as response_uuid, ra.is_completed as response_is_completed, ra.updated_at as response_updated_at from structure_penilaian_mitra spm left join kuesioner_penilaian_mitra kpm on spm.kuesioner_penilaian_mitra_uuid = kpm.uuid left join kegiatan k on kpm.kegiatan_uuid = k.uuid  left join mitra m on spm.mitra_username = m.username left join pegawai p on spm.penilai_username = p.username left join survei s on spm.survei_uuid = s.uuid left join response_assignment ra on spm.uuid = ra.structure_uuid  WHERE kpm.uuid = $1 AND kpm.penilai_username = $2",parameters: [
+        penilaian_uuid as String,
+        penilai_username as String
+      ]);
+      List<StructurePenilaianMitraDetails> listObject = [];
+      for(var item in result){
+        try {
+          StructurePenilaianMitraDetails spmDetails = StructurePenilaianMitraDetails.fromJson(item.toColumnMap());
+          if(spmDetails.response_uuid == null || spmDetails.response_uuid!.isEmpty){
+            spmDetails.isHaveResponse = false;
+          } else {
+            spmDetails.isHaveResponse = true;
+          }
+          listObject.add(spmDetails);
+        } catch(err){
+          log("Error read Details By Penilaian ${penilaian_uuid} : ${err}");
+          continue;
+        }
+      }
+      return listObject;
     });
   }
 }

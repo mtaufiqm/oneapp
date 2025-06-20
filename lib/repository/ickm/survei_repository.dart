@@ -78,4 +78,24 @@ class SurveiRepository extends MyRepository<Survei> {
       return;
     });
   }
+
+
+  //TYPE IS IN FORM "ROLE_MODE"   ex: PPL_PAPI/PPL_CAPI/PML_PAPI/PML_CAPI
+  Future<Survei> getByTypeAndVersion(String type,{int? version}) async {
+    return this.conn.connectionPool.runTx((tx) async {
+      if(version == null){
+        var result = await tx.execute(r"SELECT * FROM survei WHERE survei_type = $1 ORDER BY version DESC",parameters: [type]);
+        if(result.isEmpty){
+          throw Exception("There is no Survei for this Survei Type");
+        }
+        return Survei.fromJson(result.first.toColumnMap());
+      } else {
+        var result = await tx.execute(r"SELECT * FROM survei WHERE survei_type = $1 AND version = $2",parameters: [type,version!]);
+        if(result.isEmpty){
+          throw Exception("There is no Survei for Spesific Survei Type ${type} and Version ${version}");
+        }
+        return Survei.fromJson(result.first.toColumnMap());
+      }
+    });
+  }
 }

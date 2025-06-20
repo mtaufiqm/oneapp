@@ -81,10 +81,12 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
         //clean mitra_id and status from left space or right space
         mapObj["status"] = (mapObj["status"] as String?)?.trim().toUpperCase();
         mapObj["mitra_id"] = (mapObj["mitra_id"] as String?)?.trim();
+        mapObj["pengawas"] = (mapObj["pengawas"] as String?)?.trim();
 
         //add kegiatan_uuid for each element;
         mapObj["kegiatan_uuid"] = "${kegiatan.uuid}";
         listOfMitra.add(KegiatanMitraBridge.fromJson(mapObj));
+
       } catch(e){
         print("Error ${e}");
       }

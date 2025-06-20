@@ -1,9 +1,12 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
+import 'package:dart_frog/dart_frog.dart';
+
+import 'package:my_first/models/ickm/answer_assignment.dart';
 import 'package:my_first/models/ickm/structure_penilaian_mitra.dart';
 
-//CONSIDER TO ADD "CATATAN/NOTE" COLUMN FOR THIS TABLE. IN DATABASE ALSO
 class ResponseAssignment {
   String? uuid;
   String structure_uuid;
@@ -72,3 +75,49 @@ class ResponseAssignment {
   }
 }
 
+
+class ResponseAssignmentWithAnswerAssignment {
+  ResponseAssignment response;
+  List<AnswerAssignment> answers = [];
+  ResponseAssignmentWithAnswerAssignment({
+    required this.response,
+    required this.answers,
+  });
+
+  ResponseAssignmentWithAnswerAssignment copyWith({
+    ResponseAssignment? response,
+    List<AnswerAssignment>? answers,
+  }) {
+    return ResponseAssignmentWithAnswerAssignment(
+      response: response ?? this.response,
+      answers: answers ?? this.answers,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'response': response.toJson(),
+      'answers': answers.map((x) => x.toJson()).toList(),
+    };
+  }
+
+  factory ResponseAssignmentWithAnswerAssignment.fromJson(Map<String, dynamic> map) {
+    return ResponseAssignmentWithAnswerAssignment(
+      response: ResponseAssignment.fromJson(map['response'] as Map<String,dynamic>),
+      answers: List<AnswerAssignment>.from((map['answers'] as List<dynamic>).map<AnswerAssignment>((x) => AnswerAssignment.fromJson(x as Map<String,dynamic>)))
+    );
+  }
+
+  @override
+  String toString() => 'ResponseAssignmentWithAnswerAssignment(response: $response, answers: $answers)';
+
+  @override
+  bool operator ==(covariant ResponseAssignmentWithAnswerAssignment other) {
+    if (identical(this, other)) return true;
+    final listEquals = const DeepCollectionEquality().equals;
+  
+    return 
+      other.response == response &&
+      listEquals(other.answers, answers);
+  }
+}

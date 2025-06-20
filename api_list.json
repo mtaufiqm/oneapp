@@ -1,4 +1,5 @@
 [{
+    "description":"AUTHENTICATION API",
     "lists":[
         {
             "method":"POST",
@@ -7,7 +8,12 @@
                 "username":"USERNAME",
                 "password":"PASSWORD"
             }
-        },
+        }
+    ]
+},
+{
+    "description":"USER API",
+    "lists":[
         {
             "method":"POST",
             "url":"/api/user/create",
@@ -26,7 +32,11 @@
             "body":{
                 "roles":["ROLES1","ROLES2"]
             }
-        },
+        }
+    ]
+},{
+    "description":"MITRA API",
+    "lists":[
         {
             "method":"POST",
             "url":"/api/mitra",
@@ -61,61 +71,12 @@
                 "city_of_birth":"city_of_birth",
                 "username":"username"
             }
-        },
-        {
-            "method":"GET",
-            "url":"/api/kegiatan/[kegiatanId]",
-            "response":{
-                "id":"id",
-                "name":"name",
-                "description":"description",
-                "start":"start",
-                "last":"last",
-                "monitoring_link":"monitoring_link",
-                "organic_involved":"VALUES",
-                "organic_number":"VALUES",
-                "mitra_involved":"VALUES",
-                "mitra_number":"VALUES",
-                "createdby":"VALUES"
-            }
-        },
-        {
-            "method":"POST",
-            "url":"/api/kegiatan/[kegiatanId]",
-            "body":{
-                "name":"VALUES",
-                "description":"VALUES",
-                "start":"VALUES",
-                "last":"VALUES",
-                "monitoring_link":"VALUES",
-                "organic_involved":"VALUES",
-                "organic_number":"VALUES",
-                "mitra_involved":"VALUES",
-                "mitra_number":"VALUES",
-                "createdby":"VALUES"
-            }
-        },
-        {
-            "method":"GET",
-            "url":"/api/kegiatan/[kegiatanId]/kuesioner",
-            "response":{
-                "id":"VALUES",
-                "uuid":"VALUES",
-                "kegiatan_id":"VALUES",
-                "title":"VALUES",
-                "description":"VALUES"
-            }
-        },
-        {
-            "method":"POST",
-            "url":"/api/kegiatan/[kegiatanId]/kuesioner",
-            "response":{
-                "uuid":"VALUES",
-                "kegiatan_id":"VALUES",
-                "title":"VALUES",
-                "description":"VALUES"
-            }
-        },
+        }
+    ]
+},
+{
+    "description":"INVENTORIES API",
+    "lists":[
         {
             "method":"GET",
             "url":"/api/inventories/products",
@@ -134,10 +95,11 @@
                 "name":"name",
                 "image_link":"image_link"
             }
-        }
+        }        
     ]
 },
 {
+    "description":"DOCUMENTATION API",
     "list":[
         {
             "method":"GET",
@@ -196,6 +158,7 @@
     ]
 },
 {
+    "description":"PEGAWAI API",
     "list":[
         {
             "method":"GET",
@@ -230,7 +193,88 @@
             ]
         }
     ]
-}
+},{
+    "description":"KEGIATAN API",
+    "lists":[
+        {
+            "method":"GET",
+            "url":"/api/kegiatan/[kegiatanId]",
+            "response":{
+                "id":"id",
+                "name":"name",
+                "description":"description",
+                "start":"start",
+                "last":"last",
+                "monitoring_link":"monitoring_link",
+                "organic_involved":"VALUES",
+                "organic_number":"VALUES",
+                "mitra_involved":"VALUES",
+                "mitra_number":"VALUES",
+                "createdby":"VALUES"
+            }
+        },
+        {
+            "method":"POST",
+            "url":"/api/kegiatan/[kegiatanId]",
+            "body":{
+                "name":"VALUES",
+                "description":"VALUES",
+                "start":"VALUES",
+                "last":"VALUES",
+                "monitoring_link":"VALUES",
+                "organic_involved":"VALUES",
+                "organic_number":"VALUES",
+                "mitra_involved":"VALUES",
+                "mitra_number":"VALUES",
+                "createdby":"VALUES"
+            }
+        },
+        {
+            "method":"GET",
+            "url":"/api/kegiatan/[kegiatanId]/mitra",
+            "return":"List<KegiatanWithMitra>",
+            "response":[
+                {
+                    "kegiatan":"",
+                    "mitra": "[List<Mitra>]"
+                },{
+                }
+            ]
+        },
+        {
+            "method":"GET",
+            "url":"/api/kegiatan/[kegiatanId]/mitra/details",
+            "return":"List<KegiatanMitraBridgeMoreDetails>",
+            "response":[
+                {
+                    "uuid":"",
+                    "kegiatan_uuid":"",
+                    "kegiatan_name":""
+                },{
+                }
+            ]
 
-
-]
+        },
+        {
+            "method":"GET",
+            "url":"/api/kegiatan/[kegiatanId]/kuesioner",
+            "response":{
+                "id":"VALUES",
+                "uuid":"VALUES",
+                "kegiatan_id":"VALUES",
+                "title":"VALUES",
+                "description":"VALUES"
+            }
+        },
+        {
+            "method":"POST",
+            "url":"/api/kegiatan/[kegiatanId]/kuesioner",
+            "response":{
+                "uuid":"VALUES",
+                "kegiatan_id":"VALUES",
+                "title":"VALUES",
+                "description":"VALUES"
+            }
+        }
+    ]
+}]

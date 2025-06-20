@@ -56,7 +56,8 @@ CREATE TABLE "kegiatan" (
   "organic_number" integer,
   "mitra_involved" boolean,
   "mitra_number" integer,
-  "created_by" text
+  "created_by" text,
+  "penanggung_jawab" text
 );
 
 CREATE TABLE "kegiatan_mitra_bridge" (
@@ -328,11 +329,11 @@ ALTER TABLE "mitra" ADD FOREIGN KEY ("username") REFERENCES "user" ("username");
 
 ALTER TABLE "kegiatan" ADD FOREIGN KEY ("created_by") REFERENCES "user" ("username");
 
+ALTER TABLE "kegiatan" ADD FOREIGN KEY ("penanggung_jawab") REFERENCES "user" ("username") ON DELETE SET NULL ON UPDATE CASCADE
+
 ALTER TABLE "kegiatan_mitra_bridge" ADD FOREIGN KEY ("kegiatan_uuid") REFERENCES "kegiatan" ("uuid");
 
 ALTER TABLE "kegiatan_mitra_bridge" ADD FOREIGN KEY ("mitra_id") REFERENCES "mitra" ("mitra_id");
-
-ALTER TABLE "kegiatan_mitra_penugasan" ADD FOREIGN KEY ("bridge_uuid") REFERENCES "kegiatan_mitra_bridge" ("uuid");
 
 ALTER TABLE "kegiatan_mitra_penugasan" ADD FOREIGN KEY ("status") REFERENCES "penugasan_status" ("id");
 
@@ -346,11 +347,11 @@ ALTER TABLE "kuesioner_penilaian_mitra" ADD FOREIGN KEY ("kegiatan_uuid") REFERE
 
 ALTER TABLE "structure_penilaian_mitra" ADD FOREIGN KEY ("kuesioner_penilaian_mitra_uuid") REFERENCES "kuesioner_penilaian_mitra" ("uuid") ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE "structure_penilaian_mitra" ADD FOREIGN KEY ("penilai_username") REFERENCES "pegawai" ("username");
+ALTER TABLE "structure_penilaian_mitra" ADD FOREIGN KEY ("penilai_username") REFERENCES "pegawai" ("username") ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE "structure_penilaian_mitra" ADD FOREIGN KEY ("mitra_username") REFERENCES "mitra" ("username");
+ALTER TABLE "structure_penilaian_mitra" ADD FOREIGN KEY ("mitra_username") REFERENCES "mitra" ("username") ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE "structure_penilaian_mitra" ADD FOREIGN KEY ("survei_uuid") REFERENCES "survei" ("uuid");
+ALTER TABLE "structure_penilaian_mitra" ADD FOREIGN KEY ("survei_uuid") REFERENCES "survei" ("uuid") ON DELETE ;
 
 ALTER TABLE "survei" ADD FOREIGN KEY ("survei_type") REFERENCES "survei_type" ("description");
 
@@ -413,4 +414,6 @@ ALTER TABLE "daerah_blok_sensus" ADD FOREIGN KEY ("dt4_id") REFERENCES "daerah_t
 ALTER TABLE "transactions_item" ADD UNIQUE("transactions_uuid","products_uuid");
 
 ALTER TABLE "kegiatan_mitra_bridge" ADD UNIQUE("kegiatan_uuid","mitra_id");
+
+ALTER TABLE "structure_penilaian_mitra" ADD UNIQUE("kuesioner_penilaian_mitra_uuid","mitra_username")
 

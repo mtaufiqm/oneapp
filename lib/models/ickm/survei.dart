@@ -57,57 +57,71 @@ class Survei {
 
 
 class SurveiResponseStructure {
-  String? uuid;
+  String? survei_uuid;
   String survei_type;
-  String description;
-  int version;
-  List<QuestionsBlocResponseStructure> blocs;
+  String survei_description;
+  int survei_version;
+  List<QuestionsBlocResponseStructure>? blocs;
   SurveiResponseStructure({
-    this.uuid,
+    this.survei_uuid,
     required this.survei_type,
-    required this.description,
-    required this.version,
-    required this.blocs,
+    required this.survei_description,
+    required this.survei_version,
+    this.blocs,
   });
 
   SurveiResponseStructure copyWith({
-    String? uuid,
+    String? survei_uuid,
     String? survei_type,
-    String? description,
-    int? version,
+    String? survei_description,
+    int? survei_version,
     List<QuestionsBlocResponseStructure>? blocs,
   }) {
     return SurveiResponseStructure(
-      uuid: uuid ?? this.uuid,
+      survei_uuid: survei_uuid ?? this.survei_uuid,
       survei_type: survei_type ?? this.survei_type,
-      description: description ?? this.description,
-      version: version ?? this.version,
+      survei_description: survei_description ?? this.survei_description,
+      survei_version: survei_version ?? this.survei_version,
       blocs: blocs ?? this.blocs,
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
-      'uuid': uuid,
+      'survei_uuid': survei_uuid,
       'survei_type': survei_type,
-      'description': description,
-      'version': version,
-      'blocs': blocs.map((x) => x.toJson()).toList(),
+      'survei_description': survei_description,
+      'survei_version': survei_version,
+      'blocs': blocs?.map((x) => x?.toJson()).toList(),
     };
   }
 
   factory SurveiResponseStructure.fromJson(Map<String, dynamic> map) {
     return SurveiResponseStructure(
-      uuid: map['uuid'] != null ? map['uuid'] as String : null,
+      survei_uuid: map['survei_uuid'] != null ? map['survei_uuid'] as String : null,
       survei_type: map['survei_type'] as String,
-      description: map['description'] as String,
-      version: map['version'] as int,
-      blocs: List<QuestionsBlocResponseStructure>.from((map['blocs'] as List<dynamic>).map<QuestionsBlocResponseStructure>((x) => QuestionsBlocResponseStructure.fromMap(x as Map<String,dynamic>),),),
+      survei_description: map['survei_description'] as String,
+      survei_version: map['survei_version'] as int,
+      blocs: map['blocs'] != null ? List<QuestionsBlocResponseStructure>.from((map['blocs'] as List<dynamic>).map<QuestionsBlocResponseStructure?>((x) => QuestionsBlocResponseStructure.fromJson(x as Map<String,dynamic>),),) : null,
     );
   }
 
   @override
   String toString() {
-    return 'SurveiResponseStructure(uuid: $uuid, survei_type: $survei_type, description: $description, version: $version, blocs: $blocs)';
+    return 'SurveiResponseStructure(survei_uuid: $survei_uuid, survei_type: $survei_type, survei_description: $survei_description, survei_version: $survei_version, blocs: $blocs)';
+  }
+
+  @override
+  bool operator ==(covariant SurveiResponseStructure other) {
+    if (identical(this, other)) return true;
+    final listEquals = const DeepCollectionEquality().equals;
+  
+    return 
+      other.survei_uuid == survei_uuid &&
+      other.survei_type == survei_type &&
+      other.survei_description == survei_description &&
+      other.survei_version == survei_version &&
+      listEquals(other.blocs, blocs);
   }
 }
+
