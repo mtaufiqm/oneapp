@@ -1,4 +1,3 @@
 version 1.0.3 (2025-06-17)
     - fix ICKM Table
-
     - implementation POST /api/kegiatan/[uuid]/penilaian_mitra

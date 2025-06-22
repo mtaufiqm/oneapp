@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 
 import 'package:my_first/models/ickm/structure_penilaian_mitra.dart';
+import 'package:my_first/models/kegiatan.dart';
 
 class KuesionerPenilaianMitra {
   String? uuid;
@@ -110,5 +111,80 @@ class KuesionerPenilaianMitraWithStructure {
     return 
       other.penilaian == penilaian &&
       listEquals(other.structure, structure);
+  }
+}
+
+class KuesionerPenilaianMitraDetails {
+  String? uuid;
+  Kegiatan? kegiatan;
+  String title;
+  String description;
+  String? start_date;
+  String? end_date;
+  KuesionerPenilaianMitraDetails({
+    this.uuid,
+    this.kegiatan,
+    required this.title,
+    required this.description,
+    this.start_date,
+    this.end_date,
+  });
+
+  KuesionerPenilaianMitraDetails copyWith({
+    String? uuid,
+    Kegiatan? kegiatan,
+    String? title,
+    String? description,
+    String? start_date,
+    String? end_date,
+  }) {
+    return KuesionerPenilaianMitraDetails(
+      uuid: uuid ?? this.uuid,
+      kegiatan: kegiatan ?? this.kegiatan,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      start_date: start_date ?? this.start_date,
+      end_date: end_date ?? this.end_date,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'uuid': uuid,
+      'kegiatan': kegiatan?.toJson(),
+      'title': title,
+      'description': description,
+      'start_date': start_date,
+      'end_date': end_date,
+    };
+  }
+
+  factory KuesionerPenilaianMitraDetails.fromJson(Map<String, dynamic> map) {
+    return KuesionerPenilaianMitraDetails(
+      uuid: map['uuid'] != null ? map['uuid'] as String : null,
+      kegiatan: map['kegiatan'] != null ? Kegiatan.fromJson(map['kegiatan'] as Map<String,dynamic>) : null,
+      title: map['title'] as String,
+      description: map['description'] as String,
+      start_date: map['start_date'] != null ? map['start_date'] as String : null,
+      end_date: map['end_date'] != null ? map['end_date'] as String : null,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'KuesionerPenilaianMitraDetails(uuid: $uuid, kegiatan: $kegiatan, title: $title, description: $description, start_date: $start_date, end_date: $end_date)';
+  }
+
+  @override
+  bool operator ==(covariant KuesionerPenilaianMitraDetails other) {
+    if (identical(this, other)) return true;
+  
+    return 
+      other.uuid == uuid &&
+      other.kegiatan == kegiatan &&
+      other.title == title &&
+      other.description == description &&
+      other.start_date == start_date &&
+      other.end_date == end_date;
   }
 }

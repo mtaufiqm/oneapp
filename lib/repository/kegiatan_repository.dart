@@ -121,9 +121,21 @@ class KegiatanRepository extends MyRepository<Kegiatan>{
 
   Future<Kegiatan> update(dynamic uuid,Kegiatan kegiatan) async{
     return this.connection.connectionPool.runTx<Kegiatan>((tx) async {
-      var result = await tx.execute(r'''UPDATE kegiatan SET name = $1, description = $2, "start" = $3, "end" = $4, monitoring_link = $5, organic_involved = $6, organic_number = $7, mitra_involved = $8, mitra_number = $9, created_by = $10, penanggung_jawab = $11 WHERE uuid = $12''',
-
-      parameters: (kegiatan.toJson()..remove("uuid")).values.toList()..add(uuid as String));
+      var result = await tx.execute(r'UPDATE kegiatan SET name = $1, description = $2, "start" = $3, "end" = $4, monitoring_link = $5, organic_involved = $6, organic_number = $7, mitra_involved = $8, mitra_number = $9, created_by = $10, penanggung_jawab = $11 WHERE uuid = $12',
+      parameters: [
+        kegiatan.name,
+        kegiatan.description,
+        kegiatan.start,
+        kegiatan.end,
+        kegiatan.monitoring_link,
+        kegiatan.organic_involved,
+        kegiatan.organic_number,
+        kegiatan.mitra_involved,
+        kegiatan.mitra_number,
+        kegiatan.created_by,
+        kegiatan.penanggung_jawab,
+        uuid as String
+      ]);
       if(result.affectedRows < 1){
         throw Exception("There is no row updated!");
       }

@@ -212,6 +212,25 @@ class KegiatanMitraRepository {
     });
   }
 
+  Future<KegiatanMitraBridge> updateByUuid(dynamic uuid, KegiatanMitraBridge item) async {
+    return await this.conn.connectionPool.runTx<KegiatanMitraBridge>((tx) async {
+          var hasil = await tx.execute(r"UPDATE kegiatan_mitra_bridge SET status = $1, pengawas = $2 WHERE uuid = $3 RETURNING *",
+          parameters: [
+            item.status,
+            item.pengawas,
+            item.uuid!
+          ]);
+
+          //if there is no row affected, continue it
+          if(hasil.affectedRows < 1){
+            throw Exception("Fail to Update ${uuid as String}");
+          }
+
+          KegiatanMitraBridge object = KegiatanMitraBridge.fromJson(hasil.first.toColumnMap());
+          return object;
+    });
+  }
+
   Future<List<KegiatanMitraBridge>> updateList(List<KegiatanMitraBridge> list) async {
     return await this.conn.connectionPool.runTx<List<KegiatanMitraBridge>>((tx) async {
       List<KegiatanMitraBridge> listOfObject = [];
@@ -242,4 +261,35 @@ class KegiatanMitraRepository {
       return listOfObject;
     });
   }
+
+  Future<List<KegiatanMitraBridge>> updateListByUuid(List<KegiatanMitraBridge> list) async {
+    return await this.conn.connectionPool.runTx<List<KegiatanMitraBridge>>((tx) async {
+      List<KegiatanMitraBridge> listOfObject = [];
+      for(var item in list){
+        try{
+          var hasil = await tx.execute(r"UPDATE kegiatan_mitra_bridge SET status = $1, pengawas = $2 WHERE uuid = $3",
+          parameters: [
+            item.status,
+            item.pengawas,
+            item.uuid!
+          ]);
+
+          //if there is no row affected, continue it
+          if(hasil.length < 1){
+            continue;
+          }
+
+          //if success add to list of object for return
+          listOfObject.add(item);
+        } catch(e){
+
+          //if error
+          print("Error ${e}");
+          continue;
+        }
+      }
+      return listOfObject;
+    });
+  }
+
 }

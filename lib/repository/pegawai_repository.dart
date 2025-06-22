@@ -19,7 +19,7 @@ class PegawaiRepository extends MyRepository<Pegawai>{
   Future<List<Pegawai>> readAll() async{
     return this.connection.connectionPool.withConnection<List<Pegawai>>((conn) async {
       return conn.runTx((tx) async {
-        Result result = await tx.execute('SELECT * FROM pegawai;');
+        Result result = await tx.execute('SELECT * FROM pegawai ORDER BY nip ASC');
         List<Pegawai> listOfPegawai = <Pegawai>[];
         for(ResultRow i in result){
           Map<String,dynamic> mapRow = i.toColumnMap();

@@ -1,6 +1,6 @@
 name: my_first
 description: BPS Kabupaten Luwu OneApp Management
-version: 1.0.2
+version: 1.0.3
 publish_to: none
 
 environment:

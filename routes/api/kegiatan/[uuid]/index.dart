@@ -69,7 +69,6 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
   }
 }
 
-
 //Delete
 Future<Response> onDelete(RequestContext ctx, String uuid) async {
   KegiatanRepository kegiatanRepo = ctx.read<KegiatanRepository>();

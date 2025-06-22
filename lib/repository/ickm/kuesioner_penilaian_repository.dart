@@ -1,5 +1,6 @@
 import 'package:my_first/models/ickm/kuesioner_penilaian_mitra.dart';
 import 'package:my_first/models/ickm/structure_penilaian_mitra.dart';
+import 'package:my_first/models/kegiatan.dart';
 import 'package:my_first/repository/myconnection.dart';
 import 'package:my_first/repository/myrepository.dart';
 import 'package:uuid/uuid.dart';
@@ -28,6 +29,24 @@ class KuesionerPenilaianRepository extends MyRepository<KuesionerPenilaianMitra>
     });
   }
 
+  Future<KuesionerPenilaianMitraDetails> getDetailsById(dynamic uuid) async {
+    return this.conn.connectionPool.runTx((tx) async {
+      var result = await tx.execute(r"SELECT * FROM kuesioner_penilaian_mitra WHERE uuid = $1",parameters: [uuid as String]);
+      if(result.isEmpty){
+        throw Exception("There is No Data with uuid ${uuid}");
+      }
+      var resultMap = result.first.toColumnMap();
+      var result2 = await tx.execute(r"SELECT * FROM kegiatan k WHERE k.uuid = $1",parameters: [resultMap["kegiatan_uuid"] as String]);
+      var result2Map = result2.first.toColumnMap();
+
+      KuesionerPenilaianMitraDetails object = KuesionerPenilaianMitraDetails.fromJson(resultMap);
+      Kegiatan object2 = Kegiatan.fromJson(result2Map);
+      
+      object.kegiatan = object2;
+      return object;
+    });
+  }
+
   Future<KuesionerPenilaianMitra> getByKegiatan(dynamic uuid) async {
     return this.conn.connectionPool.runTx<KuesionerPenilaianMitra>((tx) async {
       var result = await tx.execute(r"SELECT * FROM kuesioner_penilaian_mitra WHERE kegiatan_uuid = $1");
@@ -43,7 +62,7 @@ class KuesionerPenilaianRepository extends MyRepository<KuesionerPenilaianMitra>
 
   Future<bool> checkKuesionerPenilaianByKegiatan(dynamic uuid) async {
     return this.conn.connectionPool.runTx<bool>((tx) async {
-      var result = await tx.execute(r"SELECT uuid FROM kuesioner_penilaian_mitra WHERE kegiatan_uuid");
+      var result = await tx.execute(r"SELECT uuid FROM kuesioner_penilaian_mitra WHERE kegiatan_uuid = $1",parameters: [uuid as String]);
       if(result.isEmpty){
         return false;
       } else {

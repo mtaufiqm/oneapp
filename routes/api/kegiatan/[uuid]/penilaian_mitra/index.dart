@@ -118,6 +118,7 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
     List<StructurePenilaianMitra> listCreatedStructure = await structurePenilaianRepo.insertList(structurePenilaian);
 
     KuesionerPenilaianMitraWithStructure kpmWithStructure = KuesionerPenilaianMitraWithStructure(penilaian: object, structure: listCreatedStructure);
+
     
     return Response.json(body: kpmWithStructure);
   } catch(e){

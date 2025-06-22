@@ -22,18 +22,17 @@ Future<Response> onRequest(
 }
 
 Future<Response> onGet(RequestContext ctx, String uuid) async {
-  KuesionerPenilaianRepository kuesionerRepo = ctx.read<KuesionerPenilaianRepository>();
+  KuesionerPenilaianRepository penilaianRepo = ctx.read<KuesionerPenilaianRepository>();
   StructurePenilaianRepository structureRepo = ctx.read<StructurePenilaianRepository>();
   KegiatanRepository kegiatanRepo = ctx.read<KegiatanRepository>();
   User authUser = ctx.read<User>();
 
   try {
-    KuesionerPenilaianMitra penilaian = await kuesionerRepo.getById(uuid); 
-    Kegiatan kegiatan = await kegiatanRepo.getById(penilaian.kegiatan_uuid);
+    KuesionerPenilaianMitraDetails penilaian = await penilaianRepo.getDetailsById(uuid); 
 
     bool isReturnAll = false;
 
-    if((authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA"]) || authUser.username == (kegiatan.penanggung_jawab??""))){
+    if((authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA"]) || authUser.username == (penilaian.kegiatan!.penanggung_jawab??""))){
       isReturnAll = true;
     } else if(authUser.isContainOne(["PEGAWAI"])){
       isReturnAll = false;
@@ -53,13 +52,30 @@ Future<Response> onGet(RequestContext ctx, String uuid) async {
   }
 }
 
+//this for insert new structure
+//input is List<StructurePenilaianMitra>
 Future<Response> onPost(RequestContext ctx, String uuid) async {
   KuesionerPenilaianRepository penilaianRepo = ctx.read<KuesionerPenilaianRepository>();
   StructurePenilaianRepository structureRepo = ctx.read<StructurePenilaianRepository>();
+  KegiatanRepository kegiatanRepo = ctx.read<KegiatanRepository>();
   User authUser = ctx.read<User>();
-
   try {
-    return Response.json();
+    KuesionerPenilaianMitraDetails penilaian = await penilaianRepo.getDetailsById(uuid);
+
+    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KEPALA"]) || authUser.username == (penilaian.kegiatan!.penanggung_jawab??""))) {
+      return RespHelper.forbidden();
+    }
+    var jsonMap = await ctx.request.json();
+    if(!(jsonMap is List<dynamic>)){
+      return RespHelper.badRequest(message: "Invalid JSON Body");
+    }
+    List<StructurePenilaianMitra> inputList = (jsonMap as List<dynamic>).map((el) {
+      StructurePenilaianMitra structure = StructurePenilaianMitra.fromJson(el as Map<String,dynamic>);
+      return structure;
+    }).toList();
+    List<StructurePenilaianMitra> successInput = await structureRepo.insertList(inputList);
+    
+    return Response.json(body: successInput);
   } catch(err){
     log("Error Update Structure ${err}");
     return RespHelper.badRequest(message: "Error Update Structure ${uuid}");
