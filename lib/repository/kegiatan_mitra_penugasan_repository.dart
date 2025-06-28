@@ -110,17 +110,18 @@ class KegiatanMitraPenugasanRepository extends MyRepository<KegiatanMitraPenugas
 
       //insert also to penugasan_history
       var uuid = Uuid().v1();
-      var result2 = await tx.execute(r"INSERT INTO penugasan_history VALUES($1,$2,$3,$4)",parameters: [
+      var result2 = await tx.execute(r"INSERT INTO penugasan_history VALUES($1,$2,$3,$4,$5,$6)",parameters: [
         uuid,
         id,
         status,
-        last_updated
+        last_updated,
+        null,
+        null
       ]);
     });
   }
 
-  //continue this implementations
-  Future<void> updateLocationAndStatusAndNotes(int status, String started_time, String ended_time, String? location_latitude, String? location_longitude, String? notes, dynamic id) async {
+  Future<void> updateLocationAndStatusAndNotes(int status, String started_time, String ended_time, String? location_latitude, String? location_longitude, String? notes, dynamic penugasan_uuid) async {
     return await this.conn.connectionPool.runTx<void>((tx) async {
       String last_updated = DatetimeHelper.getCurrentMakassarTime();
       var result = await tx.execute(r"UPDATE kegiatan_mitra_penugasan SET status = $1, started_time = $2, ended_time = $3, location_latitude = $4, location_longitude = $5, notes = $6, last_updated = $7 WHERE uuid = $8",parameters: [
@@ -131,7 +132,7 @@ class KegiatanMitraPenugasanRepository extends MyRepository<KegiatanMitraPenugas
         location_longitude,
         notes,
         last_updated,
-        id as String
+        penugasan_uuid as String
       ]);
       if(result.affectedRows < 1){
         throw Exception("Failed to Update");
@@ -139,14 +140,17 @@ class KegiatanMitraPenugasanRepository extends MyRepository<KegiatanMitraPenugas
 
       //insert also to penugasan_history
       var uuid = Uuid().v1();
-      var result2 = await tx.execute(r"INSERT INTO penugasan_history VALUES($1,$2,$3,$4,$5,$6)",parameters: [
+      var result2 = await tx.execute(r"INSERT INTO penugasan_history VALUES($1,$2,$3,$4,$5,$6) returning uuid",parameters: [
         uuid,
-        id,
+        penugasan_uuid as String,
         status,
         last_updated,
         location_latitude??"",
         location_longitude??""
       ]);
+      if(result2.isEmpty){
+        throw Exception("Failed to Insert History");
+      }
     });
   }
 

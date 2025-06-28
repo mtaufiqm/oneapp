@@ -135,7 +135,7 @@ class StructurePenilaianRepository extends MyRepository<StructurePenilaianMitra>
   // bool? response_is_completed;
   // String? response_updated_at;
   Future<List<StructurePenilaianMitraDetails>> readDetailsByPenilaian(dynamic penilaian_uuid) async {
-    return this.conn.connectionPool.runTx((tx) async {
+    return this.conn.connectionPool.runTx<List<StructurePenilaianMitraDetails>>((tx) async {
       var result = await tx.execute(r"select spm.uuid as uuid, kpm.uuid as kuesioner_penilaian_mitra_uuid, kpm.title as kuesioner_penilaian_mitra_titel, kpm.start_date as kuesioner_penilaian_mitra_start_date, kpm.end_date as kuesioner_penilaian_mitra_end_date, k.uuid as kegiatan_uuid, k.name as kegiatan_name, spm.penilai_username as penilai_username, p.fullname as penilai_fullname, spm.mitra_username as mitra_username, m.mitra_id as mitra_id, p.fullname as mitra_fullname, s.uuid as survei_uuid, s.description as survei_name, s.survei_type as survei_type  , ra.uuid as response_uuid, ra.is_completed as response_is_completed, ra.updated_at as response_updated_at from structure_penilaian_mitra spm left join kuesioner_penilaian_mitra kpm on spm.kuesioner_penilaian_mitra_uuid = kpm.uuid left join kegiatan k on kpm.kegiatan_uuid = k.uuid  left join mitra m on spm.mitra_username = m.username left join pegawai p on spm.penilai_username = p.username left join survei s on spm.survei_uuid = s.uuid left join response_assignment ra on spm.uuid = ra.structure_uuid WHERE kpm.uuid = $1",parameters: [penilaian_uuid as String]);
       List<StructurePenilaianMitraDetails> listObject = [];
       for(var item in result){
@@ -157,7 +157,7 @@ class StructurePenilaianRepository extends MyRepository<StructurePenilaianMitra>
   }
 
   Future<List<StructurePenilaianMitraDetails>> readDetailsByPenilaianAndPenilai(dynamic penilaian_uuid, dynamic penilai_username) async {
-    return this.conn.connectionPool.runTx((tx) async {
+    return this.conn.connectionPool.runTx<List<StructurePenilaianMitraDetails>>((tx) async {
       var result = await tx.execute(r"select spm.uuid as uuid, kpm.uuid as kuesioner_penilaian_mitra_uuid, kpm.title as kuesioner_penilaian_mitra_titel, kpm.start_date as kuesioner_penilaian_mitra_start_date, kpm.end_date as kuesioner_penilaian_mitra_end_date, k.uuid as kegiatan_uuid, k.name as kegiatan_name, spm.penilai_username as penilai_username, p.fullname as penilai_fullname, spm.mitra_username as mitra_username, m.mitra_id as mitra_id, p.fullname as mitra_fullname, s.uuid as survei_uuid, s.description as survei_name, s.survei_type as survei_type  , ra.uuid as response_uuid, ra.is_completed as response_is_completed, ra.updated_at as response_updated_at from structure_penilaian_mitra spm left join kuesioner_penilaian_mitra kpm on spm.kuesioner_penilaian_mitra_uuid = kpm.uuid left join kegiatan k on kpm.kegiatan_uuid = k.uuid  left join mitra m on spm.mitra_username = m.username left join pegawai p on spm.penilai_username = p.username left join survei s on spm.survei_uuid = s.uuid left join response_assignment ra on spm.uuid = ra.structure_uuid  WHERE kpm.uuid = $1 AND kpm.penilai_username = $2",parameters: [
         penilaian_uuid as String,
         penilai_username as String
@@ -178,6 +178,21 @@ class StructurePenilaianRepository extends MyRepository<StructurePenilaianMitra>
         }
       }
       return listObject;
+    });
+  }
+
+  Future<StructurePenilaianMitraDetails> getDetailsByUuid(dynamic uuid) async {
+    return await this.conn.connectionPool.runTx<StructurePenilaianMitraDetails>((tx) async {
+      var result = await tx.execute(r"select spm.uuid as uuid, kpm.uuid as kuesioner_penilaian_mitra_uuid, kpm.title as kuesioner_penilaian_mitra_titel, kpm.start_date as kuesioner_penilaian_mitra_start_date, kpm.end_date as kuesioner_penilaian_mitra_end_date, k.uuid as kegiatan_uuid, k.name as kegiatan_name, spm.penilai_username as penilai_username, p.fullname as penilai_fullname, spm.mitra_username as mitra_username, m.mitra_id as mitra_id, p.fullname as mitra_fullname, s.uuid as survei_uuid, s.description as survei_name, s.survei_type as survei_type  , ra.uuid as response_uuid, ra.is_completed as response_is_completed, ra.updated_at as response_updated_at from structure_penilaian_mitra spm left join kuesioner_penilaian_mitra kpm on spm.kuesioner_penilaian_mitra_uuid = kpm.uuid left join kegiatan k on kpm.kegiatan_uuid = k.uuid  left join mitra m on spm.mitra_username = m.username left join pegawai p on spm.penilai_username = p.username left join survei s on spm.survei_uuid = s.uuid left join response_assignment ra on spm.uuid = ra.structure_uuid  WHERE spm.uuid = $1",parameters: [
+        uuid as String
+      ]);
+      StructurePenilaianMitraDetails spmDetails = StructurePenilaianMitraDetails.fromJson(result.first.toColumnMap());
+      if(spmDetails.response_uuid == null || spmDetails.response_uuid!.isEmpty){
+        spmDetails.isHaveResponse = false;
+      } else {
+        spmDetails.isHaveResponse = true;
+      }
+      return spmDetails;
     });
   }
 }

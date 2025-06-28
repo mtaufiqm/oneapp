@@ -1,5 +1,7 @@
 import 'dart:developer';
 
+import 'package:my_first/blocs/datetime_helper.dart';
+import 'package:my_first/models/ickm/answer_assignment.dart';
 import 'package:my_first/models/ickm/questions_bloc.dart';
 import 'package:my_first/models/ickm/questions_group.dart';
 import 'package:my_first/models/ickm/questions_item.dart';
@@ -137,7 +139,17 @@ class ResponseAssignmentRepository extends MyRepository<ResponseAssignment>{
           throw Exception("There is No Data For This Survei ${structure.response!.survei_uuid}");
         }
 
+        Map<String,AnswerAssignment> mapAnswers = {};
         var resultCurrentResponse = await tx.execute(r"SELECT * FROM answer_assignment aa WHERE aa.response_assignment_uuid = $1",parameters: [structure.response!.uuid!]);
+        resultCurrentResponse.forEach((el){
+          try {
+            AnswerAssignment answer = AnswerAssignment.fromJson(el.toColumnMap());
+            mapAnswers[answer.uuid!] = answer;
+          } catch(err){
+            print(err);
+          }
+        });
+        
 
         //iterate for survei
         Map<String,SurveiResponseStructure> surveiStructureMap = {};
@@ -228,6 +240,7 @@ class ResponseAssignmentRepository extends MyRepository<ResponseAssignment>{
             if(doneQI.contains(qi.questions_item_uuid)){
               continue;
             }
+            qi.answer = mapAnswers[qi.questions_item_uuid];
             if(mapQG.containsKey(qg.questions_group_uuid)){
               qi.questions_options = mapQI[qi.questions_item_uuid]??[];
               mapQG[qg.questions_group_uuid]!.add(qi);
@@ -308,6 +321,112 @@ class ResponseAssignmentRepository extends MyRepository<ResponseAssignment>{
       } catch(err){
         log("Error Generate Response Assignment ${err}");
         throw Exception("Error Generate Response Assignment ${err}");
+      }
+    });
+  }
+
+  //this only upsert data, not check it if its complete
+  Future<void> upsertResponseAnswersByUuidSave(dynamic uuid, ResponseAssignment response, List<AnswerAssignment> answers) async {
+    return this.conn.connectionPool.runTx<void>((tx) async {
+      String currentTime = DatetimeHelper.getCurrentMakassarTime();
+
+      //update response_assignment
+      var result1 = await tx.execute(r"UPDATE response_assignment SET updated_at = $1, notes = $2 WHERE uuid = $3",parameters: [currentTime,response.notes,uuid as String]);
+      if(result1.affectedRows <= 0){
+        throw Exception("NO Data Updated");
+      }
+
+      //insert or update answers
+      for(var item in answers){
+        // String? uuid;
+        // String response_assignment_uuid;
+        // String questions_item_uuid;
+        // String? questions_option_uuid;
+        String uuid = Uuid().v1();
+        var result2 = await tx.execute(r"INSERT INTO answer_assignment VALUES($1,$2,$3,$4) ON CONFLICT(response_assignment_uuid,questions_item_uuid) DO UPDATE SET questions_option_uuid = $5 returning uuid",parameters: [
+          uuid as String,
+          item.response_assignment_uuid,
+          item.questions_item_uuid,
+          item.questions_option_uuid
+        ]);
+        if(result2.isEmpty){
+          throw Exception("Error Occured While insert Answer ${response.structure_uuid}}");
+        }
+      }
+    });
+  }
+
+  //this upsert data, and validate check based survei_uuid
+  Future<ResponseAssignment?> upsertResponseAnswersByUuidSubmit(dynamic uuid, ResponseAssignment response, List<AnswerAssignment> answers) async {
+    return this.conn.connectionPool.runTx<ResponseAssignment?>((tx) async {
+      String currentTime = DatetimeHelper.getCurrentMakassarTime();
+
+      //update response_assignment
+      var result1 = await tx.execute(r"UPDATE response_assignment SET updated_at = $1, notes = $2 WHERE uuid = $3",parameters: [currentTime,response.notes,uuid as String]);
+      if(result1.affectedRows <= 0){
+        throw Exception("NO Data Updated");
+      }
+
+      //insert or update answers
+      for(var item in answers){
+        // String? uuid;
+        // String response_assignment_uuid;
+        // String questions_item_uuid;
+        // String? questions_option_uuid;
+        String uuid = Uuid().v1();
+        var result2 = await tx.execute(r"INSERT INTO answer_assignment VALUES($1,$2,$3,$4) ON CONFLICT(response_assignment_uuid,questions_item_uuid) DO UPDATE SET questions_option_uuid = $5 returning uuid",parameters: [
+          uuid as String,
+          item.response_assignment_uuid,
+          item.questions_item_uuid,
+          item.questions_option_uuid
+        ]);
+        if(result2.isEmpty){
+          throw Exception("Error Occured While insert Answer ${response.structure_uuid}}");
+        }
+      }
+
+      //validate if all questions items have answer assignment 
+      try {
+        var result2 = await tx.execute(r"SELECT qi.* FROM questions_item qi LEFT JOIN questions_group qg ON qi.questions_group_uuid = qg.uuid LEFT JOIN questions_bloc qb ON qg.questions_bloc_uuid = qb.uuid LEFT JOIN survei s ON qb.survei_uuid = s.uuid WHERE s.uuid = $1",parameters: [
+          response.survei_uuid
+        ]);
+        Map<String,bool> answersExistance = {}; 
+        List<QuestionsItem> listObject = result2.map((el) {
+          QuestionsItem qi = QuestionsItem.fromJson(el.toColumnMap());
+          answersExistance[qi.uuid!] = false;
+          return qi;
+        }).toList();
+        var result3 = await tx.execute(r"SELECT aa.* FROM answer_assignment aa WHERE aa.response_assignment_uuid = $1",parameters: [
+          response.uuid!
+        ]);
+        if(result3.isEmpty){
+          throw Exception("There is No Answer Detected");
+        }
+        List<AnswerAssignment> listAnswer = result3.map((el) {
+          AnswerAssignment answer = AnswerAssignment.fromJson(el.toColumnMap());
+          if(answersExistance.containsKey(answer.questions_item_uuid)){
+            answersExistance[answer.questions_item_uuid] = true;
+          }
+          return answer;
+        }).toList();
+
+        //check answersExistance value, is all value true?
+        //if there false value, it will throw Error and return null;
+        answersExistance.keys.forEach((el){
+          if(answersExistance[el] == false){
+            throw Exception("There is No Answer For This Questions Item UUID ${el}");
+          }
+        });
+      } catch(err){
+        log("Error while Validate and Calculate ICKM ${err}");
+        return null;
+      }
+
+      //if it all fine, then calculate ickm value for this response, if it failed nothing happen
+      try {
+        //calculate ickm value for this kegiatan_mitra
+      } catch(err){
+        return null;
       }
     });
   }

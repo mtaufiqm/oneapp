@@ -321,11 +321,11 @@ ALTER TABLE "user_role_bridge" ADD FOREIGN KEY ("description") REFERENCES "roles
 
 ALTER TABLE "user_role_bridge" ADD FOREIGN KEY ("username") REFERENCES "user" ("username");
 
-ALTER TABLE "pegawai" ADD FOREIGN KEY ("username") REFERENCES "user" ("username");
+ALTER TABLE "pegawai" ADD FOREIGN KEY ("username") REFERENCES "user" ("username") ON UPDATE CASCADE;
 
 ALTER TABLE "pegawai" ADD FOREIGN KEY ("status_pegawai") REFERENCES "status_pegawai" ("description");
 
-ALTER TABLE "mitra" ADD FOREIGN KEY ("username") REFERENCES "user" ("username");
+ALTER TABLE "mitra" ADD FOREIGN KEY ("username") REFERENCES "user" ("username") ON UPDATE CASCADE;
 
 ALTER TABLE "kegiatan" ADD FOREIGN KEY ("created_by") REFERENCES "user" ("username");
 
@@ -415,5 +415,6 @@ ALTER TABLE "transactions_item" ADD UNIQUE("transactions_uuid","products_uuid");
 
 ALTER TABLE "kegiatan_mitra_bridge" ADD UNIQUE("kegiatan_uuid","mitra_id");
 
-ALTER TABLE "structure_penilaian_mitra" ADD UNIQUE("kuesioner_penilaian_mitra_uuid","mitra_username")
+ALTER TABLE "structure_penilaian_mitra" ADD UNIQUE("kuesioner_penilaian_mitra_uuid","mitra_username");
 
+ALTER TABLE "answer_assignment" ADD UNIQUE("response_assignment_uuid","questions_item_uuid");

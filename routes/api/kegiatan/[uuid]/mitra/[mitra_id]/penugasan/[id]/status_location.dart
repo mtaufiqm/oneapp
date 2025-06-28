@@ -61,7 +61,7 @@ Future<Response> onPost(RequestContext ctx,String uuid, String mitra_id,String i
     //if not have started, input only can be started(1)
     if(objectDetails.status == 0){
       if(status == 1){
-        var result = await kmpRepo.updateStatusAndNotes(status, DatetimeHelper.getCurrentMakassarTime(), "", notes, id);
+        var result = await kmpRepo.updateLocationAndStatusAndNotes(status, DatetimeHelper.getCurrentMakassarTime(), "", location_latitude, location_longitude, notes, id);
         return RespHelper.message(message: "Success");
       } else {
         return RespHelper.badRequest(message: "Task Not have Started. Only can be Started");
@@ -74,11 +74,11 @@ Future<Response> onPost(RequestContext ctx,String uuid, String mitra_id,String i
         return RespHelper.badRequest(message: "Cannot Started again");
       } else if(status == 2){
         //Jika status sedang dimulai dan ingin dijeda
-        var result = await kmpRepo.updateStatusAndNotes(status, objectDetails.started_time??"", DatetimeHelper.getCurrentMakassarTime(), notes, id);
+        var result = await kmpRepo.updateLocationAndStatusAndNotes(status, objectDetails.started_time??"", DatetimeHelper.getCurrentMakassarTime(), location_latitude, location_longitude, notes, id);
         return RespHelper.message(message: "Success");
       } else if(status == 3){
         //Jika status sedang dimulai dan ingin diakhir
-        var result = kmpRepo.updateStatusAndNotes(status, objectDetails.started_time??"",DatetimeHelper.getCurrentMakassarTime(), notes, id);
+        var result = kmpRepo.updateLocationAndStatusAndNotes(status, objectDetails.started_time??"",DatetimeHelper.getCurrentMakassarTime(), location_latitude, location_longitude, notes, id);
         return RespHelper.message(message: "Success");
       }
     }
@@ -88,14 +88,14 @@ Future<Response> onPost(RequestContext ctx,String uuid, String mitra_id,String i
     if(objectDetails.status == 2){
       if(status == 1){
         //if have paused, and want to start again
-        var result = await kmpRepo.updateStatusAndNotes(status, objectDetails.started_time??"", objectDetails.ended_time??"", notes, id);
+        var result = await kmpRepo.updateLocationAndStatusAndNotes(status, objectDetails.started_time??"", objectDetails.ended_time??"", location_latitude, location_longitude, notes, id);
         return RespHelper.message(message: "Success");
       } else if(status == 2){
         //if have paused, and want to pause again
         return RespHelper.badRequest(message: "Task have paused, cannot paused again");
       } else if(status == 3){
         //if have paused, and want to end it.
-        var result = await kmpRepo.updateStatusAndNotes(status, objectDetails.started_time??"",objectDetails.ended_time??"", notes, id);
+        var result = await kmpRepo.updateLocationAndStatusAndNotes(status, objectDetails.started_time??"",objectDetails.ended_time??"", location_latitude, location_longitude, notes, id);
         return RespHelper.message(message: "Success");
       }
     }

@@ -141,7 +141,7 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
         print("Error ${e}");
       }
     }
-
+    
     List<KegiatanMitraBridge> kegiatanMitra = await kegiatanMitraRepo.create(listOfMitra);
     
     //get excel of successful inserted

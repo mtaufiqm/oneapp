@@ -13,7 +13,7 @@ Future<Response> onRequest(RequestContext context) async {
 }
 
 Future<Response> onGet(RequestContext ctx) async {
-  KuesionerPenilaianRepository kuesionerPenilaiainRepo = ctx.read<KuesionerPenilaianRepository>();
+  KuesionerPenilaianRepository kuesionerPenilaianRepo = ctx.read<KuesionerPenilaianRepository>();
   User authUser = ctx.read<User>();
 
   try {
@@ -21,7 +21,9 @@ Future<Response> onGet(RequestContext ctx) async {
       return RespHelper.forbidden();
     }
     //need implementations;
-    return Response.json();
+    List<KuesionerPenilaianMitra> listPenilaian = await kuesionerPenilaianRepo.readAll();
+    
+    return Response.json(body: listPenilaian);
   } catch(err){
     print("Error ${err}");
     return RespHelper.badRequest(message: "Error Occured when Read All Penilaian Mitra ${err}");
