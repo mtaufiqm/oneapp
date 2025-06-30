@@ -19,8 +19,8 @@ Future<Response> onGet(RequestContext ctx) async{
 
   //AUTHORIZATION
   User user = ctx.read<User>();
-  if(!user.isContainOne(["SUPERADMIN","ADMIN","ADMIN_INVENTORIES"])){
-    return RespHelper.unauthorized();
+  if(!user.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","ADMIN_INVENTORIES","PEGAWAI"])){
+    return RespHelper.forbidden();
   }
   //AUTHORIZATION
 

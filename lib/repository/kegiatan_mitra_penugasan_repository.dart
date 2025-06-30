@@ -474,6 +474,25 @@ Future<List<KegiatanMitraPenugasanGroup>> readAllDetailsByMitraGroupedByKegiatan
     }); 
   }
 
+  Future<KegiatanMitraPenugasanDetailsWithHistory> getDetailsWithHistoryByUuid(dynamic uuid) async {
+    return this.conn.connectionPool.runTx<KegiatanMitraPenugasanDetailsWithHistory>((tx) async {
+      var result = await tx.execute(r"SELECT kmp.uuid as uuid, k.uuid as kegiatan_uuid,k.name as kegiatan_name,m.mitra_id as mitra_id, m.fullname as mitra_name,m.username as mitra_username,kmp.code as code, kmp.group as group,kmp.group_type_id as group_type_id,kmp.group_desc as group_desc,kmp.description as description,kmp.unit as unit,ps.id as status,ps.description as status_desc,kmp.started_time as started_time, kmp.ended_time as ended_time,kmp.location_latitude as location_latitude,kmp.location_longitude as location_longitude,kmp.notes as notes, kmp.created_at as created_at, kmp.last_updated as last_updated FROM kegiatan_mitra_penugasan kmp LEFT JOIN kegiatan_mitra_bridge kmb ON kmp.bridge_uuid = kmb.uuid LEFT JOIN penugasan_status ps ON kmp.status = ps.id LEFT JOIN kegiatan k ON kmb.kegiatan_uuid = k.uuid LEFT JOIN mitra m ON kmb.mitra_id = m.mitra_id WHERE kmp.uuid = $1",parameters: [uuid as String]);
+      if(result.isEmpty){
+        throw Exception("There is No Data ${uuid}");
+      }
+      KegiatanMitraPenugasanDetails kmpDetails = KegiatanMitraPenugasanDetails.fromJson(result.first.toColumnMap());
+      List<PenugasanHistoryDetails> history = [];
+      var result2 = await tx.execute(r"SELECT ph.*, ps.description as status_description FROM penugasan_history ph LEFT JOIN penugasan_status ps ON ph.status = ps.id WHERE ph.penugasan_uuid = $1 ORDER BY ph.created_at ASC",parameters: [
+        kmpDetails.uuid!
+      ]);
+      for(var item in result2){
+        PenugasanHistoryDetails historyDetails = PenugasanHistoryDetails.fromJson(item.toColumnMap());
+        history.add(historyDetails);
+      }
+      return KegiatanMitraPenugasanDetailsWithHistory(details: kmpDetails, history: history);
+    });
+  }
+
   //this return all penugasan that active today (exclude status:0 BELUM MULAI where it is inactive)
   Future<List<KegiatanMitraPenugasanDetailsWithHistory>> readAllDetailsByStatusActiveLastUpdatedToday() async {
     return this.conn.connectionPool.runTx<List<KegiatanMitraPenugasanDetailsWithHistory>>((tx) async {
@@ -519,6 +538,52 @@ Future<List<KegiatanMitraPenugasanGroup>> readAllDetailsByMitraGroupedByKegiatan
     });
   }
 
+  Future<List<KegiatanMitraPenugasanGroup>> readAllDetailsByHistoryStatusAndHistoryUpdateGroupedByMitra(String date) async {
+    return this.conn.connectionPool.runTx<List<KegiatanMitraPenugasanGroup>>((tx) async {
+      var result = await tx.execute(r"SELECT kmp.uuid as uuid, k.uuid as kegiatan_uuid,k.name as kegiatan_name,m.mitra_id as mitra_id, m.fullname as mitra_name,m.username as mitra_username,kmp.code as code, kmp.group as group,kmp.group_type_id as group_type_id,kmp.group_desc as group_desc,kmp.description as description,kmp.unit as unit,ps.id as status,ps.description as status_desc,kmp.started_time as started_time, kmp.ended_time as ended_time,kmp.location_latitude as location_latitude,kmp.location_longitude as location_longitude,kmp.notes as notes, kmp.created_at as created_at, kmp.last_updated as last_updated FROM kegiatan_mitra_penugasan kmp LEFT JOIN kegiatan_mitra_bridge kmb ON kmp.bridge_uuid = kmb.uuid LEFT JOIN penugasan_status ps ON kmp.status = ps.id LEFT JOIN kegiatan k ON kmb.kegiatan_uuid = k.uuid LEFT JOIN mitra m ON kmb.mitra_id = m.mitra_id WHERE kmp.uuid IN (SELECT ph.penugasan_uuid FROM penugasan_history ph WHERE ph.status != 0 AND to_date(ph.created_at,'YYYY-MM-DD') = $1) ORDER BY kmb.mitra_id, kmb.kegiatan_uuid, kmp.group, kmp.last_updated DESC",parameters: [
+        date
+      ]);
+      Map<String,KegiatanMitraPenugasanGroup> mapObject = {};
+      for(var item in result){
+        KegiatanMitraPenugasanDetails kmpDetails = KegiatanMitraPenugasanDetails.fromJson(item.toColumnMap());
+        if(mapObject.containsKey(kmpDetails.mitra_id)){
+          mapObject[kmpDetails.mitra_id]!.penugasan.add(kmpDetails);
+          continue;
+        }
+        Map<String,dynamic> group_item = {
+          "mitra_id":kmpDetails.mitra_id,
+          "mitra_name":kmpDetails.mitra_name,
+          "mitra_username":kmpDetails.mitra_username
+        };
+        mapObject[kmpDetails.mitra_id] = KegiatanMitraPenugasanGroup(group: group_item, penugasan: [kmpDetails]);
+        continue;
+      }
+      return mapObject.values.toList();
+    });
+  }
+
+  Future<List<KegiatanMitraPenugasanGroup>> readAllDetailsByHistoryStatusAndHistoryUpdateGroupedByKegiatan(String date) async {
+    return this.conn.connectionPool.runTx<List<KegiatanMitraPenugasanGroup>>((tx) async {
+      var result = await tx.execute(r"SELECT kmp.uuid as uuid, k.uuid as kegiatan_uuid,k.name as kegiatan_name,m.mitra_id as mitra_id, m.fullname as mitra_name,m.username as mitra_username,kmp.code as code, kmp.group as group,kmp.group_type_id as group_type_id,kmp.group_desc as group_desc,kmp.description as description,kmp.unit as unit,ps.id as status,ps.description as status_desc,kmp.started_time as started_time, kmp.ended_time as ended_time,kmp.location_latitude as location_latitude,kmp.location_longitude as location_longitude,kmp.notes as notes, kmp.created_at as created_at, kmp.last_updated as last_updated FROM kegiatan_mitra_penugasan kmp LEFT JOIN kegiatan_mitra_bridge kmb ON kmp.bridge_uuid = kmb.uuid LEFT JOIN penugasan_status ps ON kmp.status = ps.id LEFT JOIN kegiatan k ON kmb.kegiatan_uuid = k.uuid LEFT JOIN mitra m ON kmb.mitra_id = m.mitra_id WHERE kmp.uuid IN (SELECT ph.penugasan_uuid FROM penugasan_history ph WHERE ph.status != 0 AND to_date(ph.created_at,'YYYY-MM-DD') = $1) ORDER BY kmb.kegiatan_uuid, kmb.mitra_id, kmp.group, kmp.last_updated DESC",parameters: [
+        date
+      ]);
+      Map<String,KegiatanMitraPenugasanGroup> mapObject = {};
+      for(var item in result){
+        KegiatanMitraPenugasanDetails kmpDetails = KegiatanMitraPenugasanDetails.fromJson(item.toColumnMap());
+        if(mapObject.containsKey(kmpDetails.kegiatan_uuid)){
+          mapObject[kmpDetails.kegiatan_uuid]!.penugasan.add(kmpDetails);
+          continue;
+        }
+        Map<String,dynamic> group_item = {
+          "kegiatan_uuid":kmpDetails.kegiatan_uuid,
+          "kegiatan_name":kmpDetails.kegiatan_name
+        };
+        mapObject[kmpDetails.kegiatan_uuid] = KegiatanMitraPenugasanGroup(group: group_item, penugasan: [kmpDetails]);
+        continue;
+      }
+      return mapObject.values.toList();
+    });
+  }
 
   Future<List<KegiatanMitraPenugasanByMitraProgress>> getProgressKegiatan(dynamic kegiatan_uuid) async {
     return this.conn.connectionPool.runTx<List<KegiatanMitraPenugasanByMitraProgress>>((tx) async {
