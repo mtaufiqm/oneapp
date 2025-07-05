@@ -142,6 +142,18 @@ class KuesionerPenilaianRepository extends MyRepository<KuesionerPenilaianMitra>
     });
   }
 
+  Future<List<KuesionerPenilaianMitra>> readAllByPenilai(String username) async {
+    return this.conn.connectionPool.runTx<List<KuesionerPenilaianMitra>>((tx) async {
+      var result = await tx.execute(r"SELECT * FROM kuesioner_penilaian_mitra WHERE uuid IN(SELECT kuesioner_penilaian_mitra_uuid FROM structure_penilaian_mitra spm WHERE spm.penilai_username = $1) ORDER BY end_date DESC",parameters: [username]);
+      List<KuesionerPenilaianMitra> listObject = [];
+      for(var item in result){
+        KuesionerPenilaianMitra kpm = KuesionerPenilaianMitra.fromJson(item.toColumnMap());
+        listObject.add(kpm);
+      }
+      return listObject;
+    });
+  }
+
   Future<void> delete(dynamic uuid) async {
     return this.conn.connectionPool.runTx((tx) async {
       var result = await tx.execute(r"DELETE FROM kuesioner_penilaian_mitra WHERE uuid = $1",parameters: [uuid as String]);

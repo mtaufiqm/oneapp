@@ -21,8 +21,13 @@ Future<Response> onGet(RequestContext ctx) async {
       return RespHelper.forbidden();
     }
     //need implementations;
-    List<KuesionerPenilaianMitra> listPenilaian = await kuesionerPenilaianRepo.readAll();
-    
+    List<KuesionerPenilaianMitra> listPenilaian = [];
+
+    if(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA"])){
+      listPenilaian = await kuesionerPenilaianRepo.readAll();
+    } else {
+      listPenilaian = await kuesionerPenilaianRepo.readAllByPenilai(authUser.username);
+    }
     return Response.json(body: listPenilaian);
   } catch(err){
     print("Error ${err}");

@@ -48,7 +48,7 @@ class KegiatanMitraRepository {
     return await this.conn.connectionPool.runTx<List<KegiatanMitraBridgeDetails>>((tx) async {
       var listOfObject = <KegiatanMitraBridgeDetails>[];      
       Result result = await tx.execute(r'''SELECT k.*, kmb.mitra_id, kmb.kegiatan_uuid, kmb.status, kmb.pengawas FROM kegiatan_mitra_bridge kmb LEFT JOIN kegiatan k ON kmb.kegiatan_uuid = k.uuid 
-      WHERE kmb.mitra_id = $1''',parameters: [
+      WHERE kmb.mitra_id = $1 ORDER BY k."end" DESC''',parameters: [
         mitra_id as String
       ]);
       for(var item in result){
