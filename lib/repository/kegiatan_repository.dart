@@ -155,4 +155,27 @@ class KegiatanRepository extends MyRepository<Kegiatan>{
       return kegiatan;
     });
   }
+
+  Future<List<KegiatanWithProgress>> readAllWithProgress() async {
+    return this.connection.connectionPool.withConnection<List<KegiatanWithProgress>>((conn) async {
+      return conn.runTx((tx) async {
+        var result = await tx.execute(r'select k.*, coalesce(query1.open_number,0) as number_of_open, coalesce(query1.progress_number,0) as number_of_progress, coalesce(query1.pause_number,0) as number_of_pause, coalesce(query1.end_number,0) as number_of_end, coalesce(query1.total_number,0) as number_of_total from kegiatan k left join (select kmb.kegiatan_uuid as kegiatan_uuid, sum(case when kmp.status = 0 then 1 else 0 end) as open_number, sum(case when kmp.status = 1 then 1 else 0 end) as progress_number, sum(case when kmp.status = 2 then 1 else 0 end) as pause_number, sum(case when kmp.status = 3 then 1 else 0 end) as end_number, count(*) as total_number from kegiatan_mitra_penugasan kmp left join kegiatan_mitra_bridge kmb on kmp.bridge_uuid = kmb."uuid" group by kmb.kegiatan_uuid) as query1 on k."uuid" = query1.kegiatan_uuid ORDER BY k."end" DESC');
+        List<KegiatanWithProgress> listOfKegiatan = <KegiatanWithProgress>[];
+        for(ResultRow i in result){
+          Map<String,dynamic> mapRow = i.toColumnMap();
+          Kegiatan kegiatan = Kegiatan.fromJson(mapRow);
+          Map<String,int> progress = {
+            "open":mapRow["number_of_open"] as int,
+            "progress":mapRow["number_of_progress"] as int,
+            "pause":mapRow["number_of_pause"] as int,
+            "end":mapRow["number_of_end"] as int,
+            "total":mapRow["number_of_total"] as int
+          };
+          KegiatanWithProgress item = KegiatanWithProgress(kegiatan: kegiatan, progress: progress);
+          listOfKegiatan.add(item);
+        }
+        return listOfKegiatan;
+      });
+    });
+  }
 }

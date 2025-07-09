@@ -165,3 +165,52 @@ class KegiatanWithMitra {
   @override
   String toString() => 'KegiatanWithMitra(kegiatan: $kegiatan, mitra: $mitra)';
 }
+
+class KegiatanWithProgress {
+  Kegiatan kegiatan;
+  Map<String,int> progress;
+  KegiatanWithProgress({
+    required this.kegiatan,
+    required this.progress,
+  });
+
+  KegiatanWithProgress copyWith({
+    Kegiatan? kegiatan,
+    Map<String,int>? progress,
+  }) {
+    return KegiatanWithProgress(
+      kegiatan: kegiatan ?? this.kegiatan,
+      progress: progress ?? this.progress,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'kegiatan': kegiatan.toJson(),
+      'progress': progress,
+    };
+  }
+
+  factory KegiatanWithProgress.fromJson(Map<String, dynamic> map) {
+    return KegiatanWithProgress(
+      kegiatan: Kegiatan.fromJson(map['kegiatan'] as Map<String,dynamic>),
+      progress: Map<String,int>.from(map['progress'] as Map<String,dynamic>),
+    );
+  }
+
+  @override
+  String toString() => 'KegiatanWithProgress(kegiatan: $kegiatan, progress: $progress)';
+
+  @override
+  bool operator ==(covariant KegiatanWithProgress other) {
+    if (identical(this, other)) return true;
+    final mapEquals = const DeepCollectionEquality().equals;
+  
+    return 
+      other.kegiatan == kegiatan &&
+      mapEquals(other.progress, progress);
+  }
+
+  @override
+  int get hashCode => kegiatan.hashCode ^ progress.hashCode;
+}

@@ -22,6 +22,7 @@ Handler middleware(Handler handler){
       List<String> roles = (jwtToken!.payload["roles"] as List).cast<String>();
       var userRepository = UserRepository(connection);
       try{
+        //this check if user with username exists in db
         User myUser = await userRepository.getById(jwtToken!.payload["username"]);
         myUser.roles = roles;
         return myUser;
