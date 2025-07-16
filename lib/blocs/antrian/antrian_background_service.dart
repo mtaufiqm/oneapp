@@ -16,7 +16,7 @@ class AntrianBackgroundService {
       cronJob.schedule((Schedule.parse("0 1,3 * * *")), () async {
         try {
           Pool connectionPool = prepareConnectionPool();
-          var result = await automaticInsertNewJadwal(connectionPool, 20);
+          var result = await automaticInsertNewJadwal(connectionPool, 15);
           print("Success Insert ${result} Jadwal Antrian");
         } catch(err){
           print("Error ${err}");
@@ -38,7 +38,7 @@ class AntrianBackgroundService {
   }
 
     //insert two weeks new jadwal for future 
-  static Future<int> automaticInsertNewJadwal(Pool connectionPool,int kuotaPerDay) async {
+  static Future<int> automaticInsertNewJadwal(Pool connectionPool,int kuotaPerSesiPerDay) async {
     return connectionPool.runTx<int>((tx) async {
       List<DateTime> twoWeeksMore = [];
 
@@ -81,7 +81,7 @@ class AntrianBackgroundService {
               uuid,
               date,
               sesiItem.uuid!,
-              kuotaPerDay
+              kuotaPerSesiPerDay
             ]);
             if(result2.isNotEmpty){
               successCounter++;
@@ -93,7 +93,6 @@ class AntrianBackgroundService {
         }
       }
       return successCounter;
-
     });
   }
 }
