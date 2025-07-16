@@ -1,6 +1,7 @@
 import 'package:dart_frog/dart_frog.dart';
 import 'package:my_first/models/ickm/kuesioner_penilaian_mitra.dart';
 import 'package:my_first/models/kegiatan.dart';
+import 'package:my_first/repository/ickm/answer_assignment_repository.dart';
 import 'package:my_first/repository/ickm/kuesioner_penilaian_repository.dart';
 import 'package:my_first/repository/ickm/response_assignment_repository.dart';
 import 'package:my_first/repository/ickm/structure_penilaian_repository.dart';
@@ -29,5 +30,8 @@ Handler middleware(Handler handler) {
   })).use(provider<ResponseAssignmentRepository>((ctx){
     MyConnectionPool conn = ctx.read<MyConnectionPool>();
     return ResponseAssignmentRepository(conn);
+  })).use(provider<AnswerAssignmentRepository>((ctx){
+    MyConnectionPool conn = ctx.read<MyConnectionPool>();
+    return AnswerAssignmentRepository(conn);
   }));
 }

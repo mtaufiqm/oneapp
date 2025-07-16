@@ -31,7 +31,7 @@ Future<Response> onGet(RequestContext ctx, String uuid) async {
     if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA"]) || authUser.username == structureDetails.penilai_username || authUser.username == (kegiatan.penanggung_jawab??""))){
       return RespHelper.forbidden();
     }
-    var result = await responseRepo.generateResponseStructure(uuid);
+    var result = await responseRepo.generateResponseStructureWithAnswers(uuid);
     var end = DateTime.now();
     print("Selisih Waktu : ${end.difference(start)}");
     return Response.json(body: result);

@@ -91,7 +91,7 @@ class ResponseAssignmentStructure {
     };
   }
 
-  factory ResponseAssignmentStructure.fromMap(Map<String, dynamic> map) {
+  factory ResponseAssignmentStructure.fromJson(Map<String, dynamic> map) {
     return ResponseAssignmentStructure(
       kegiatan_uuid: map['kegiatan_uuid'] != null ? map['kegiatan_uuid'] as String : null,
       kegiatan_name: map['kegiatan_name'] != null ? map['kegiatan_name'] as String : null,

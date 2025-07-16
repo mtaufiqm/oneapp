@@ -186,6 +186,13 @@ CREATE TABLE "answer_assignment" (
   "questions_option_uuid" text
 );
 
+CREATE TABLE "ickm_mitra" (
+  "uuid" text PRIMARY KEY,
+  "mitra_id" text NOT NULL,
+  "kegiatan_uuid" text NOT NULL,
+  "ickm" double precision NOT NULL
+);
+
 CREATE TABLE "products" (
   "uuid" text PRIMARY KEY,
   "name" text,
@@ -317,6 +324,37 @@ CREATE TABLE "daerah_blok_sensus" (
   "dt4_id" text
 );
 
+CREATE TABLE "antrian_sesi" (
+  "uuid" text PRIMARY KEY,
+  "order" integer NOT NULL,
+  "description" text NOT NULL,
+  "tag" text NOT NULL
+);
+
+CREATE TABLE "antrian_service_type" (
+  "uuid" text PRIMARY KEY,
+  "description" text NOT NULL
+);
+
+CREATE TABLE "antrian_jadwal" (
+  "uuid" text PRIMARY KEY,
+  "date" text NOT NULL,
+  "sesi" text NOT NULL,
+  "kuota" integer NOT NULL
+);
+
+CREATE TABLE "antrian_ticket" (
+  "uuid" text PRIMARY KEY,
+  "name" text NOT NULL,
+  "email" text NOT NULL,
+  "no_hp" text NOT NULL,
+  "jadwal" text,
+  "service" text,
+  "qr_code" text,
+  "created_at" text NOT NULL,
+  "is_confirmed" bool NOT NULL
+);
+
 ALTER TABLE "user_role_bridge" ADD FOREIGN KEY ("description") REFERENCES "roles" ("description");
 
 ALTER TABLE "user_role_bridge" ADD FOREIGN KEY ("username") REFERENCES "user" ("username");
@@ -373,6 +411,10 @@ ALTER TABLE "answer_assignment" ADD FOREIGN KEY ("questions_item_uuid") REFERENC
 
 ALTER TABLE "answer_assignment" ADD FOREIGN KEY ("questions_option_uuid") REFERENCES "questions_option" ("uuid");
 
+ALTER TABLE "ickm_mitra" ADD FOREIGN KEY ("mitra_id") REFERENCES "mitra" ("mitra_id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "ickm_mitra" ADD FOREIGN KEY ("kegiatan_uuid") REFERENCES "kegiatan" ("uuid") ON DELETE CASCADE ON UPDATE CASCADE;
+
 ALTER TABLE "products" ADD FOREIGN KEY ("created_by") REFERENCES "user" ("username");
 
 ALTER TABLE "categories_products" ADD FOREIGN KEY ("product_uuid") REFERENCES "products" ("uuid");
@@ -418,3 +460,13 @@ ALTER TABLE "kegiatan_mitra_bridge" ADD UNIQUE("kegiatan_uuid","mitra_id");
 ALTER TABLE "structure_penilaian_mitra" ADD UNIQUE("kuesioner_penilaian_mitra_uuid","mitra_username");
 
 ALTER TABLE "answer_assignment" ADD UNIQUE("response_assignment_uuid","questions_item_uuid");
+
+ALTER TABLE "ickm_mitra" ADD UNIQUE("mitra_id","kegiatan_uuid");
+
+ALTER TABLE "antrian_jadwal" ADD FOREIGN KEY ("sesi") REFERENCES "antrian_sesi" ("uuid");
+
+ALTER TABLE "antrian_ticket" ADD FOREIGN KEY ("jadwal") REFERENCES "antrian_jadwal" ("uuid") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "antrian_ticket" ADD FOREIGN KEY ("service") REFERENCES "antrian_service_type" ("uuid") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "antrian_jadwal" ADD UNIQUE("date","sesi");
