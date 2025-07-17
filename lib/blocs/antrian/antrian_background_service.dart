@@ -13,7 +13,7 @@ class AntrianBackgroundService {
   static Future<void> runUpsertJadwalInBackground() async {
     try {
       Cron cronJob = Cron();
-      cronJob.schedule((Schedule.parse("0 1,3 * * *")), () async {
+      cronJob.schedule((Schedule.parse("22 1,3,20 * * *")), () async {
         try {
           Pool connectionPool = prepareConnectionPool();
           var result = await automaticInsertNewJadwal(connectionPool, 15);
@@ -28,7 +28,7 @@ class AntrianBackgroundService {
   }
 
   static Pool prepareConnectionPool() {
-      String host = Platform.environment["dbhost"]??"localhost";
+      String host = Platform.environment["dbhost"]??"103.85.117.69";
       String databaseName = Platform.environment["dbname"]??"myapp";
       String user = Platform.environment["dbuser"]??"postgres";
       String password = Platform.environment["dbpassword"]??"taufiq1729";

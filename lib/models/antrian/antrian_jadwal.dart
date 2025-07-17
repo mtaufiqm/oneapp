@@ -172,3 +172,50 @@ class AntrianJadwalDetalsWithTickets {
   }
 
 }
+
+class AntrianJadwalDetailsGroupByDate {
+  String date;
+  List<AntrianJadwalDetails> jadwals = [];
+  AntrianJadwalDetailsGroupByDate({
+    required this.date,
+    required this.jadwals,
+  });
+
+  AntrianJadwalDetailsGroupByDate copyWith({
+    String? date,
+    List<AntrianJadwalDetails>? jadwals,
+  }) {
+    return AntrianJadwalDetailsGroupByDate(
+      date: date ?? this.date,
+      jadwals: jadwals ?? this.jadwals,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'date': date,
+      'jadwals': jadwals.map((x) => x.toJson()).toList(),
+    };
+  }
+
+  factory AntrianJadwalDetailsGroupByDate.fromJson(Map<String, dynamic> map) {
+    return AntrianJadwalDetailsGroupByDate(
+      date: map['date'] as String,
+      jadwals: List<AntrianJadwalDetails>.from((map['jadwals'] as List<dynamic>).map<AntrianJadwalDetails>((x) => AntrianJadwalDetails.fromJson(x as Map<String,dynamic>))),
+    );
+  }
+
+  @override
+  String toString() => 'AntrianJadwalDetailsGroupByDate(date: $date, jadwals: $jadwals)';
+
+  @override
+  bool operator ==(covariant AntrianJadwalDetailsGroupByDate other) {
+    if (identical(this, other)) return true;
+    final listEquals = const DeepCollectionEquality().equals;
+  
+    return 
+      other.date == date &&
+      listEquals(other.jadwals, jadwals);
+  }
+
+}
