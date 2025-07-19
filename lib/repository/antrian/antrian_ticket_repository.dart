@@ -225,7 +225,7 @@ ORDER BY aj.date ASC, ass.order ASC
       // var qr_image = QrImage(qr_generator);
 
       //generate qr_code
-      var barcode = Barcode.qrCode(typeNumber: 10);
+      var barcode = Barcode.qrCode(typeNumber: 8);
       String qr_code_data = '''https://api.bpsluwu.id/public/antrian/ticket/item/#1/pdf'''.replaceFirst("#1",uuid);
       String qr_code = barcode.toSvg(qr_code_data);
       object.qr_code = qr_code;
