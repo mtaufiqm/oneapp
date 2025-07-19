@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:duration/duration.dart';
 import 'package:intl/intl.dart';
 import 'package:my_first/blocs/datetime_helper.dart';
 import 'package:my_first/models/antrian/antrian_jadwal.dart';
@@ -9,6 +10,8 @@ import 'package:my_first/models/antrian/antrian_status.dart';
 import 'package:my_first/models/antrian/antrian_ticket.dart';
 import 'package:my_first/repository/myconnection.dart';
 import 'package:my_first/repository/myrepository.dart';
+import 'package:postgres/postgres.dart';
+import 'package:timezone/standalone.dart';
 import 'package:uuid/uuid.dart';
 import 'package:barcode/barcode.dart';
 class AntrianTicketRepository extends MyRepository<AntrianTicket> {
@@ -376,6 +379,112 @@ ass.order ASC, att.created_at ASC
       return mapObject.values.toList();
     });
   }
+
+  Future<AntrianJadwalDetalsWithTickets?> readAllTicketCurrentSesi() async {
+    return this.conn.connectionPool.runTx<AntrianJadwalDetalsWithTickets?>((tx) async {
+      DateTime currentDateTime = DatetimeHelper.parseMakassarTime(DatetimeHelper.getCurrentMakassarTime());
+      String currentTime = DateFormat("HH:mm:ss.SSS").format(currentDateTime);
+      String todayDate = DateFormat('yyyy-MM-dd').format(currentDateTime);
+      
+      //String todayDate = '2025-07-19';
+      String query = 
+r'''
+SELECT 
+
+att.uuid as antrian_ticket_uuid,
+att.name as antrian_ticket_name,
+att.email as antrian_ticket_email,
+att.no_hp as antrian_ticket_no_hp,
+att.qr_code as antrian_ticket_qr_code,
+att.created_at as antrian_ticket_created_at,
+att.is_confirmed as antrian_ticket_is_confirmed,
+att.on_sesi_order as antrian_ticket_on_sesi_order,
+
+ast.uuid as antrian_service_uuid,
+ast.description as antrian_service_description,
+
+aj.uuid as antrian_jadwal_uuid,
+aj.date as antrian_jadwal_date,
+aj.kuota as antrian_jadwal_kuota,
+
+ass.uuid as antrian_sesi_uuid,
+ass.order as antrian_sesi_order,
+ass.description as antrian_sesi_description,
+ass.tag as antrian_sesi_tag,
+ass.code as antrian_sesi_code,
+ass.sesi_start as antrian_sesi_start,
+ass.sesi_end as antrian_sesi_end,
+
+anstat.id as antrian_status_id,
+anstat.description as antrian_status_description
+
+FROM antrian_ticket att
+
+LEFT JOIN antrian_service_type ast
+ON att.service = ast.uuid
+
+LEFT JOIN antrian_jadwal aj
+ON att.jadwal = aj.uuid
+
+LEFT JOIN antrian_sesi ass
+ON aj.sesi = ass.uuid
+
+LEFT JOIN antrian_status anstat
+ON att.status = anstat.id
+
+WHERE aj.date = $1 AND (anstat.id = 0 OR anstat.id = 1) 
+
+ORDER BY
+ass.order ASC, anstat.id DESC, att.on_sesi_order ASC
+
+''';
+
+      var result = await tx.execute(query,parameters: [todayDate]);
+      if(result.isEmpty){
+        return null;
+      }
+
+      Duration currentTimeInDuration = parseTime(currentTime);
+
+      AntrianJadwalDetalsWithTickets? object = null;
+
+      for(var item in result){
+        try {
+          AntrianTicketDetails ticket = AntrianTicketDetails.fromJson(item.toColumnMap());
+          AntrianServiceTypeDetails service = AntrianServiceTypeDetails.fromJson(item.toColumnMap());
+          AntrianSesiDetails sesi = AntrianSesiDetails.fromJson(item.toColumnMap());
+          AntrianJadwalDetails jadwal = AntrianJadwalDetails.fromJson(item.toColumnMap());
+          AntrianStatusDetails status = AntrianStatusDetails.fromJson(item.toColumnMap());
+
+          jadwal.sesi_details = sesi;
+
+          ticket.jadwal_details = jadwal;
+          ticket.service_details = service;
+          ticket.status_details = status;
+
+          Duration startDuration = parseTime(sesi.antrian_sesi_start);
+          Duration endDuration = parseTime(sesi.antrian_sesi_end);
+
+          if(object != null){
+            if(object.jadwal.antrian_jadwal_uuid! == jadwal.antrian_jadwal_uuid!) {
+              object.tickets.add(ticket);
+              continue;
+            }
+            continue;
+          }
+
+          if(currentTimeInDuration.compareTo(startDuration) > 0 && currentTimeInDuration.compareTo(endDuration) < 0){
+            object = AntrianJadwalDetalsWithTickets(jadwal: jadwal, tickets: [ticket]);
+          }
+          continue;
+        } catch(err){
+          continue;
+        }
+      }
+      return object;
+    });
+  }
+
 
   Future<List<AntrianTicket>> readAll() async {
     return this.conn.connectionPool.runTx<List<AntrianTicket>>((tx) async {
