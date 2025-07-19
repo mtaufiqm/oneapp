@@ -217,5 +217,5 @@ class AntrianJadwalDetailsGroupByDate {
       other.date == date &&
       listEquals(other.jadwals, jadwals);
   }
-
 }
+

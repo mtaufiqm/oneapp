@@ -65,71 +65,9 @@ class AntrianJadwalRepository extends MyRepository<AntrianJadwal> {
     });
   }
 
-  //insert two weeks new jadwal for future 
-  Future<int> automaticInsertNewJadwal(int kuotaPerDay) async {
-    return this.conn.connectionPool.runTx<int>((tx) async {
-      List<DateTime> twoWeeksMore = [];
-
-      //get current date
-      DateTime currentDate = DatetimeHelper.parseMakassarTime(DatetimeHelper.getCurrentMakassarTime());
-      twoWeeksMore.add(currentDate);
-
-      //get all two weeks more days
-      for(int i = 0; i < 14;i++){
-        DateTime nextDay = currentDate.add(Duration(days: (i+1)));
-        twoWeeksMore.add(nextDay);
-      }
-
-      //filter only workDays
-      List<DateTime> workDays = twoWeeksMore.where((el) {
-        if(el.weekday == 6 || el.weekday == 7){
-          return false;
-        }
-        return true;
-      }).toList();
-
-      //get all sesi
-      List<AntrianSesi> allSesi = [];
-      var result1 = await tx.execute(r"SELECT * FROM antrian_sesi");
-      for(var item in result1){
-        AntrianSesi sesi = AntrianSesi.fromJson(item.toColumnMap());
-        allSesi.add(sesi);
-      }
-
-      //count successful insert data
-      int successCounter = 0;
-
-      //upsert new antrian jadwal based two week work days
-      for(var dateItem in workDays){
-        try {
-          for(var sesiItem in allSesi){
-            String uuid = Uuid().v1();
-            String date = DateFormat("yyyy-MM-dd").format(dateItem);
-            var result2 = await tx.execute(r"INSERT INTO antrian_jadwal VALUES($1,$2,$3,$4) ON CONFLICT(date,sesi) DO NOTHING RETURNING uuid",parameters: [
-              uuid,
-              date,
-              sesiItem.uuid!,
-              kuotaPerDay
-            ]);
-            if(result2.isNotEmpty){
-              successCounter++;
-            }
-          }
-        } catch(err){
-          log("Error Insert Jadwal Date ${dateItem.toIso8601String()} ${err}");
-          continue;
-        }
-      }
-      return successCounter;
-
-    });
-  }
-
-
-
   Future<Map<String,List<AntrianJadwalDetails>>> readAllAvailableJadwalGroupByDate() async {
     return this.conn.connectionPool.runTx<Map<String,List<AntrianJadwalDetails>>>((tx) async {
-      String currentDate = DateFormat("yyyy-MM-dd").format(DateTime.parse(DatetimeHelper.getCurrentMakassarTime()));
+      String currentDate = DateFormat("yyyy-MM-dd").format(DatetimeHelper.parseMakassarTime(DatetimeHelper.getCurrentMakassarTime()));
       String query = 
 r'''
 
@@ -142,7 +80,10 @@ aj.kuota - COALESCE(count(att.jadwal),0) as antrian_jadwal_kuota,
 ass.uuid as antrian_sesi_uuid,
 ass.order as antrian_sesi_order,
 ass.description as antrian_sesi_description,
-ass.tag as antrian_sesi_tag
+ass.tag as antrian_sesi_tag,
+ass.code as antrian_sesi_code,
+ass.sesi_start as antrian_sesi_start,
+ass.sesi_end as antrian_sesi_end
 
 FROM antrian_jadwal aj
 
@@ -160,7 +101,10 @@ aj.date,
 ass.uuid,
 ass.order,
 ass.description,
-ass.tag
+ass.tag,
+ass.code,
+ass.sesi_start,
+ass.sesi_end
 
 ORDER BY aj.date ASC, ass.order ASC
 ''';
@@ -197,7 +141,10 @@ aj.kuota - COALESCE(count(att.jadwal),0) as antrian_jadwal_kuota,
 ass.uuid as antrian_sesi_uuid,
 ass.order as antrian_sesi_order,
 ass.description as antrian_sesi_description,
-ass.tag as antrian_sesi_tag
+ass.tag as antrian_sesi_tag,
+ass.code as antrian_sesi_code,
+ass.sesi_start as antrian_sesi_start,
+ass.sesi_end as antrian_sesi_end
 
 FROM antrian_jadwal aj
 
@@ -215,7 +162,10 @@ aj.date,
 ass.uuid,
 ass.order,
 ass.description,
-ass.tag
+ass.tag,
+ass.code,
+ass.sesi_start,
+ass.sesi_end
 
 ORDER BY aj.date ASC, ass.order ASC
 ''';

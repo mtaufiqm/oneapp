@@ -5,6 +5,7 @@ import 'package:my_first/blocs/datetime_helper.dart';
 import 'package:my_first/models/antrian/antrian_jadwal.dart';
 import 'package:my_first/models/antrian/antrian_service_type.dart';
 import 'package:my_first/models/antrian/antrian_sesi.dart';
+import 'package:my_first/models/antrian/antrian_status.dart';
 import 'package:my_first/models/antrian/antrian_ticket.dart';
 import 'package:my_first/repository/myconnection.dart';
 import 'package:my_first/repository/myrepository.dart';
@@ -32,11 +33,13 @@ class AntrianTicketRepository extends MyRepository<AntrianTicket> {
   // String antrian_ticket_name;
   // String antrian_ticket_email;
   // String antrian_ticket_no_hp;
-  // AntrianJadwalDetails jadwal_details;
-  // AntrianServiceTypeDetails service_details;
+  // AntrianJadwalDetails? jadwal_details;
+  // AntrianServiceTypeDetails? service_details;
   // String? antrian_ticket_qr_code;
   // String? antrian_ticket_created_at;
   // bool antrian_ticket_is_confirmed;
+  // AntrianStatusDetails status_details;
+  // int antrian_ticket_on_sesi_order;
 
   //SERVICE
   // String? antrian_service_uuid;
@@ -53,6 +56,13 @@ class AntrianTicketRepository extends MyRepository<AntrianTicket> {
   // int antrian_sesi_order;
   // String antrian_sesi_description;
   // String antrian_sesi_tag;
+  // String antrian_sesi_code;
+  // String antrian_sesi_start;
+  // String antrian_sesi_end;
+
+  //STATUS
+  // int antrian_sesi_id;
+  // String description;
 
   Future<AntrianTicketDetails> getDetailsById(dynamic id) async {
     return this.conn.connectionPool.runTx<AntrianTicketDetails>((tx) async {
@@ -66,6 +76,8 @@ att.no_hp as antrian_ticket_no_hp,
 att.qr_code as antrian_ticket_qr_code,
 att.created_at as antrian_ticket_created_at,
 att.is_confirmed as antrian_ticket_is_confirmed,
+att.on_sesi_order as antrian_ticket_on_sesi_order,
+
 
 ast.uuid as antrian_service_uuid,
 ast.description as antrian_service_description,
@@ -77,7 +89,14 @@ aj.kuota as antrian_jadwal_kuota,
 ass.uuid as antrian_sesi_uuid,
 ass.order as antrian_sesi_order,
 ass.description as antrian_sesi_description,
-ass.tag as antrian_sesi_tag
+ass.tag as antrian_sesi_tag,
+ass.code as antrian_sesi_code,
+ass.sesi_start as antrian_sesi_start,
+ass.sesi_end as antrian_sesi_end,
+
+
+anstat.id as antrian_status_id,
+anstat.description as antrian_status_description
 
 FROM antrian_ticket att
 
@@ -89,6 +108,9 @@ ON att.jadwal = aj.uuid
 
 LEFT JOIN antrian_sesi ass
 ON aj.sesi = ass.uuid
+
+LEFT JOIN antrian_status anstat
+ON att.status = anstat.id
 
 WHERE att.uuid = $1
 ''';
@@ -102,11 +124,13 @@ WHERE att.uuid = $1
       AntrianServiceTypeDetails service = AntrianServiceTypeDetails.fromJson(mapResult);
       AntrianSesiDetails sesi = AntrianSesiDetails.fromJson(mapResult);
       AntrianJadwalDetails jadwal = AntrianJadwalDetails.fromJson(mapResult);
+      AntrianStatusDetails status = AntrianStatusDetails.fromJson(mapResult);
 
       jadwal.sesi_details = sesi;
 
       ticket.jadwal_details = jadwal;
       ticket.service_details = service;
+      ticket.status_details = status;
 
       return ticket;
     });
@@ -133,7 +157,10 @@ aj.kuota - COALESCE(count(att.jadwal),0) as antrian_jadwal_kuota,
 ass.uuid as antrian_sesi_uuid,
 ass.order as antrian_sesi_order,
 ass.description as antrian_sesi_description,
-ass.tag as antrian_sesi_tag
+ass.tag as antrian_sesi_tag,
+ass.code as antrian_sesi_code,
+ass.sesi_start as antrian_sesi_start,
+ass.sesi_end as antrian_sesi_end
 
 FROM antrian_jadwal aj
 
@@ -151,7 +178,10 @@ aj.date,
 ass.uuid,
 ass.order,
 ass.description,
-ass.tag
+ass.tag,
+ass.code,
+ass.sesi_start,
+ass.sesi_end
 
 ORDER BY aj.date ASC, ass.order ASC
 ''';
@@ -160,6 +190,7 @@ ORDER BY aj.date ASC, ass.order ASC
       if(result.isEmpty) {
         throw Exception("There is No Antrian Jadwal ${object.jadwal as String}");
       }
+
       AntrianJadwalDetails jadwalDetails = AntrianJadwalDetails.fromJson(result.first.toColumnMap());
       AntrianSesiDetails sesiDetails = AntrianSesiDetails.fromJson(result.first.toColumnMap());
       jadwalDetails.sesi_details = sesiDetails;
@@ -168,6 +199,20 @@ ORDER BY aj.date ASC, ass.order ASC
       if(jadwalDetails.antrian_jadwal_kuota <= 0) {
         throw Exception("Kuota Pada Jadwal Tersebut Telah Habis!");
       }
+
+
+      //set on_sesi_order value
+      int on_sesi_order = 1;
+      var resultMaxOrder = await tx.execute(r"SELECT COALESCE(MAX(att.on_sesi_order),0) as max_value FROM antrian_ticket att WHERE att.jadwal = $1",parameters: [object.jadwal]);
+      if(!resultMaxOrder.isEmpty){
+        int tempValue = (resultMaxOrder.first.toColumnMap()["max_value"] as int?)??0;
+        on_sesi_order = ++tempValue;
+      }
+      object.on_sesi_order = on_sesi_order;
+
+      //set default status value for submit
+      //0: PENDING
+      object.status = 0;   
 
       //generate qr_code in base64
       // var qr_generator = QrCode(4, QrErrorCorrectLevel.L);
@@ -181,14 +226,12 @@ ORDER BY aj.date ASC, ass.order ASC
 
       //generate qr_code
       var barcode = Barcode.qrCode(typeNumber: 10);
-      String qr_code_data = jsonEncode(
-        '''https://api.bpsluwu.id/public/antrian/ticket/item/#1'''.replaceFirst("#1",uuid)
-      );
+      String qr_code_data = '''https://api.bpsluwu.id/public/antrian/ticket/item/#1/pdf'''.replaceFirst("#1",uuid);
       String qr_code = barcode.toSvg(qr_code_data);
       object.qr_code = qr_code;
 
       //second if there is quota, insert new ticket data
-      var result2 = await tx.execute(r"INSERT INTO antrian_ticket VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING uuid",
+      var result2 = await tx.execute(r"INSERT INTO antrian_ticket VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING uuid",
       parameters: [
         object.uuid!,
         object.name,
@@ -198,7 +241,9 @@ ORDER BY aj.date ASC, ass.order ASC
         object.service,
         object.qr_code,
         object.created_at,
-        object.is_confirmed
+        object.is_confirmed,
+        object.status,
+        object.on_sesi_order
       ]);
       if(result2.isEmpty){
         throw Exception("Failed Create New Ticket!");
@@ -221,7 +266,7 @@ ORDER BY aj.date ASC, ass.order ASC
       object.uuid = uuid;
       object.created_at = created_at;
       object.is_confirmed = false;
-      var result = await tx.execute(r"INSERT INTO antrian_ticket VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+      var result = await tx.execute(r"INSERT INTO antrian_ticket VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
       parameters: [
         object.uuid!,
         object.name,
@@ -231,7 +276,9 @@ ORDER BY aj.date ASC, ass.order ASC
         object.service,
         object.qr_code,
         object.created_at,
-        object.is_confirmed
+        object.is_confirmed,
+        object.status,
+        object.on_sesi_order
       ]);
       return object;
     });
@@ -239,8 +286,8 @@ ORDER BY aj.date ASC, ass.order ASC
 
   Future<List<AntrianJadwalDetalsWithTickets>> readAllTodayGroupBySesi() async {
     return this.conn.connectionPool.runTx<List<AntrianJadwalDetalsWithTickets>>((tx) async {
-      //String todayDate = DateFormat('yyyy-MM-dd').format(DatetimeHelper.parseMakassarTime(DatetimeHelper.getCurrentMakassarTime()));
-      String todayDate = '2025-07-15';
+      String todayDate = DateFormat('yyyy-MM-dd').format(DatetimeHelper.parseMakassarTime(DatetimeHelper.getCurrentMakassarTime()));
+      //String todayDate = '2025-07-19';
       String query = 
 r'''
 SELECT 
@@ -252,6 +299,7 @@ att.no_hp as antrian_ticket_no_hp,
 att.qr_code as antrian_ticket_qr_code,
 att.created_at as antrian_ticket_created_at,
 att.is_confirmed as antrian_ticket_is_confirmed,
+att.on_sesi_order as antrian_ticket_on_sesi_order,
 
 ast.uuid as antrian_service_uuid,
 ast.description as antrian_service_description,
@@ -263,7 +311,13 @@ aj.kuota as antrian_jadwal_kuota,
 ass.uuid as antrian_sesi_uuid,
 ass.order as antrian_sesi_order,
 ass.description as antrian_sesi_description,
-ass.tag as antrian_sesi_tag
+ass.tag as antrian_sesi_tag,
+ass.code as antrian_sesi_code,
+ass.sesi_start as antrian_sesi_start,
+ass.sesi_end as antrian_sesi_end,
+
+anstat.id as antrian_status_id,
+anstat.description as antrian_status_description
 
 FROM antrian_ticket att
 
@@ -276,7 +330,10 @@ ON att.jadwal = aj.uuid
 LEFT JOIN antrian_sesi ass
 ON aj.sesi = ass.uuid
 
-WHERE aj.date = $1 AND att.is_confirmed = false
+LEFT JOIN antrian_status anstat
+ON att.status = anstat.id
+
+WHERE aj.date = $1 AND att.is_confirmed = false AND anstat.id = 0
 
 ORDER BY
 ass.order ASC, att.created_at ASC
@@ -296,11 +353,13 @@ ass.order ASC, att.created_at ASC
           AntrianServiceTypeDetails service = AntrianServiceTypeDetails.fromJson(item.toColumnMap());
           AntrianSesiDetails sesi = AntrianSesiDetails.fromJson(item.toColumnMap());
           AntrianJadwalDetails jadwal = AntrianJadwalDetails.fromJson(item.toColumnMap());
+          AntrianStatusDetails status = AntrianStatusDetails.fromJson(item.toColumnMap());
 
           jadwal.sesi_details = sesi;
 
           ticket.jadwal_details = jadwal;
           ticket.service_details = service;
+          ticket.status_details = status;
 
           //if jadwal already there
           if(mapObject.containsKey(jadwal.antrian_jadwal_uuid!)){

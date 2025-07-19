@@ -328,7 +328,10 @@ CREATE TABLE "antrian_sesi" (
   "uuid" text PRIMARY KEY,
   "order" integer NOT NULL,
   "description" text NOT NULL,
-  "tag" text NOT NULL
+  "tag" text NOT NULL,
+  "code" text NOT NULL,
+  "sesi_start" text NOT NULL,
+  "sesi_end" text NOT NULL
 );
 
 CREATE TABLE "antrian_service_type" (
@@ -352,7 +355,14 @@ CREATE TABLE "antrian_ticket" (
   "service" text,
   "qr_code" text,
   "created_at" text NOT NULL,
-  "is_confirmed" bool NOT NULL
+  "is_confirmed" bool NOT NULL,
+  "status" integer NOT NULL,
+  "on_sesi_order" integer NOT NULL
+);
+
+CREATE TABLE "antrian_status" (
+  "id" integer PRIMARY KEY,
+  "description" text NOT NULL
 );
 
 ALTER TABLE "user_role_bridge" ADD FOREIGN KEY ("description") REFERENCES "roles" ("description");
@@ -463,10 +473,12 @@ ALTER TABLE "answer_assignment" ADD UNIQUE("response_assignment_uuid","questions
 
 ALTER TABLE "ickm_mitra" ADD UNIQUE("mitra_id","kegiatan_uuid");
 
-ALTER TABLE "antrian_jadwal" ADD FOREIGN KEY ("sesi") REFERENCES "antrian_sesi" ("uuid");
+ALTER TABLE "antrian_jadwal" ADD FOREIGN KEY ("sesi") REFERENCES "antrian_sesi" ("uuid") ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE "antrian_ticket" ADD FOREIGN KEY ("jadwal") REFERENCES "antrian_jadwal" ("uuid") ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE "antrian_ticket" ADD FOREIGN KEY ("service") REFERENCES "antrian_service_type" ("uuid") ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "antrian_ticket" ADD FOREIGN KEY ("status") REFERENCES "antrian_status" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE "antrian_jadwal" ADD UNIQUE("date","sesi");

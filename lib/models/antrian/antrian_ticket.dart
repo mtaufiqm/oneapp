@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:my_first/models/antrian/antrian_jadwal.dart';
 import 'package:my_first/models/antrian/antrian_service_type.dart';
+import 'package:my_first/models/antrian/antrian_status.dart';
 
 class AntrianTicket {
   String? uuid;
@@ -14,6 +15,8 @@ class AntrianTicket {
   String? qr_code;
   String? created_at;
   bool is_confirmed;
+  int status;
+  int on_sesi_order;
   AntrianTicket({
     this.uuid,
     required this.name,
@@ -24,6 +27,8 @@ class AntrianTicket {
     this.qr_code,
     this.created_at,
     required this.is_confirmed,
+    required this.status,
+    required this.on_sesi_order,
   });
 
   AntrianTicket copyWith({
@@ -36,6 +41,8 @@ class AntrianTicket {
     String? qr_code,
     String? created_at,
     bool? is_confirmed,
+    int? status,
+    int? on_sesi_order,
   }) {
     return AntrianTicket(
       uuid: uuid ?? this.uuid,
@@ -47,6 +54,8 @@ class AntrianTicket {
       qr_code: qr_code ?? this.qr_code,
       created_at: created_at ?? this.created_at,
       is_confirmed: is_confirmed ?? this.is_confirmed,
+      status: status ?? this.status,
+      on_sesi_order: on_sesi_order ?? this.on_sesi_order,
     );
   }
 
@@ -61,6 +70,8 @@ class AntrianTicket {
       'qr_code': qr_code,
       'created_at': created_at,
       'is_confirmed': is_confirmed,
+      'status': status,
+      'on_sesi_order': on_sesi_order,
     };
   }
 
@@ -75,12 +86,14 @@ class AntrianTicket {
       qr_code: map['qr_code'] != null ? map['qr_code'] as String : null,
       created_at: map['created_at'] != null ? map['created_at'] as String : null,
       is_confirmed: map['is_confirmed'] as bool,
+      status: map['status'] as int,
+      on_sesi_order: map['on_sesi_order'] as int,
     );
   }
 
   @override
   String toString() {
-    return 'AntrianTicket(uuid: $uuid, name: $name, email: $email, no_hp: $no_hp, jadwal: $jadwal, service: $service, qr_code: $qr_code, created_at: $created_at, is_confirmed: $is_confirmed)';
+    return 'AntrianTicket(uuid: $uuid, name: $name, email: $email, no_hp: $no_hp, jadwal: $jadwal, service: $service, qr_code: $qr_code, created_at: $created_at, is_confirmed: $is_confirmed, status: $status, on_sesi_order: $on_sesi_order)';
   }
 
   @override
@@ -96,11 +109,26 @@ class AntrianTicket {
       other.service == service &&
       other.qr_code == qr_code &&
       other.created_at == created_at &&
-      other.is_confirmed == is_confirmed;
+      other.is_confirmed == is_confirmed &&
+      other.status == status &&
+      other.on_sesi_order == on_sesi_order;
   }
+
 }
 
 class AntrianTicketDetails {
+  // String? uuid;
+  // String name;
+  // String email;
+  // String no_hp;
+  // String jadwal;
+  // String service;
+  // String? qr_code;
+  // String? created_at;
+  // bool is_confirmed;
+  // int status;
+  // int on_sesi_order;
+
   String? antrian_ticket_uuid;
   String antrian_ticket_name;
   String antrian_ticket_email;
@@ -110,6 +138,8 @@ class AntrianTicketDetails {
   String? antrian_ticket_qr_code;
   String? antrian_ticket_created_at;
   bool antrian_ticket_is_confirmed;
+  AntrianStatusDetails? status_details;
+  int antrian_ticket_on_sesi_order;
   AntrianTicketDetails({
     this.antrian_ticket_uuid,
     required this.antrian_ticket_name,
@@ -120,6 +150,8 @@ class AntrianTicketDetails {
     this.antrian_ticket_qr_code,
     this.antrian_ticket_created_at,
     required this.antrian_ticket_is_confirmed,
+    this.status_details,
+    required this.antrian_ticket_on_sesi_order,
   });
 
   AntrianTicketDetails copyWith({
@@ -132,6 +164,8 @@ class AntrianTicketDetails {
     String? antrian_ticket_qr_code,
     String? antrian_ticket_created_at,
     bool? antrian_ticket_is_confirmed,
+    AntrianStatusDetails? status_details,
+    int? antrian_ticket_on_sesi_order,
   }) {
     return AntrianTicketDetails(
       antrian_ticket_uuid: antrian_ticket_uuid ?? this.antrian_ticket_uuid,
@@ -143,6 +177,8 @@ class AntrianTicketDetails {
       antrian_ticket_qr_code: antrian_ticket_qr_code ?? this.antrian_ticket_qr_code,
       antrian_ticket_created_at: antrian_ticket_created_at ?? this.antrian_ticket_created_at,
       antrian_ticket_is_confirmed: antrian_ticket_is_confirmed ?? this.antrian_ticket_is_confirmed,
+      status_details: status_details ?? this.status_details,
+      antrian_ticket_on_sesi_order: antrian_ticket_on_sesi_order ?? this.antrian_ticket_on_sesi_order,
     );
   }
 
@@ -157,6 +193,8 @@ class AntrianTicketDetails {
       'antrian_ticket_qr_code': antrian_ticket_qr_code,
       'antrian_ticket_created_at': antrian_ticket_created_at,
       'antrian_ticket_is_confirmed': antrian_ticket_is_confirmed,
+      'status_details': status_details?.toJson(),
+      'antrian_ticket_on_sesi_order': antrian_ticket_on_sesi_order,
     };
   }
 
@@ -171,7 +209,14 @@ class AntrianTicketDetails {
       antrian_ticket_qr_code: map['antrian_ticket_qr_code'] != null ? map['antrian_ticket_qr_code'] as String : null,
       antrian_ticket_created_at: map['antrian_ticket_created_at'] != null ? map['antrian_ticket_created_at'] as String : null,
       antrian_ticket_is_confirmed: map['antrian_ticket_is_confirmed'] as bool,
+      status_details: map['status_details'] != null ? AntrianStatusDetails.fromJson(map['status_details'] as Map<String,dynamic>) : null,
+      antrian_ticket_on_sesi_order: map['antrian_ticket_on_sesi_order'] as int,
     );
+  }
+
+  @override
+  String toString() {
+    return 'AntrianTicketDetails(antrian_ticket_uuid: $antrian_ticket_uuid, antrian_ticket_name: $antrian_ticket_name, antrian_ticket_email: $antrian_ticket_email, antrian_ticket_no_hp: $antrian_ticket_no_hp, jadwal_details: $jadwal_details, service_details: $service_details, antrian_ticket_qr_code: $antrian_ticket_qr_code, antrian_ticket_created_at: $antrian_ticket_created_at, antrian_ticket_is_confirmed: $antrian_ticket_is_confirmed, status_details: $status_details, antrian_ticket_on_sesi_order: $antrian_ticket_on_sesi_order)';
   }
 
   @override
@@ -187,19 +232,9 @@ class AntrianTicketDetails {
       other.service_details == service_details &&
       other.antrian_ticket_qr_code == antrian_ticket_qr_code &&
       other.antrian_ticket_created_at == antrian_ticket_created_at &&
-      other.antrian_ticket_is_confirmed == antrian_ticket_is_confirmed;
+      other.antrian_ticket_is_confirmed == antrian_ticket_is_confirmed &&
+      other.status_details == status_details &&
+      other.antrian_ticket_on_sesi_order == antrian_ticket_on_sesi_order;
   }
 
-  @override
-  int get hashCode {
-    return antrian_ticket_uuid.hashCode ^
-      antrian_ticket_name.hashCode ^
-      antrian_ticket_email.hashCode ^
-      antrian_ticket_no_hp.hashCode ^
-      jadwal_details.hashCode ^
-      service_details.hashCode ^
-      antrian_ticket_qr_code.hashCode ^
-      antrian_ticket_created_at.hashCode ^
-      antrian_ticket_is_confirmed.hashCode;
-  }
 }
