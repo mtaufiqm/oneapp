@@ -151,7 +151,7 @@ class AntrianJadwalDetalsWithTickets {
     };
   }
 
-  factory AntrianJadwalDetalsWithTickets.fromMap(Map<String, dynamic> map) {
+  factory AntrianJadwalDetalsWithTickets.fromJson(Map<String, dynamic> map) {
     return AntrianJadwalDetalsWithTickets(
       jadwal: AntrianJadwalDetails.fromJson(map['jadwal'] as Map<String,dynamic>),
       tickets: List<AntrianTicketDetails>.from((map['tickets'] as List<dynamic>).map<AntrianTicketDetails>((x) => AntrianTicketDetails.fromJson(x as Map<String,dynamic>))),

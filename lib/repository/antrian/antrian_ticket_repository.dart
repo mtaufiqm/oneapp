@@ -336,10 +336,10 @@ ON aj.sesi = ass.uuid
 LEFT JOIN antrian_status anstat
 ON att.status = anstat.id
 
-WHERE aj.date = $1 AND att.is_confirmed = false AND anstat.id = 0
+WHERE aj.date = $1
 
 ORDER BY
-ass.order ASC, att.created_at ASC
+ass.order ASC, anstat.id DESC, att.on_sesi_order, att.created_at ASC
 
 ''';
 
@@ -494,7 +494,23 @@ ass.order ASC, anstat.id DESC, att.on_sesi_order ASC
 
 
   //need more implementations
-  Future<void> delete(dynamic id) async {
-    return;
+  Future<void> delete(dynamic uuid) async {
+    return this.conn.connectionPool.runTx((tx) async {
+      var result = await tx.execute(r"DELETE FROM antrian_ticket WHERE uuid = $1",parameters: [uuid as String]);
+      if(result.affectedRows <= 0){
+        throw Exception("Failed Delete Data");
+      }
+      return;
+    });
+  }
+
+  Future<void> updateStatusOnlyByUuid(String uuid, int status) async {
+    return this.conn.connectionPool.runTx((tx) async {
+      var result = await tx.execute(r"UPDATE antrian_ticket SET status = $1 WHERE uuid = $2",parameters: [status,uuid]);
+      if(result.affectedRows <= 0){
+        throw Exception("Failed Update Data");
+      }
+      return;
+    });
   }
 }
