@@ -1,4 +1,5 @@
 import 'package:dart_frog/dart_frog.dart';
+import 'package:my_first/blocs/request_helper.dart';
 import 'package:my_first/blocs/response_helper.dart';
 import 'package:my_first/models/kegiatan.dart';
 import 'package:my_first/models/user.dart';
@@ -25,7 +26,13 @@ Future<Response> onGet(RequestContext ctx) async {
   //AUTHORIZATION
 
   try { 
-    List<KegiatanWithProgress> listOfKegiatanWithProgress = await kegiatanRepo.readAllWithProgress();
+    if(ctx.request.url.queryParameters["status"] == null){
+      List<KegiatanWithProgress> listOfKegiatanWithProgress = await kegiatanRepo.readAllWithProgress();
+      return Response.json(body: listOfKegiatanWithProgress);
+    }
+
+    Map<String,dynamic> queryParams = RequestHelper.parseAllQueryParam({"status":1}, ctx.request);
+    List<KegiatanWithProgress> listOfKegiatanWithProgress = await kegiatanRepo.readAllWithProgressByStatus(queryParams["status"]! as int);
     return Response.json(body: listOfKegiatanWithProgress);
   } catch(e){
     print(e);

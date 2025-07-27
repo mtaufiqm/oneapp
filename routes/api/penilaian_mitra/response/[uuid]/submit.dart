@@ -21,8 +21,8 @@ Future<Response> onRequest(
   };
 }
 
-//this only save, not submit
-//Insert / Update RequestAssignmentStructure;
+//this submit
+//Insert / Update RequestAssignmentStructure and Calculate ICKM;
 Future<Response> onPost(RequestContext ctx, String uuid) async {
   KegiatanRepository kegiatanRepo = ctx.read<KegiatanRepository>();
   StructurePenilaianRepository structureRepo = ctx.read<StructurePenilaianRepository>();
@@ -41,11 +41,16 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
       return RespHelper.forbidden();
     }
     RequestAssignmentStructure object = RequestAssignmentStructure.fromJson(jsonBody);
-    await responseRepo.upsertResponseAnswersByUuidSave(uuid, object.response, object.answers);
-    return RespHelper.message(message:"SUCCESS");
+    var responseAssignment = await responseRepo.upsertResponseAnswersByUuidSubmit(uuid, object.response, object.answers);
+
+    //failed in calculate ickm or insert it to ickm_mitra table, but answers is saved
+    if(responseAssignment == null){
+      throw Exception("Gagal Mendapatkan/Menyimpan Nilai Indeks Mitra");
+    }
+    return Response.json(body: responseAssignment);
 
   } catch(err){
-    log("Error Upsert Answers");
+    print("Error Upsert Answers Submit : ${err}");
     return RespHelper.badRequest(message: "Error Occured ${err}");
   }
 }

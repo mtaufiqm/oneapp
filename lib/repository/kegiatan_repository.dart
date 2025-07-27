@@ -84,7 +84,7 @@ class KegiatanRepository extends MyRepository<Kegiatan>{
     return this.connection.connectionPool.withConnection((conn) async{
       return conn.runTx<Kegiatan>((tx) async{
         kegiatan.uuid = Uuid().v1();
-        Result result = await tx.execute(r'INSERT INTO kegiatan VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING uuid',
+        Result result = await tx.execute(r'INSERT INTO kegiatan VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING uuid',
         parameters: [
           kegiatan.uuid,
           kegiatan.name,
@@ -97,7 +97,9 @@ class KegiatanRepository extends MyRepository<Kegiatan>{
           kegiatan.mitra_involved,
           kegiatan.mitra_number,
           kegiatan.created_by,
-          kegiatan.penanggung_jawab
+          kegiatan.penanggung_jawab,
+          null,   //this is kegiatan_mode
+          kegiatan.status
         ]);
         if(result.isEmpty){
           throw Exception("Error Create Kegiatan ${kegiatan.uuid}");
@@ -121,7 +123,7 @@ class KegiatanRepository extends MyRepository<Kegiatan>{
 
   Future<Kegiatan> update(dynamic uuid,Kegiatan kegiatan) async{
     return this.connection.connectionPool.runTx<Kegiatan>((tx) async {
-      var result = await tx.execute(r'UPDATE kegiatan SET name = $1, description = $2, "start" = $3, "end" = $4, monitoring_link = $5, organic_involved = $6, organic_number = $7, mitra_involved = $8, mitra_number = $9, created_by = $10, penanggung_jawab = $11 WHERE uuid = $12',
+      var result = await tx.execute(r'UPDATE kegiatan SET name = $1, description = $2, "start" = $3, "end" = $4, monitoring_link = $5, organic_involved = $6, organic_number = $7, mitra_involved = $8, mitra_number = $9, created_by = $10, penanggung_jawab = $11, status = $12 WHERE uuid = $13',
       parameters: [
         kegiatan.name,
         kegiatan.description,
@@ -134,6 +136,7 @@ class KegiatanRepository extends MyRepository<Kegiatan>{
         kegiatan.mitra_number,
         kegiatan.created_by,
         kegiatan.penanggung_jawab,
+        kegiatan.status,
         uuid as String
       ]);
       if(result.affectedRows < 1){
@@ -160,6 +163,29 @@ class KegiatanRepository extends MyRepository<Kegiatan>{
     return this.connection.connectionPool.withConnection<List<KegiatanWithProgress>>((conn) async {
       return conn.runTx((tx) async {
         var result = await tx.execute(r'select k.*, coalesce(query1.open_number,0) as number_of_open, coalesce(query1.progress_number,0) as number_of_progress, coalesce(query1.pause_number,0) as number_of_pause, coalesce(query1.end_number,0) as number_of_end, coalesce(query1.total_number,0) as number_of_total from kegiatan k left join (select kmb.kegiatan_uuid as kegiatan_uuid, sum(case when kmp.status = 0 then 1 else 0 end) as open_number, sum(case when kmp.status = 1 then 1 else 0 end) as progress_number, sum(case when kmp.status = 2 then 1 else 0 end) as pause_number, sum(case when kmp.status = 3 then 1 else 0 end) as end_number, count(*) as total_number from kegiatan_mitra_penugasan kmp left join kegiatan_mitra_bridge kmb on kmp.bridge_uuid = kmb."uuid" group by kmb.kegiatan_uuid) as query1 on k."uuid" = query1.kegiatan_uuid ORDER BY k."end" DESC');
+        List<KegiatanWithProgress> listOfKegiatan = <KegiatanWithProgress>[];
+        for(ResultRow i in result){
+          Map<String,dynamic> mapRow = i.toColumnMap();
+          Kegiatan kegiatan = Kegiatan.fromJson(mapRow);
+          Map<String,int> progress = {
+            "open":mapRow["number_of_open"] as int,
+            "progress":mapRow["number_of_progress"] as int,
+            "pause":mapRow["number_of_pause"] as int,
+            "end":mapRow["number_of_end"] as int,
+            "total":mapRow["number_of_total"] as int
+          };
+          KegiatanWithProgress item = KegiatanWithProgress(kegiatan: kegiatan, progress: progress);
+          listOfKegiatan.add(item);
+        }
+        return listOfKegiatan;
+      });
+    });
+  }
+
+    Future<List<KegiatanWithProgress>> readAllWithProgressByStatus(int status) async {
+    return this.connection.connectionPool.withConnection<List<KegiatanWithProgress>>((conn) async {
+      return conn.runTx((tx) async {
+        var result = await tx.execute(r'select k.*, coalesce(query1.open_number,0) as number_of_open, coalesce(query1.progress_number,0) as number_of_progress, coalesce(query1.pause_number,0) as number_of_pause, coalesce(query1.end_number,0) as number_of_end, coalesce(query1.total_number,0) as number_of_total from kegiatan k left join (select kmb.kegiatan_uuid as kegiatan_uuid, sum(case when kmp.status = 0 then 1 else 0 end) as open_number, sum(case when kmp.status = 1 then 1 else 0 end) as progress_number, sum(case when kmp.status = 2 then 1 else 0 end) as pause_number, sum(case when kmp.status = 3 then 1 else 0 end) as end_number, count(*) as total_number from kegiatan_mitra_penugasan kmp left join kegiatan_mitra_bridge kmb on kmp.bridge_uuid = kmb."uuid" group by kmb.kegiatan_uuid) as query1 on k."uuid" = query1.kegiatan_uuid WHERE k.status = $1 ORDER BY k."end" DESC',parameters: [status]);
         List<KegiatanWithProgress> listOfKegiatan = <KegiatanWithProgress>[];
         for(ResultRow i in result){
           Map<String,dynamic> mapRow = i.toColumnMap();

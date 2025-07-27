@@ -54,6 +54,10 @@ Future<Response> onPost(RequestContext ctx) async {
 
     jsonBody["created_by"] = authUser.username;
     Kegiatan kegiatan = Kegiatan.fromJson(jsonBody as Map<String,dynamic>);
+
+    //new kegiatan automatically have status : 0 (BELUM MULAI)
+    kegiatan.status = 0;
+
     Kegiatan created = await kegiatanRepo.create(kegiatan);
     return Response.json(body: created);
   } catch(e){

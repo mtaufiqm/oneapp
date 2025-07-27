@@ -28,8 +28,6 @@ Future<Response> onGet(RequestContext ctx, String structure_uuid) async {
     if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA"]) || authUser.username == (spmDetails.penilai_username??"") || authUser.username == (kegiatan.penanggung_jawab??""))){
       return RespHelper.forbidden();
     }
-
-
     return Response.json(body: spmDetails);
   } catch(err){
     String message = "Error get Structure Details ${structure_uuid} : ${err}";

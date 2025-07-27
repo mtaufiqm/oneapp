@@ -3,7 +3,6 @@
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
-
 import 'package:my_first/models/mitra.dart';
 
 class Kegiatan {
@@ -20,6 +19,7 @@ class Kegiatan {
   String created_by;
   String? penanggung_jawab;
   String? mode;
+  int status;
   Kegiatan({
     this.uuid,
     required this.name,
@@ -34,6 +34,7 @@ class Kegiatan {
     required this.created_by,
     this.penanggung_jawab,
     this.mode,
+    required this.status,
   });
 
   Kegiatan copyWith({
@@ -50,6 +51,7 @@ class Kegiatan {
     String? created_by,
     String? penanggung_jawab,
     String? mode,
+    int? status,
   }) {
     return Kegiatan(
       uuid: uuid ?? this.uuid,
@@ -65,6 +67,7 @@ class Kegiatan {
       created_by: created_by ?? this.created_by,
       penanggung_jawab: penanggung_jawab ?? this.penanggung_jawab,
       mode: mode ?? this.mode,
+      status: status ?? this.status,
     );
   }
 
@@ -83,6 +86,7 @@ class Kegiatan {
       'created_by': created_by,
       'penanggung_jawab': penanggung_jawab,
       'mode': mode,
+      'status': status,
     };
   }
 
@@ -101,12 +105,13 @@ class Kegiatan {
       created_by: map['created_by'] as String,
       penanggung_jawab: map['penanggung_jawab'] != null ? map['penanggung_jawab'] as String : null,
       mode: map['mode'] != null ? map['mode'] as String : null,
+      status: map['status'] as int,
     );
   }
 
   @override
   String toString() {
-    return 'Kegiatan(uuid: $uuid, name: $name, description: $description, start: $start, end: $end, monitoring_link: $monitoring_link, organic_involved: $organic_involved, organic_number: $organic_number, mitra_involved: $mitra_involved, mitra_number: $mitra_number, created_by: $created_by, penanggung_jawab: $penanggung_jawab, mode: $mode)';
+    return 'Kegiatan(uuid: $uuid, name: $name, description: $description, start: $start, end: $end, monitoring_link: $monitoring_link, organic_involved: $organic_involved, organic_number: $organic_number, mitra_involved: $mitra_involved, mitra_number: $mitra_number, created_by: $created_by, penanggung_jawab: $penanggung_jawab, mode: $mode, status: $status)';
   }
 
   @override
@@ -126,7 +131,8 @@ class Kegiatan {
       other.mitra_number == mitra_number &&
       other.created_by == created_by &&
       other.penanggung_jawab == penanggung_jawab &&
-      other.mode == mode;
+      other.mode == mode &&
+      other.status == status;
   }
 }
 

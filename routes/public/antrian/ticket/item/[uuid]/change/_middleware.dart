@@ -11,7 +11,7 @@ import 'package:my_first/repository/user_repository.dart';
 Handler middleware(Handler handler){
   return handler.use(bearerAuthentication<User>(
     authenticator: (context,token) async{
-      JWT jwtToken = JwtHelper.tryVerify(token);
+      JWT? jwtToken = JwtHelper.tryVerify(token);
       //print("Token : ${token}");
       //print(jwtToken??"Invalid JWT");
       if(jwtToken == null){
