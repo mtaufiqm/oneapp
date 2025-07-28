@@ -28,8 +28,21 @@ Future<Response> onRequest(
   });
 }
 
+
+//Continue This
 Future<Response> onGet(RequestContext context, String uuid) async {
-  return Response.json();
+  KegiatanRepository kegiatanRepo = context.read<KegiatanRepository>();
+
+  User authUser = context.read<User>();
+
+  try {
+    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA"]))){
+      return RespHelper.forbidden();
+    }
+    return Response.json();
+  } catch(err) {
+    return RespHelper.badRequest(message: "${err}");
+  }
 }
 
 //CONTINUE THIS
@@ -58,8 +71,8 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
       kegiatan_uuid: kegiatan.uuid!, 
       title: "Penilaian Mitra Kegiatan ${kegiatan.name}", 
       description: "Penilaian Mitra Kegiatan ${kegiatan.description}",
-      start_date: DateFormat("yyyy-MM-dd").format(DateTime.parse(kegiatan.start).add(Duration(days: 1))),
-      end_date: DateFormat("yyyy-MM-dd").format(DateTime.parse(kegiatan.start).add(Duration(days: 10)))
+      start_date: DateFormat("yyyy-MM-dd").format(DateTime.parse(kegiatan.end).add(Duration(days: 1))),
+      end_date: DateFormat("yyyy-MM-dd").format(DateTime.parse(kegiatan.end).add(Duration(days: 10)))
     );
 
     //create kuesioner_penilaian_mitra here.
