@@ -54,6 +54,17 @@ class KegiatanMitraBridge {
     );
   }
 
+  
+  factory KegiatanMitraBridge.fromDb(Map<String, dynamic> map) {
+    return KegiatanMitraBridge(
+      uuid: map['kmb_uuid'] != null ? map['kmb_uuid'] as String : null,
+      kegiatan_uuid: map['kmb_kegiatan_uuid'] as String,
+      mitra_id: map['kmb_mitra_id'] as String,
+      status: map['kmb_status'] as String,
+      pengawas: map['kmb_pengawas'] != null ? map['kmb_pengawas'] as String : null,
+    );
+  }
+
   @override
   String toString() {
     return 'KegiatanMitraBridge(uuid: $uuid, kegiatan_uuid: $kegiatan_uuid, mitra_id: $mitra_id, status: $status, pengawas: $pengawas)';

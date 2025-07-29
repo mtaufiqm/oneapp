@@ -57,7 +57,18 @@ CREATE TABLE "kegiatan" (
   "mitra_involved" boolean,
   "mitra_number" integer,
   "created_by" text,
-  "penanggung_jawab" text
+  "penanggung_jawab" text,
+  "mode" text,
+  "status" integer NOT NULL DEFAULT 0
+);
+
+CREATE TABLE "kegiatan_mode" (
+  "description" text PRIMARY KEY
+);
+
+CREATE TABLE "kegiatan_status" (
+  "id" integer PRIMARY KEY,
+  "description" text NOT NULL
 );
 
 CREATE TABLE "kegiatan_mitra_bridge" (
@@ -378,6 +389,10 @@ ALTER TABLE "mitra" ADD FOREIGN KEY ("username") REFERENCES "user" ("username") 
 ALTER TABLE "kegiatan" ADD FOREIGN KEY ("created_by") REFERENCES "user" ("username");
 
 ALTER TABLE "kegiatan" ADD FOREIGN KEY ("penanggung_jawab") REFERENCES "user" ("username") ON DELETE SET NULL ON UPDATE CASCADE
+
+ALTER TABLE "kegiatan" ADD FOREIGN KEY ("mode") REFERENCES "kegiatan_mode" ("description") ON DELETE SET NULL ON UPDATE CASCADE;
+
+ALTER TABLE "kegiatan" ADD FOREIGN KEY ("status") REFERENCES "kegiatan_status" ("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 ALTER TABLE "kegiatan_mitra_bridge" ADD FOREIGN KEY ("kegiatan_uuid") REFERENCES "kegiatan" ("uuid");
 

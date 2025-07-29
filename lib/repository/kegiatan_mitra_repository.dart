@@ -46,14 +46,30 @@ class KegiatanMitraRepository {
 
     Future<List<KegiatanMitraBridgeDetails>> getDetailsByMitraId(dynamic mitra_id) async {
     return await this.conn.connectionPool.runTx<List<KegiatanMitraBridgeDetails>>((tx) async {
-      var listOfObject = <KegiatanMitraBridgeDetails>[];      
-      Result result = await tx.execute(r'''SELECT k.*, kmb.mitra_id, kmb.kegiatan_uuid, kmb.status, kmb.pengawas FROM kegiatan_mitra_bridge kmb LEFT JOIN kegiatan k ON kmb.kegiatan_uuid = k.uuid 
-      WHERE kmb.mitra_id = $1 ORDER BY k."end" DESC''',parameters: [
+      var listOfObject = <KegiatanMitraBridgeDetails>[];     
+      String queryTemplate = 
+      r'''
+SELECT 
+k.*, 
+kmb.uuid as kmb_uuid,
+kmb.mitra_id as kmb_mitra_id, 
+kmb.kegiatan_uuid as kmb_kegiatan_uuid, 
+kmb.status as kmb_status, 
+kmb.pengawas as kmb_pengawas 
+
+FROM kegiatan_mitra_bridge kmb 
+LEFT JOIN kegiatan k 
+ON kmb.kegiatan_uuid = k.uuid 
+
+WHERE kmb.mitra_id = $1 
+ORDER BY k."end" DESC
+'''; 
+      Result result = await tx.execute(queryTemplate,parameters: [
         mitra_id as String
       ]);
       for(var item in result){
         Kegiatan kegiatan = Kegiatan.fromJson(item.toColumnMap());
-        KegiatanMitraBridge kmb = KegiatanMitraBridge.fromJson(item.toColumnMap()..remove("uuid"));
+        KegiatanMitraBridge kmb = KegiatanMitraBridge.fromDb(item.toColumnMap());
         KegiatanMitraBridgeDetails kmbDetails = KegiatanMitraBridgeDetails(
           kegiatan: kegiatan, 
           status: kmb
