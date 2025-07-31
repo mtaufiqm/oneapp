@@ -578,6 +578,167 @@ ass.order ASC, anstat.id DESC, att.on_sesi_order ASC
     });
   }
 
+    Future<AntrianJadwalDetalsWithTickets?> readAllTicketCurrentSesiNew() async {
+    return this.conn.connectionPool.runTx<AntrianJadwalDetalsWithTickets?>((tx) async {
+      DateTime currentDateTime = DatetimeHelper.parseMakassarTime(DatetimeHelper.getCurrentMakassarTime());
+      String currentTime = DateFormat("HH:mm:ss.SSS").format(currentDateTime);
+      String todayDate = DateFormat('yyyy-MM-dd').format(currentDateTime);
+
+  // String? antrian_sesi_uuid;
+  // int antrian_sesi_order;
+  // String antrian_sesi_description;
+  // String antrian_sesi_tag;
+  // String antrian_sesi_code;
+  // String antrian_sesi_start;
+  // String antrian_sesi_end;
+
+  // String? antrian_jadwal_uuid;
+  // String antrian_jadwal_date;
+  // AntrianSesiDetails? sesi_details;
+  // int antrian_jadwal_kuota;
+      String queryTodaySesi = r'''
+SELECT
+aj.uuid as antrian_jadwal_uuid,
+aj.date as antrian_jadwal_date,
+aj.kuota as antrian_jadwal_kuota,
+
+ass.uuid as antrian_sesi_uuid,
+ass.order as antrian_sesi_order,
+ass.description as antrian_sesi_description,
+ass.tag as antrian_sesi_tag,
+ass.code as antrian_sesi_code,
+ass.sesi_start as antrian_sesi_start,
+ass.sesi_end as antrian_sesi_end
+
+FROM antrian_jadwal aj
+
+LEFT JOIN antrian_sesi ass
+ON aj.sesi = ass.uuid
+
+WHERE aj.date = $1
+
+ORDER BY ass.order ASC
+''';
+      var resultTodaySesi = await tx.execute(queryTodaySesi,parameters: [todayDate]);
+
+      if(resultTodaySesi.isEmpty){
+        return null;
+      }
+
+      List<AntrianJadwalDetails> listJadwal = [];
+
+      for(var item in resultTodaySesi){
+          //add to list jadwal sesi
+          AntrianJadwalDetails jadwalDetails = AntrianJadwalDetails.fromJson(item.toColumnMap());
+          AntrianSesiDetails sesiDetails = AntrianSesiDetails.fromJson(item.toColumnMap());
+          jadwalDetails.sesi_details = sesiDetails;
+          listJadwal.add(jadwalDetails);
+      }
+
+      Duration currentTimeInDuration = parseTime(currentTime);
+
+      //filter only active today jadwal
+      List<AntrianJadwalDetails> currentActiveJadwal = listJadwal.where((el) {
+        try {
+          Duration jadwalStartDuration = parseTime(el.sesi_details!.antrian_sesi_start);
+          Duration jadwalEndDuration = parseTime(el.sesi_details!.antrian_sesi_end);
+          if((currentTimeInDuration.compareTo(jadwalStartDuration) >= 0) && (currentTimeInDuration.compareTo(jadwalEndDuration) <=0)){
+            return true;
+          }
+          return false;
+        } catch(err){
+          return false;
+        }
+      }).toList();
+
+      //if has filtered also still empty
+      if(currentActiveJadwal.isEmpty){
+        return null;
+      }
+      
+      //String todayDate = '2025-07-19';
+      String query = 
+r'''
+SELECT 
+
+att.uuid as antrian_ticket_uuid,
+att.name as antrian_ticket_name,
+att.email as antrian_ticket_email,
+att.no_hp as antrian_ticket_no_hp,
+att.qr_code as antrian_ticket_qr_code,
+att.created_at as antrian_ticket_created_at,
+att.is_confirmed as antrian_ticket_is_confirmed,
+att.on_sesi_order as antrian_ticket_on_sesi_order,
+
+ast.uuid as antrian_service_uuid,
+ast.description as antrian_service_description,
+
+aj.uuid as antrian_jadwal_uuid,
+aj.date as antrian_jadwal_date,
+aj.kuota as antrian_jadwal_kuota,
+
+ass.uuid as antrian_sesi_uuid,
+ass.order as antrian_sesi_order,
+ass.description as antrian_sesi_description,
+ass.tag as antrian_sesi_tag,
+ass.code as antrian_sesi_code,
+ass.sesi_start as antrian_sesi_start,
+ass.sesi_end as antrian_sesi_end,
+
+anstat.id as antrian_status_id,
+anstat.description as antrian_status_description
+
+FROM antrian_ticket att
+
+LEFT JOIN antrian_service_type ast
+ON att.service = ast.uuid
+
+LEFT JOIN antrian_jadwal aj
+ON att.jadwal = aj.uuid
+
+LEFT JOIN antrian_sesi ass
+ON aj.sesi = ass.uuid
+
+LEFT JOIN antrian_status anstat
+ON att.status = anstat.id
+
+WHERE aj.uuid = $1 AND (anstat.id = 0 OR anstat.id = 1) 
+
+ORDER BY
+ass.order ASC, anstat.id DESC, att.on_sesi_order ASC
+
+''';
+
+
+      var result = await tx.execute(query,parameters: [currentActiveJadwal.first.antrian_jadwal_uuid!]);
+      if(result.isEmpty){
+        return AntrianJadwalDetalsWithTickets(jadwal: currentActiveJadwal.first, tickets: []);
+      }
+
+      AntrianJadwalDetalsWithTickets? object = null;
+
+      for(var item in result){
+        try {
+          AntrianTicketDetails ticket = AntrianTicketDetails.fromJson(item.toColumnMap());
+          AntrianServiceTypeDetails service = AntrianServiceTypeDetails.fromJson(item.toColumnMap());
+          AntrianSesiDetails sesi = AntrianSesiDetails.fromJson(item.toColumnMap());
+          AntrianJadwalDetails jadwal = AntrianJadwalDetails.fromJson(item.toColumnMap());
+          AntrianStatusDetails status = AntrianStatusDetails.fromJson(item.toColumnMap());
+
+          jadwal.sesi_details = sesi;
+
+          ticket.jadwal_details = jadwal;
+          ticket.service_details = service;
+          ticket.status_details = status;
+
+        } catch(err){
+          continue;
+        }
+      }
+      return object;
+    });
+  }
+
 
   Future<List<AntrianTicket>> readAll() async {
     return this.conn.connectionPool.runTx<List<AntrianTicket>>((tx) async {

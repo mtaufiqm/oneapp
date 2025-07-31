@@ -15,10 +15,9 @@ Future<Response> onRequest(RequestContext context) async {
 Future<Response> onGet(RequestContext ctx) async {
   AntrianTicketRepository ticketRepo = ctx.read<AntrianTicketRepository>();
   try {
-    var object = await ticketRepo.readAllTicketCurrentSesi();
+    var object = await ticketRepo.readAllTicketCurrentSesiNew();
     return Response.json(body: object);
   } catch(err){
     return RespHelper.badRequest(message: "Error ${err}");
   }
-
 }
