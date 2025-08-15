@@ -19,7 +19,7 @@ Future<Response> onGet(RequestContext ctx) async {
   try {
     String today = DateFormat("yyyy-MM-dd").format(DatetimeHelper.parseMakassarTime(DatetimeHelper.getCurrentMakassarTime()));
     PetugasPst petugas = await petugasRepo.getByDate(today);
-    return Response.json(body: today);
+    return Response.json(body: petugas);
   } catch(err){
     return RespHelper.badRequest(message: "Error Occured");
   }
