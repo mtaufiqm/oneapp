@@ -71,6 +71,50 @@ class IckmMitraRepository extends MyRepository<IckmMitra> {
     });
   }
 
+  Future<void> deleteByKegiatanAndMitra(dynamic kegiatan_uuid, dynamic mitra_id) async {
+    return this.conn.connectionPool.runTx((tx) async {
+      var result = await tx.execute(r"DELETE FROM ickm_mitra WHERE kegiatan_uuid = $1 AND mitra_id = $2",parameters: [kegiatan_uuid as String, mitra_id as String]);
+      if(result.affectedRows <= 0){
+        throw Exception("Failed Remove ICKM Value for Kegiatan : ${kegiatan_uuid as String}, Mitra ID : ${mitra_id as String}");
+      }
+      return;
+    });
+  }
+
+  Future<double> getAverageIckm() async {
+        return this.conn.connectionPool.runTx((tx) async {
+      var result = await tx.execute(r"SELECT AVG(query1.ickm_kegiatan) as average_ickm FROM (SELECT AVG(im.ickm) as ickm_kegiatan FROM ickm_mitra im GROUP BY im.kegiatan_uuid) as query1");
+      //if still there is no data just return 0.0
+      if(result.isEmpty){
+        return 0.0;
+      }
+      double average_ickm = result.first.toColumnMap()["average_ickm"] as double;
+      return average_ickm;
+    });
+  }
+
+  Future<double> getAverageIckmByKegiatanUuid(dynamic kegiatan_uuid) async {
+    return this.conn.connectionPool.runTx((tx) async {
+      var result = await tx.execute(r"SELECT * FROM ickm_mitra WHERE kegiatan_uuid = $1",parameters: [kegiatan_uuid as String]);
+      //if still there is no data just return 0.0
+      if(result.isEmpty){
+        return 0.0;
+      }
+      List<double> allValue = result.map((el) {
+        IckmMitra item = IckmMitra.fromJson(el.toColumnMap());
+        return item.ickm;
+      }).toList();
+
+      double total = 0.0;
+      double average = 0.0;
+      allValue.forEach((el) {
+        total += el;
+      });
+      average = total/allValue.length;
+      return average;
+    });
+  }
+
   Future<double> getAverageIckmByMitraId(dynamic mitra_id) async {
     return this.conn.connectionPool.runTx<double>((tx) async {
       var result = await tx.execute(r"SELECT * FROM ickm_mitra WHERE mitra_id = $1",parameters: [mitra_id as String]);

@@ -720,10 +720,10 @@ WHERE aa.response_assignment_uuid = $1
         parameters: [currentTime, true, uuid as String]
       );
       if(result1.affectedRows <= 0){
-        print("Failed");
+        // print("Failed");
         throw Exception("NO Data Updated");
       }
-      print("Success");
+      // print("Success");
       return ResponseAssignment.fromJson(lastUpdate.first.toColumnMap());
         
       } catch(err){

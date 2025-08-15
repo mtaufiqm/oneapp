@@ -39,7 +39,7 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
   User authUser = ctx.read<User>();
   try{
     Kegiatan kegiatan = await kegiatanRepo.getById(uuid);
-    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM"]) || authUser.username == kegiatan.created_by)){
+    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM"]) || authUser.username == kegiatan.created_by || authUser.username == (kegiatan.penanggung_jawab??""))){
       return RespHelper.unauthorized();
     }
 

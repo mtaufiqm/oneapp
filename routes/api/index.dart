@@ -6,6 +6,6 @@ import "package:my_first/repository/myconnection.dart";
 
 Future<Response> onRequest(RequestContext context) async {
   return Response.json(body:{
-    "Coba":"Hehe"
+    "message":"Welcome To BPS Kabupaten Luwu Site."
   });
 }
