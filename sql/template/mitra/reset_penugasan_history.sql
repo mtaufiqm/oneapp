@@ -4,7 +4,7 @@ select count(*) from penugasan_history ps where ps.penugasan_uuid in  (select km
 
 
 --this will delete all penugasan history from spesific kegiatan_uuid
--- BECAREFULLY because this will delete all penugasan_history of that kegiatan
+-- BECAREFULLY because this can be delete all penugasan_history of that kegiatan
 
 delete from penugasan_history ps where ps.penugasan_uuid in  (select kmp.uuid as uuid from kegiatan_mitra_penugasan kmp left join kegiatan_mitra_bridge kmb on kmp.bridge_uuid  = kmb."uuid" where kmb.kegiatan_uuid = '5eb43a40-40ea-11f0-aab0-e9b3119ef152')
 

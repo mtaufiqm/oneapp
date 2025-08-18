@@ -20,7 +20,8 @@ class PetugasPstRepository {
 
   Future<PetugasPst> getByDate(String date) async {
     return this.conn.connectionPool.runTx<PetugasPst>((tx) async {
-      var result = await tx.execute(r"SELECT * FROM petugas_pst pp WHERE pp.end_date >= $1 AND pp.start_date <= $1",parameters: [date]);
+      var result = await tx.execute(r"SELECT * FROM petugas_pst pp WHERE TO_DATE(pp.end_date,'YYYY-MM-DD') >= $1 AND TO_DATE(pp.start_date,'YYYY-MM-DD') <= $1",parameters: [date]);
+      
       if(result.isEmpty){
         throw Exception("There is no Data at time ${date}");
       }

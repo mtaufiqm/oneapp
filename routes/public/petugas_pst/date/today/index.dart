@@ -21,6 +21,6 @@ Future<Response> onGet(RequestContext ctx) async {
     PetugasPst petugas = await petugasRepo.getByDate(today);
     return Response.json(body: petugas);
   } catch(err){
-    return RespHelper.badRequest(message: "Error Occured");
+    return RespHelper.badRequest(message: "Error Occured ${err}");
   }
 }

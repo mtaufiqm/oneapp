@@ -376,6 +376,14 @@ CREATE TABLE "antrian_status" (
   "description" text NOT NULL
 );
 
+CREATE TABLE "petugas_pst" (
+  "uuid" text PRIMARY KEY,
+  "nama" text NOT NULL,
+  "start_date" text NOT NULL,
+  "end_date" text NOT NULL,
+  "photo" text
+);
+
 ALTER TABLE "user_role_bridge" ADD FOREIGN KEY ("description") REFERENCES "roles" ("description");
 
 ALTER TABLE "user_role_bridge" ADD FOREIGN KEY ("username") REFERENCES "user" ("username");
