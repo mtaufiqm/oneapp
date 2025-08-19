@@ -709,13 +709,13 @@ ass.order ASC, anstat.id DESC, att.on_sesi_order ASC
 
 ''';
 
-
       var result = await tx.execute(query,parameters: [currentActiveJadwal.first.antrian_jadwal_uuid!]);
-      if(result.isEmpty){
-        return AntrianJadwalDetalsWithTickets(jadwal: currentActiveJadwal.first, tickets: []);
-      }
+      
+      AntrianJadwalDetalsWithTickets object = AntrianJadwalDetalsWithTickets(jadwal: currentActiveJadwal.first, tickets: []);
 
-      AntrianJadwalDetalsWithTickets? object = null;
+      if(result.isEmpty){
+        return object;
+      }
 
       for(var item in result){
         try {
@@ -730,7 +730,7 @@ ass.order ASC, anstat.id DESC, att.on_sesi_order ASC
           ticket.jadwal_details = jadwal;
           ticket.service_details = service;
           ticket.status_details = status;
-
+          object.tickets.add(ticket);
         } catch(err){
           continue;
         }
