@@ -493,6 +493,36 @@ Future<List<KegiatanMitraPenugasanGroup>> readAllDetailsByMitraGroupedByKegiatan
     });
   }
 
+    Future<List<KegiatanMitraPenugasanDetailsWithHistory>> readDetailsWithHistoryByKegiatanUuid(String kegiatan) async {
+    return this.conn.connectionPool.runTx<List<KegiatanMitraPenugasanDetailsWithHistory>>((tx) async {
+      var result = await tx.execute(r"SELECT kmp.uuid as uuid, k.uuid as kegiatan_uuid,k.name as kegiatan_name,m.mitra_id as mitra_id, m.fullname as mitra_name,m.username as mitra_username,kmp.code as code, kmp.group as group,kmp.group_type_id as group_type_id,kmp.group_desc as group_desc,kmp.description as description,kmp.unit as unit,ps.id as status,ps.description as status_desc,kmp.started_time as started_time, kmp.ended_time as ended_time,kmp.location_latitude as location_latitude,kmp.location_longitude as location_longitude,kmp.notes as notes, kmp.created_at as created_at, kmp.last_updated as last_updated FROM kegiatan_mitra_penugasan kmp LEFT JOIN kegiatan_mitra_bridge kmb ON kmp.bridge_uuid = kmb.uuid LEFT JOIN penugasan_status ps ON kmp.status = ps.id LEFT JOIN kegiatan k ON kmb.kegiatan_uuid = k.uuid LEFT JOIN mitra m ON kmb.mitra_id = m.mitra_id WHERE kmb.kegiatan_uuid = $1",parameters: [kegiatan as String]);
+      if(result.isEmpty){
+        throw Exception("There is No Data");
+      }
+      List<KegiatanMitraPenugasanDetailsWithHistory> listObject = [];
+      print("LENGTH ${result.length}");
+      int counter = 0;
+      for(var item in result){
+        print("");
+        KegiatanMitraPenugasanDetails kmpDetails = KegiatanMitraPenugasanDetails.fromJson(item.toColumnMap());
+        List<PenugasanHistoryDetails> history = [];
+        var result2 = await tx.execute(r"SELECT ph.*, ps.description as status_description FROM penugasan_history ph LEFT JOIN penugasan_status ps ON ph.status = ps.id WHERE ph.penugasan_uuid = $1 ORDER BY ph.created_at ASC",parameters: [
+          kmpDetails.uuid!
+        ]);
+        for(var item2 in result2){
+          PenugasanHistoryDetails historyDetails = PenugasanHistoryDetails.fromJson(item2.toColumnMap());
+          history.add(historyDetails);
+        }
+        listObject.add(KegiatanMitraPenugasanDetailsWithHistory(
+          details: kmpDetails, 
+          history: history)
+        );
+        print("DONE - ${++counter}");
+      }
+      return listObject;
+    });
+  }
+
   //this return all penugasan that active today (exclude status:0 BELUM MULAI where it is inactive)
   Future<List<KegiatanMitraPenugasanDetailsWithHistory>> readAllDetailsByStatusActiveLastUpdatedToday() async {
     return this.conn.connectionPool.runTx<List<KegiatanMitraPenugasanDetailsWithHistory>>((tx) async {
@@ -588,21 +618,15 @@ Future<List<KegiatanMitraPenugasanGroup>> readAllDetailsByMitraGroupedByKegiatan
   Future<List<KegiatanMitraPenugasanByMitraProgress>> getProgressKegiatan(dynamic kegiatan_uuid) async {
     return this.conn.connectionPool.runTx<List<KegiatanMitraPenugasanByMitraProgress>>((tx) async {
       List<KegiatanMitraPenugasanByMitraProgress> listObject = [];
-
       var result = await tx.execute(r"SELECT * FROM penugasan_status");
       List<PenugasanStatus> listStatus = result.map((el) {
         return PenugasanStatus.fromJson(el.toColumnMap());
       }).toList();
-
       var result2 = await tx.execute(r"SELECT kmb.uuid as uuid, m.mitra_id as mitra_id, m.fullname as mitra_name, m.username as mitra_username, k.uuid as kegiatan_uuid, k.name as kegiatan_name, k.description as kegiatan_desc FROM kegiatan_mitra_bridge kmb LEFT JOIN mitra m ON m.mitra_id = kmb.mitra_id LEFT JOIN kegiatan k ON k.uuid = kmb.kegiatan_uuid WHERE kmb.kegiatan_uuid = $1",parameters: [kegiatan_uuid as String]);
-
       if(result2.isEmpty){
         return listObject;
       }
-
-
       Map<String,KegiatanMitraPenugasanByMitraProgress> mapMitraProgress = {};
-
       result2.forEach((el) {
         Map<String,dynamic> kmbMap = el.toColumnMap();
         //bridge uuid, that unique for spesific mitra_id and kegiatan_uuid

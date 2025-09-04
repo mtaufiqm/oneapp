@@ -29,23 +29,26 @@ Future<Response> onRequest(
 }
 
 
-//Continue This
 Future<Response> onGet(RequestContext context, String uuid) async {
   KegiatanRepository kegiatanRepo = context.read<KegiatanRepository>();
+  KuesionerPenilaianRepository kuesionerRepo = context.read<KuesionerPenilaianRepository>();
 
   User authUser = context.read<User>();
 
   try {
-    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA"]))){
+    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","PEGAWAI"]))){
       return RespHelper.forbidden();
     }
-    return Response.json();
+    KuesionerPenilaianMitra kuesioner = await kuesionerRepo.getByKegiatan(uuid);
+    return Response.json(
+      body: kuesioner
+    );
   } catch(err) {
+    print("Error ${err}");
     return RespHelper.badRequest(message: "${err}");
   }
 }
 
-//CONTINUE THIS
 //create penilaian_mitra
 Future<Response> onPost(RequestContext ctx, String uuid) async {
   KegiatanRepository kegiatanRepo = ctx.read<KegiatanRepository>();
@@ -57,6 +60,10 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
 
   try {
     Kegiatan kegiatan = await kegiatanRepo.getById(uuid);
+    //pastikan status_kegiatan telah selesai
+    if(kegiatan.status != 2){
+      return RespHelper.badRequest(message: "Kegiatan Belum Selesai");
+    }
 
     if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA"]) || authUser.username == kegiatan.created_by)){
       return RespHelper.unauthorized();
@@ -75,14 +82,13 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
       end_date: DateFormat("yyyy-MM-dd").format(DateTime.parse(kegiatan.end).add(Duration(days: 10)))
     );
 
+    //if there is no kegiatan.mode / null, return bad request
+    if(kegiatan.mode == null){
+      return RespHelper.badRequest(message:"Belum ada Mode Kegiatan");
+    }
+
     //create kuesioner_penilaian_mitra here.
     KuesionerPenilaianMitra createdKpm = await penilaianMitraRepo.create(object);
-
-
-    //if there is no kegiatan.mode / null, just return success
-    if(kegiatan.mode == null){
-      return RespHelper.message(message:"SUCCESS CREATE Penilaian Only");
-    }
 
     //get mitra from that spesific kegiatan
     List<KegiatanMitraBridgeMoreDetails> mitra = await kegiatanMitraRepo.getMoreDetailsByKegiatanId(kegiatan.uuid!);
@@ -93,15 +99,12 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
       try {
         String roleMitra = item.status;
         String surveiType = "${roleMitra}_${kegiatan.mode}";
-
         //if surveiMap already contain surveyType, just continue it;
         if(surveiMap.containsKey(surveiType)){
           continue;
         }
-
         //if not try to get from db;
         Survei survei = await chooseSurvei(ctx, roleMitra, kegiatan.mode!);
-
         //fill surveiMap;
         surveiMap[surveiType] = survei;
       } catch(e) {
@@ -109,6 +112,7 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
       }
     }
 
+    //create structure penilaian_mitra;
     List<StructurePenilaianMitra> structurePenilaian = [];
     mitra.forEach((el) {
       String status = el.status;    //PPL //PML //KOSEKA
@@ -118,25 +122,31 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
         kuesioner_penilaian_mitra_uuid: createdKpm.uuid!, 
         mitra_username: el.mitra_username, 
         survei_uuid: (selectedSurvei?.uuid),
-        penilai_username: el.pengawas_username
+        penilai_username: null
       );
+      if(el.pengawas_username == null){
+        structure.penilai_username = (kegiatan.penanggung_jawab);
+      } else {
+        if((el.is_pengawas_organic!) == true){
+          structure.penilai_username = el.pengawas_username;
+        } else {
+          structure.penilai_username = (kegiatan.penanggung_jawab);
+        }
+      }
       structurePenilaian.add(structure);
     });
-
+    
     //if structure penilaian that want to insert isEmpty, just return KuesionerPenilaianMitraWithStructure object
     if(structurePenilaian.isEmpty){
       KuesionerPenilaianMitraWithStructure kpmWithStructure = KuesionerPenilaianMitraWithStructure(penilaian: object, structure: []);
       return Response.json(body: kpmWithStructure);
     }
-    List<StructurePenilaianMitra> listCreatedStructure = await structurePenilaianRepo.insertList(structurePenilaian);
-
+    List<StructurePenilaianMitra> listCreatedStructure = await structurePenilaianRepo.insertListAndResponse(structurePenilaian);
     KuesionerPenilaianMitraWithStructure kpmWithStructure = KuesionerPenilaianMitraWithStructure(penilaian: object, structure: listCreatedStructure);
-
-    
     return Response.json(body: kpmWithStructure);
   } catch(e){
     print("Error ${e}");
-    return RespHelper.badRequest(message: "Fail create Penilaian Mitra Kegiatan ${uuid}");
+    return RespHelper.badRequest(message: "Failed create Penilaian Mitra Kegiatan ${uuid}");
   }
 }
 
@@ -144,14 +154,15 @@ Future<Response> onDelete(RequestContext context, String uuid) async {
   return Response.json();
 }
 
-
 Future<Survei> chooseSurvei(RequestContext ctx,String role,String mode,{int? version}) async {
   try {
     SurveiRepository surveiRepo = ctx.read<SurveiRepository>();
     //TYPE IS IN FORM "ROLE_MODE"   ex: PPL_PAPI/PPL_CAPI/PML_PAPI/PML_CAPI
     String type = "${role}_${mode}";
+    print("TYPE ${type}");
     return await surveiRepo.getByTypeAndVersion(type);
   } catch(err){
+    print("error ${err}");
     throw Exception("Error Choose Survei By Role, Mode, and Version");
   }
 }

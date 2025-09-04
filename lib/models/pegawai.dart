@@ -109,5 +109,4 @@ class Pegawai {
   String toString() {
     return 'Pegawai(uuid: $uuid, fullname: $fullname, fullname_with_title: $fullname_with_title, nickname: $nickname, date_of_birth: $date_of_birth, city_of_birth: $city_of_birth, nip: $nip, old_nip: $old_nip, age: $age, username: $username, status_pegawai: $status_pegawai, phone_number: $phone_number)';
   }
-  
 }

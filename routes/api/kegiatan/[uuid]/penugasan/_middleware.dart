@@ -9,6 +9,7 @@ import 'package:my_first/repository/daerah_tingkat_5_repository.dart';
 import 'package:my_first/repository/kegiatan_mitra_penugasan_repository.dart';
 import 'package:my_first/repository/kegiatan_mitra_repository.dart';
 import 'package:my_first/repository/myconnection.dart';
+import 'package:my_first/repository/penugasan_history_repository.dart';
 
 Handler middleware(Handler handler) {
   // TODO: implement middleware
@@ -18,6 +19,9 @@ Handler middleware(Handler handler) {
   })).use(provider<KegiatanMitraRepository>((ctx) {
     MyConnectionPool conn = ctx.read<MyConnectionPool>();
     return KegiatanMitraRepository(conn);
+  })).use(provider<PenugasanHistoryRepository>((ctx) {
+    MyConnectionPool conn = ctx.read<MyConnectionPool>();
+    return PenugasanHistoryRepository(conn);
   })).use(provider<DaerahTingkat1Repository>((ctx) {
     MyConnectionPool conn = ctx.read<MyConnectionPool>();
     return DaerahTingkat1Repository(conn);

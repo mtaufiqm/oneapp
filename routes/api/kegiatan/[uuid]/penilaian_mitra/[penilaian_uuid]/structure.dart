@@ -46,6 +46,7 @@ Future<Response> onGet(RequestContext ctx, String kegiatan_uuid, String penilaia
     return Response.json(body: listObject);
   } catch(ee){
     log("Error ${ee}");
+    print("Error ${ee}");
     return RespHelper.badRequest(message: "Error Get Structure Mitra Penilaian ${penilaian_uuid}");
   }
 }

@@ -123,7 +123,7 @@ class KegiatanRepository extends MyRepository<Kegiatan>{
 
   Future<Kegiatan> update(dynamic uuid,Kegiatan kegiatan) async{
     return this.connection.connectionPool.runTx<Kegiatan>((tx) async {
-      var result = await tx.execute(r'UPDATE kegiatan SET name = $1, description = $2, "start" = $3, "end" = $4, monitoring_link = $5, organic_involved = $6, organic_number = $7, mitra_involved = $8, mitra_number = $9, created_by = $10, penanggung_jawab = $11, status = $12 WHERE uuid = $13',
+      var result = await tx.execute(r'UPDATE kegiatan SET name = $1, description = $2, "start" = $3, "end" = $4, monitoring_link = $5, organic_involved = $6, organic_number = $7, mitra_involved = $8, mitra_number = $9, created_by = $10, penanggung_jawab = $11, mode = $12, status = $13 WHERE uuid = $14',
       parameters: [
         kegiatan.name,
         kegiatan.description,
@@ -136,6 +136,7 @@ class KegiatanRepository extends MyRepository<Kegiatan>{
         kegiatan.mitra_number,
         kegiatan.created_by,
         kegiatan.penanggung_jawab,
+        kegiatan.mode,
         kegiatan.status,
         uuid as String
       ]);

@@ -49,10 +49,10 @@ class KuesionerPenilaianRepository extends MyRepository<KuesionerPenilaianMitra>
 
   Future<KuesionerPenilaianMitra> getByKegiatan(dynamic uuid) async {
     return this.conn.connectionPool.runTx<KuesionerPenilaianMitra>((tx) async {
-      var result = await tx.execute(r"SELECT * FROM kuesioner_penilaian_mitra WHERE kegiatan_uuid = $1");
+      var result = await tx.execute(r"SELECT * FROM kuesioner_penilaian_mitra WHERE kegiatan_uuid = $1",parameters: [uuid as String]);
       //if there is no penilaian for spesific kegiatan
       if(result.isEmpty){
-        throw Exception("There is no Data with kegiatan_uuid ${uuid as String}");
+        throw Exception("There is no Kuesioner with kegiatan_uuid ${uuid as String}");
       }
       var resultMap = result.first.toColumnMap();
       KuesionerPenilaianMitra object = KuesionerPenilaianMitra.fromJson(resultMap);

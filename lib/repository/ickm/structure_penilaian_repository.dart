@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:my_first/blocs/datetime_helper.dart';
 import 'package:my_first/models/ickm/structure_penilaian_mitra.dart';
 import 'package:my_first/repository/myconnection.dart';
 import 'package:my_first/repository/myrepository.dart';
@@ -31,7 +32,8 @@ class StructurePenilaianRepository extends MyRepository<StructurePenilaianMitra>
 
   Future<StructurePenilaianMitra> update(dynamic uuid, StructurePenilaianMitra object) async {
     return this.conn.connectionPool.runTx((tx) async {
-      var result = await tx.execute(r"UPDATE structure_penilaian_mitra SET kuesioner_penilaian_mitra_uuid = $1, penilai_username = $2, mitra_username = $3, survei_uuid = $4 WHERE uuid = $8",parameters: [
+      object.uuid = uuid as String;
+      var result = await tx.execute(r"UPDATE structure_penilaian_mitra SET kuesioner_penilaian_mitra_uuid = $1, penilai_username = $2, mitra_username = $3, survei_uuid = $4 WHERE uuid = $5",parameters: [
         object.kuesioner_penilaian_mitra_uuid,
         object.penilai_username,
         object.mitra_username,
@@ -106,6 +108,52 @@ class StructurePenilaianRepository extends MyRepository<StructurePenilaianMitra>
     });
   }
 
+  // String? uuid;
+  // String kuesioner_penilaian_mitra_uuid;
+  // String? penilai_username;
+  // String? mitra_username;
+  // String? survei_uuid;
+  Future<List<StructurePenilaianMitra>> insertListAndResponse(List<StructurePenilaianMitra> listObject) async {
+    return this.conn.connectionPool.runTx<List<StructurePenilaianMitra>>((tx) async {
+      for(var item in listObject){
+        try {
+          String uuid = Uuid().v1();
+          item.uuid = uuid;
+          var result = await tx.execute(r"INSERT INTO structure_penilaian_mitra VALUES($1,$2,$3,$4,$5) RETURNING *",parameters: [
+            item.uuid,
+            item.kuesioner_penilaian_mitra_uuid,
+            item.penilai_username,
+            item.mitra_username,
+            item.survei_uuid
+          ]);
+          if(result.isEmpty){
+            throw Exception("Failed Insert Structure Penilaian Item");
+          }
+          String currentTime = DatetimeHelper.getCurrentMakassarTime();
+          StructurePenilaianMitra structure = StructurePenilaianMitra.fromDb(result.first.toColumnMap());
+          String uuid2 = Uuid().v1();
+          var result2 = await tx.execute(r"INSERT INTO response_assignment VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING uuid",parameters: [
+            uuid2,
+            structure.uuid!,
+            currentTime,
+            currentTime,
+            false,
+            structure.survei_uuid!,
+            ""
+          ]);
+          if(result2.isEmpty){
+            log("Error Create Response Penilaian ${item.kuesioner_penilaian_mitra_uuid}, Mitra ${item.mitra_username}");
+            throw Exception("Failed Insert Response Assignment");
+          }
+        } catch(err){
+          log("Error Create Structure Penilaian ${item.kuesioner_penilaian_mitra_uuid}, Mitra ${item.mitra_username}");
+          throw Exception(err);
+        }
+      }
+      return listObject;
+    });
+  }
+
   Future<void> delete(dynamic uuid) async {
     return this.conn.connectionPool.runTx((tx) async {
       var result = await tx.execute(r"DELETE FROM structure_penilaian_mitra WHERE uuid = $1",parameters: [uuid as String]);
@@ -158,7 +206,7 @@ class StructurePenilaianRepository extends MyRepository<StructurePenilaianMitra>
 
   Future<List<StructurePenilaianMitraDetails>> readDetailsByPenilaianAndPenilai(dynamic penilaian_uuid, dynamic penilai_username) async {
     return this.conn.connectionPool.runTx<List<StructurePenilaianMitraDetails>>((tx) async {
-      var result = await tx.execute(r"select spm.uuid as uuid, kpm.uuid as kuesioner_penilaian_mitra_uuid, kpm.title as kuesioner_penilaian_mitra_title, kpm.start_date as kuesioner_penilaian_mitra_start_date, kpm.end_date as kuesioner_penilaian_mitra_end_date, k.uuid as kegiatan_uuid, k.name as kegiatan_name, spm.penilai_username as penilai_username, p.fullname as penilai_fullname, spm.mitra_username as mitra_username, m.mitra_id as mitra_id, m.fullname as mitra_fullname, s.uuid as survei_uuid, s.description as survei_name, s.survei_type as survei_type  , ra.uuid as response_uuid, ra.is_completed as response_is_completed, ra.updated_at as response_updated_at from structure_penilaian_mitra spm left join kuesioner_penilaian_mitra kpm on spm.kuesioner_penilaian_mitra_uuid = kpm.uuid left join kegiatan k on kpm.kegiatan_uuid = k.uuid  left join mitra m on spm.mitra_username = m.username left join pegawai p on spm.penilai_username = p.username left join survei s on spm.survei_uuid = s.uuid left join response_assignment ra on spm.uuid = ra.structure_uuid  WHERE kpm.uuid = $1 AND kpm.penilai_username = $2",parameters: [
+      var result = await tx.execute(r"select spm.uuid as uuid, kpm.uuid as kuesioner_penilaian_mitra_uuid, kpm.title as kuesioner_penilaian_mitra_title, kpm.start_date as kuesioner_penilaian_mitra_start_date, kpm.end_date as kuesioner_penilaian_mitra_end_date, k.uuid as kegiatan_uuid, k.name as kegiatan_name, spm.penilai_username as penilai_username, p.fullname as penilai_fullname, spm.mitra_username as mitra_username, m.mitra_id as mitra_id, m.fullname as mitra_fullname, s.uuid as survei_uuid, s.description as survei_name, s.survei_type as survei_type  , ra.uuid as response_uuid, ra.is_completed as response_is_completed, ra.updated_at as response_updated_at from structure_penilaian_mitra spm left join kuesioner_penilaian_mitra kpm on spm.kuesioner_penilaian_mitra_uuid = kpm.uuid left join kegiatan k on kpm.kegiatan_uuid = k.uuid  left join mitra m on spm.mitra_username = m.username left join pegawai p on spm.penilai_username = p.username left join survei s on spm.survei_uuid = s.uuid left join response_assignment ra on spm.uuid = ra.structure_uuid  WHERE kpm.uuid = $1 AND spm.penilai_username = $2",parameters: [
         penilaian_uuid as String,
         penilai_username as String
       ]);

@@ -51,6 +51,17 @@ class StructurePenilaianMitra {
     );
   }
 
+  
+  factory StructurePenilaianMitra.fromDb(Map<String, dynamic> map) {
+    return StructurePenilaianMitra(
+      uuid: map['uuid'] != null ? map['uuid'] as String : null,
+      kuesioner_penilaian_mitra_uuid: map['kuesioner_penilaian_mitra_uuid'] as String,
+      penilai_username: map['penilai_username'] != null ? map['penilai_username'] as String : null,
+      mitra_username: map['mitra_username'] != null ? map['mitra_username'] as String : null,
+      survei_uuid: map['survei_uuid'] != null ? map['survei_uuid'] as String : null,
+    );
+  }
+
   @override
   String toString() {
     return 'StructurePenilaianMitra(uuid: $uuid, kuesioner_penilaian_mitra_uuid: $kuesioner_penilaian_mitra_uuid, penilai_username: $penilai_username, mitra_username: $mitra_username, survei_uuid: $survei_uuid)';
