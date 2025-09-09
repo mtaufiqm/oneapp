@@ -117,23 +117,25 @@ class IckmMitraRepository extends MyRepository<IckmMitra> {
 
   Future<double> getAverageIckmByMitraId(dynamic mitra_id) async {
     return this.conn.connectionPool.runTx<double>((tx) async {
-      var result = await tx.execute(r"SELECT * FROM ickm_mitra WHERE mitra_id = $1",parameters: [mitra_id as String]);
+      var result = await tx.execute(r"SELECT COALESCE(AVG(ickm),0.0) as ickm FROM ickm_mitra WHERE mitra_id = $1",parameters: [mitra_id as String]);
       //if still there is no data just return 0.0
       if(result.isEmpty){
         return 0.0;
       }
-      List<double> allValue = result.map((el) {
-        IckmMitra item = IckmMitra.fromJson(el.toColumnMap());
-        return item.ickm;
-      }).toList();
+      double ickm = (result.first.toColumnMap()["ickm"] as double?)??0.0;
+      return ickm;
+    });
+  }
 
-      double total = 0.0;
-      double average = 0.0;
-      allValue.forEach((el) {
-        total += el;
-      });
-      average = total/allValue.length;
-      return average;
+  Future<double> getAverageIckmByMitraUsername(dynamic mitra_username) async {
+    return this.conn.connectionPool.runTx<double>((tx) async {
+      var result = await tx.execute(r"SELECT COALESCE(AVG(im.ickm),0.0) as ickm FROM ickm_mitra im LEFT JOIN mitra m ON im.mitra_id = m.mitra_id WHERE m.username = $1",parameters: [mitra_username as String]);
+      //if still there is no data just return 0.0
+      if(result.isEmpty){
+        return 0.0;
+      }
+      double ickm = (result.first.toColumnMap()["ickm"] as double?)??0.0;
+      return ickm;
     });
   }
 

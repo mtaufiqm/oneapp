@@ -156,4 +156,16 @@ class MitraRepository extends MyRepository<Mitra>{
       return MitraWithKegiatan(mitra: mitra, kegiatan: listOfKegiatan);
     });
   }
+
+  Future<List<MitraWithIckm>> readAllWithIckm() async{
+    return await this.connection.connectionPool.runTx<List<MitraWithIckm>>((tx) async {
+      Result hasil = await tx.execute(r"SELECT m.*, COALESCE(query1.ickm,0.0) AS ickm FROM mitra m LEFT JOIN (SELECT im.mitra_id, COALESCE(AVG(im.ickm),0.0) AS ickm FROM ickm_mitra im GROUP BY im.mitra_id) AS query1 ON m.mitra_id  = query1.mitra_id ORDER BY ickm DESC, m.fullname ASC");
+      List<MitraWithIckm> listObject = [];
+      for(var item in hasil){
+        MitraWithIckm object = MitraWithIckm.fromDb(item.toColumnMap());
+        listObject.add(object);
+      }
+      return listObject;
+    });
+  }
 }
