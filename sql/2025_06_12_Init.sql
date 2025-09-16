@@ -114,6 +114,18 @@ CREATE TABLE "penugasan_history" (
   "created_at" text NOT NULL
 );
 
+CREATE TABLE "penugasan_photo" (
+  "uuid" text PRIMARY KEY,
+  "kmp_uuid" text UNIQUE NOT NULL,
+  "photo1_loc" text,
+  "photo1_ext" text,
+  "photo2_loc" text,
+  "photo2_ext" text,
+  "photo3_loc" text,
+  "photo3_ext" text,
+  "last_updated" text NOT NULL
+);
+
 CREATE TABLE "kuesioner_penilaian_mitra" (
   "uuid" text PRIMARY KEY,
   "kegiatan_uuid" text UNIQUE NOT NULL,
@@ -414,6 +426,8 @@ ALTER TABLE "penugasan_history" ADD FOREIGN KEY ("penugasan_uuid") REFERENCES "k
 
 ALTER TABLE "penugasan_history" ADD FOREIGN KEY ("status") REFERENCES "penugasan_status" ("id");
 
+ALTER TABLE "penugasan_photo" ADD FOREIGN KEY ("kmp_uuid") REFERENCES "kegiatan_mitra_penugasan" ("uuid") ON DELETE CASCADE ON UPDATE CASCADE;
+
 ALTER TABLE "kuesioner_penilaian_mitra" ADD FOREIGN KEY ("kegiatan_uuid") REFERENCES "kegiatan" ("uuid") ON UPDATE CASCADE;
 
 ALTER TABLE "structure_penilaian_mitra" ADD FOREIGN KEY ("kuesioner_penilaian_mitra_uuid") REFERENCES "kuesioner_penilaian_mitra" ("uuid") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -422,7 +436,7 @@ ALTER TABLE "structure_penilaian_mitra" ADD FOREIGN KEY ("penilai_username") REF
 
 ALTER TABLE "structure_penilaian_mitra" ADD FOREIGN KEY ("mitra_username") REFERENCES "mitra" ("username") ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE "structure_penilaian_mitra" ADD FOREIGN KEY ("survei_uuid") REFERENCES "survei" ("uuid") ON DELETE ;
+ALTER TABLE "structure_penilaian_mitra" ADD FOREIGN KEY ("survei_uuid") REFERENCES "survei" ("uuid") ON DELETE SET NULL ON UPDATE CASCADE;
 
 ALTER TABLE "survei" ADD FOREIGN KEY ("survei_type") REFERENCES "survei_type" ("description");
 

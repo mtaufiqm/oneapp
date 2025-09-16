@@ -418,9 +418,8 @@ class ResponseAssignmentRepository extends MyRepository<ResponseAssignment>{
         for(var item in resultSurvei){
           try {
             Map<String,dynamic> mapItem = item.toColumnMap();
+            print("Item : ${item.toColumnMap()}");
             QuestionsItemResponseStructure qi = QuestionsItemResponseStructure.fromJson(item.toColumnMap());
-
-
             String? questions_option_uuid = mapItem["questions_option_uuid"] as String?; 
             String questions_option_title = mapItem["questions_option_title"] as String;
             String questions_option_description = mapItem["questions_option_description"] as String;
@@ -456,6 +455,8 @@ class ResponseAssignmentRepository extends MyRepository<ResponseAssignment>{
         // List<QuestionsOption> options;
         // AnswerAssignment? answer;
 
+        print('EXECUTED 1');
+
         //iterate item
         Map<String,List<QuestionsItemResponseStructure>> mapQG = {};
         List<String> doneQI = [];
@@ -483,6 +484,8 @@ class ResponseAssignmentRepository extends MyRepository<ResponseAssignment>{
             continue;
           }
         }
+
+        print('EXECUTED 2');
 
         //iterate group
         Map<String,List<QuestionsGroupResponseStructure>> mapQB = {};
