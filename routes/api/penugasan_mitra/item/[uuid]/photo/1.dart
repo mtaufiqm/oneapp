@@ -30,7 +30,6 @@ Future<Response> onGet(RequestContext ctx, String uuid) async {
   KegiatanRepository kegiatanRepo = ctx.read<KegiatanRepository>();
   User authUser = ctx.read<User>();
   try{
-    print("Called");
     KegiatanMitraPenugasanDetails objectDetails = await kmpRepo.getDetailsById(uuid);
     Kegiatan kegiatan = await kegiatanRepo.getById(objectDetails.kegiatan_uuid);
     if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM"]) || (kegiatan.created_by == authUser.username) || (objectDetails.mitra_username == authUser.username))){
@@ -56,8 +55,6 @@ Future<Response> onGet(RequestContext ctx, String uuid) async {
         }
       );
     }
-
-    return Response.json(body: objectDetails);
   } catch(e){
     print("Error ${e}");
     return RespHelper.badRequest(message:"Error Occured");
@@ -78,13 +75,21 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
       return RespHelper.forbidden();
     }
 
+    //check if kmp (status : 1 - BELUM MULAI OR 3 - SELESAI), cannot upload photo
+    if(kmp.status <= 0 ){
+      return RespHelper.badRequest(message: "Assignment Belum Dimulai");
+    }
+    if(kmp.status >= 3){
+      return RespHelper.badRequest(message: "Assignment Telah Selesai");
+    }
+
     //check if penugasan_photo data exist;
     PenugasanPhoto? photo = await photoRepo.getByKmpUuid(uuid);
 
     //DIRECTORY FOR Windows is in app folder files/images
     //DIRECTORY FOR Linus is in /opt/files/images
-    String windows_dir = "assignment\\images";
-    String linux_dir = "/opt/files/assignment";
+    String windows_dir = "assignment\\images\\${kmp.kegiatan_uuid!}";
+    String linux_dir = "/opt/files/assignment/${kmp.kegiatan_uuid!}";
 
     var formData = await ctx.request.formData();
     var files = await formData.files["files"];
@@ -149,10 +154,10 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
       return Response.json(body: result);
     }
   } catch(err){
+    print("Error ${err}");
     return RespHelper.badRequest(message: "Error Occured ${err}");
   }
 }
-
 
 Future<Response> onDelete(RequestContext ctx, String uuid) async {
   return Response.json();

@@ -67,7 +67,6 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
   PenugasanPhotoRepository photoRepo = ctx.read<PenugasanPhotoRepository>();
   KegiatanRepository kegiatanRepo = ctx.read<KegiatanRepository>();
   User authUser = ctx.read<User>();
-  print(uuid);
   try {
     KegiatanMitraPenugasanDetails kmp = await kmpRepo.getDetailsById(uuid);
     Kegiatan kegiatan = await kegiatanRepo.getById(kmp.kegiatan_uuid);
@@ -75,13 +74,21 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
       return RespHelper.forbidden();
     }
 
+    //check if kmp (status : 1 - BELUM MULAI OR 3 - SELESAI), cannot upload photo
+    if(kmp.status <= 0 ){
+      return RespHelper.badRequest(message: "Assignment Belum Dimulai");
+    }
+    if(kmp.status >= 3){
+      return RespHelper.badRequest(message: "Assignment Telah Selesai");
+    }
+
     //check if penugasan_photo data exist;
     PenugasanPhoto? photo = await photoRepo.getByKmpUuid(uuid);
 
     //DIRECTORY FOR Windows is in app folder files/images
     //DIRECTORY FOR Linus is in /opt/files/images
-    String windows_dir = "assignment\\images";
-    String linux_dir = "/opt/files/assignment";
+    String windows_dir = "assignment\\images\\${kmp.kegiatan_uuid!}";
+    String linux_dir = "/opt/files/assignment/${kmp.kegiatan_uuid!}";
 
     var formData = await ctx.request.formData();
     var files = await formData.files["files"];

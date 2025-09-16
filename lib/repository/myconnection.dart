@@ -12,7 +12,7 @@ class MyConnectionPool{
       String user = Platform.environment["dbuser"]??"postgres";
       String password = Platform.environment["dbpassword"]??"taufiq1729";
       Endpoint endpoint = Endpoint(host: host, database: databaseName,username: user,password: password);
-      connectionPool = Pool.withEndpoints([endpoint],settings: PoolSettings(maxConnectionCount: 3,connectTimeout: Duration(seconds: 5),sslMode: SslMode.disable));
+      connectionPool = Pool.withEndpoints([endpoint],settings: PoolSettings(maxConnectionCount: 20,connectTimeout: Duration(seconds: 5),sslMode: SslMode.disable));
     } catch(e){
       print(e);
     }
