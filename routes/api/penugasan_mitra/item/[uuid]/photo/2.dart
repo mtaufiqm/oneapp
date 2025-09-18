@@ -74,6 +74,7 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
     KegiatanMitraPenugasanDetails kmp = await kmpRepo.getDetailsById(uuid);
     Kegiatan kegiatan = await kegiatanRepo.getById(kmp.kegiatan_uuid);
     if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM"]) || (kegiatan.created_by == authUser.username) || (kmp.mitra_username == authUser.username))){
+      print("FORBIDDEN ${authUser.username}");
       return RespHelper.forbidden();
     }
 
@@ -99,7 +100,7 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
     if(files == null){
       return RespHelper.badRequest(message: "There is no Image File in Request Body");
     }
-    String photo_uuid = Uuid().v1();
+    String photo_uuid = kmp.uuid!;
     String file_name = files.name;
     String extension = p.extension(file_name);
     String location = "";
@@ -163,5 +164,33 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
 
 
 Future<Response> onDelete(RequestContext ctx, String uuid) async {
-  return Response.json();
+  KegiatanMitraPenugasanRepository kmpRepo = ctx.read<KegiatanMitraPenugasanRepository>();
+  PenugasanPhotoRepository photoRepo = ctx.read<PenugasanPhotoRepository>();
+  KegiatanRepository kegiatanRepo = ctx.read<KegiatanRepository>();
+  User authUser = ctx.read<User>();
+  print(uuid);
+  try {
+    KegiatanMitraPenugasanDetails kmp = await kmpRepo.getDetailsById(uuid);
+    Kegiatan kegiatan = await kegiatanRepo.getById(kmp.kegiatan_uuid);
+    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM"]) || (kegiatan.created_by == authUser.username) || (kmp.mitra_username == authUser.username))){
+      return RespHelper.forbidden();
+    }
+
+    PenugasanPhoto? photo = await photoRepo.getByKmpUuid(kmp.uuid!);
+
+    //check if photo1 exists, delete old photo1 if there
+    if((photo != null) && !(photo.photo2_loc == null || photo.photo2_loc!.trim().isEmpty)){
+      File related_file = File("${photo.photo2_loc}");
+      if(related_file.existsSync()){
+        try {
+          await related_file.delete();
+        } catch(err){
+          return RespHelper.badRequest(message: "Failed Delete Photo 2");
+        } 
+    }}
+    return RespHelper.message(message: "Success Delete Photo 2");
+    
+  } catch(err){
+    return RespHelper.badRequest(message:"Error ${err}");
+  }
 }

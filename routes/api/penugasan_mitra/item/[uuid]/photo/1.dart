@@ -32,7 +32,7 @@ Future<Response> onGet(RequestContext ctx, String uuid) async {
   try{
     KegiatanMitraPenugasanDetails objectDetails = await kmpRepo.getDetailsById(uuid);
     Kegiatan kegiatan = await kegiatanRepo.getById(objectDetails.kegiatan_uuid);
-    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM"]) || (kegiatan.created_by == authUser.username) || (objectDetails.mitra_username == authUser.username))){
+    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM","PEGAWAI"]) || (kegiatan.created_by == authUser.username) || (objectDetails.mitra_username == authUser.username))){
       return RespHelper.forbidden();
     }
     PenugasanPhoto? photo = await photoRepo.getByKmpUuid(uuid);
@@ -72,14 +72,17 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
     KegiatanMitraPenugasanDetails kmp = await kmpRepo.getDetailsById(uuid);
     Kegiatan kegiatan = await kegiatanRepo.getById(kmp.kegiatan_uuid);
     if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM"]) || (kegiatan.created_by == authUser.username) || (kmp.mitra_username == authUser.username))){
+      print("FORBIDDEN ${authUser.username}");
       return RespHelper.forbidden();
     }
 
     //check if kmp (status : 1 - BELUM MULAI OR 3 - SELESAI), cannot upload photo
     if(kmp.status <= 0 ){
+      print("Belum Mulai ${authUser.username}");
       return RespHelper.badRequest(message: "Assignment Belum Dimulai");
     }
     if(kmp.status >= 3){
+      print("Sudah Selesai ${authUser.username}");
       return RespHelper.badRequest(message: "Assignment Telah Selesai");
     }
 
@@ -96,7 +99,7 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
     if(files == null){
       return RespHelper.badRequest(message: "There is no Image File in Request Body");
     }
-    String photo_uuid = Uuid().v1();
+    String photo_uuid = kmp.uuid!;
     String file_name = files.name;
     String extension = p.extension(file_name);
     String location = "";
@@ -115,7 +118,6 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
           print("Error Delete File ${err}");
         } 
     }}
-
     if(Platform.isWindows){
       Directory dirFile = Directory(windows_dir);
       if(!dirFile.existsSync()){
@@ -160,5 +162,33 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
 }
 
 Future<Response> onDelete(RequestContext ctx, String uuid) async {
-  return Response.json();
+  KegiatanMitraPenugasanRepository kmpRepo = ctx.read<KegiatanMitraPenugasanRepository>();
+  PenugasanPhotoRepository photoRepo = ctx.read<PenugasanPhotoRepository>();
+  KegiatanRepository kegiatanRepo = ctx.read<KegiatanRepository>();
+  User authUser = ctx.read<User>();
+  print(uuid);
+  try {
+    KegiatanMitraPenugasanDetails kmp = await kmpRepo.getDetailsById(uuid);
+    Kegiatan kegiatan = await kegiatanRepo.getById(kmp.kegiatan_uuid);
+    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM"]) || (kegiatan.created_by == authUser.username) || (kmp.mitra_username == authUser.username))){
+      return RespHelper.forbidden();
+    }
+
+    PenugasanPhoto? photo = await photoRepo.getByKmpUuid(kmp.uuid!);
+
+    //check if photo1 exists, delete old photo1 if there
+    if((photo != null) && !(photo.photo1_loc == null || photo.photo1_loc!.trim().isEmpty)){
+      File related_file = File("${photo.photo1_loc}");
+      if(related_file.existsSync()){
+        try {
+          await related_file.delete();
+        } catch(err){
+          return RespHelper.badRequest(message: "Failed Delete Photo 1");
+        } 
+    }}
+    return RespHelper.message(message: "Success Delete Photo 1");
+    
+  } catch(err){
+    return RespHelper.badRequest(message:"Error ${err}");
+  }
 }
