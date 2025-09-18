@@ -32,7 +32,7 @@ Future<Response> onGet(RequestContext ctx, String uuid) async {
   try{
     KegiatanMitraPenugasanDetails objectDetails = await kmpRepo.getDetailsById(uuid);
     Kegiatan kegiatan = await kegiatanRepo.getById(objectDetails.kegiatan_uuid);
-    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM"]) || (kegiatan.created_by == authUser.username) || (objectDetails.mitra_username == authUser.username))){
+    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM","PEGAWAI"]) || (kegiatan.created_by == authUser.username) || (objectDetails.mitra_username == authUser.username))){
       return RespHelper.forbidden();
     }
     PenugasanPhoto? photo = await photoRepo.getByKmpUuid(uuid);
