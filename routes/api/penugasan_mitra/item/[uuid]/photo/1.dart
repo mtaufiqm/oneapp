@@ -75,20 +75,23 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
       print("FORBIDDEN ${authUser.username}");
       return RespHelper.forbidden();
     }
+    print("LOG 1");
 
     //check if kmp (status : 1 - BELUM MULAI OR 3 - SELESAI), cannot upload photo
     if(kmp.status <= 0 ){
+      print("LOG 2");
       print("Belum Mulai ${authUser.username}");
       return RespHelper.badRequest(message: "Assignment Belum Dimulai");
     }
     if(kmp.status >= 3){
+      print("LOG 3");
       print("Sudah Selesai ${authUser.username}");
       return RespHelper.badRequest(message: "Assignment Telah Selesai");
     }
 
     //check if penugasan_photo data exist;
     PenugasanPhoto? photo = await photoRepo.getByKmpUuid(uuid);
-
+    print("LOG 4");
     //DIRECTORY FOR Windows is in app folder files/images
     //DIRECTORY FOR Linus is in /opt/files/images
     String windows_dir = "assignment\\images\\${kmp.kegiatan_uuid!}";
@@ -97,6 +100,7 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
     var formData = await ctx.request.formData();
     var files = await formData.files["files"];
     if(files == null){
+      print("Files null");
       return RespHelper.badRequest(message: "There is no Image File in Request Body");
     }
     String photo_uuid = kmp.uuid!;
