@@ -31,7 +31,7 @@ Future<Response> onGet(RequestContext ctx, String uuid) async {
     KegiatanMitraPenugasanDetails objectDetails = await kmpRepo.getDetailsById(uuid);
     KegiatanMitraBridge bridge = await kmRepo.getByKegiatanAndMitra(objectDetails.kegiatan_uuid, objectDetails.mitra_id);
     Kegiatan kegiatan = await kegiatanRepo.getById(objectDetails.kegiatan_uuid);
-    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM"]) || (kegiatan.created_by == authUser.username) || (objectDetails.mitra_username == authUser.username) || (authUser.username == bridge.pengawas))){
+    if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM","PEGAWAI"]) || (kegiatan.created_by == authUser.username) || (objectDetails.mitra_username == authUser.username) || (authUser.username == bridge.pengawas))){
       return RespHelper.forbidden();
     }
     PenugasanPhoto? photo = await photoRepo.getByKmpUuid(uuid);
@@ -40,7 +40,6 @@ Future<Response> onGet(RequestContext ctx, String uuid) async {
       photo.photo2_loc = (photo.photo2_loc!= null)?"":null;
       photo.photo3_loc = (photo.photo3_loc!= null)?"":null;
     }
-    print(photo?.toJson());
     return Response.json(
       body: photo
     );

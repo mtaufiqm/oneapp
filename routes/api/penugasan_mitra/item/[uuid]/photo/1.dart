@@ -101,9 +101,11 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
     }
     String photo_uuid = kmp.uuid!;
     String file_name = files.name;
+    print("File Name : ${file_name}");
     String extension = p.extension(file_name);
     String location = "";
     List<int> file_bytes = await files.readAsBytes();
+    print("Ukuran File ${file_bytes.length/(1024*1024)}");
     if(file_bytes.length >= 1024 * 1024 * 3){
       return RespHelper.badRequest(message: "Image Size Exceeded 3 Mb!");
     }
