@@ -82,7 +82,7 @@ Future<Response> onPost(RequestContext ctx,String uuid, String mitra_id,String i
       } else if(status == 3){
         //Jika status sedang dimulai dan ingin diakhir
         //verifikasi jika belum ada photo return bad request
-        if((photoDetails == null) || (photoDetails!.photo1_loc == null) || (photoDetails!.photo2_loc == null) || (photoDetails!.photo3_loc == null)){
+        if((photoDetails == null) || ((photoDetails!.photo1_loc == null) && (photoDetails!.photo2_loc == null) && (photoDetails!.photo3_loc == null))){
           return RespHelper.badRequest(message: "Belum Ada Foto Kegiatan");
         }
         var result = kmpRepo.updateLocationAndStatusAndNotes(status, objectDetails.started_time??"",DatetimeHelper.getCurrentMakassarTime(), location_latitude, location_longitude, notes, id);
@@ -101,9 +101,9 @@ Future<Response> onPost(RequestContext ctx,String uuid, String mitra_id,String i
         //if have paused, and want to pause again
         return RespHelper.badRequest(message: "Task have paused, cannot paused again");
       } else if(status == 3){
-        //if have paused, and want to end it.
+        //Jika status sedang dimulai dan ingin diakhir
         //verifikasi jika belum ada photo return bad request
-        if((photoDetails == null) || (photoDetails!.photo1_loc == null) || (photoDetails!.photo2_loc == null) || (photoDetails!.photo3_loc == null)){
+        if((photoDetails == null) || ((photoDetails!.photo1_loc == null) && (photoDetails!.photo2_loc == null) && (photoDetails!.photo3_loc == null))){
           return RespHelper.badRequest(message: "Belum Ada Foto Kegiatan");
         }
         var result = await kmpRepo.updateLocationAndStatusAndNotes(status, objectDetails.started_time??"",objectDetails.ended_time??"", location_latitude, location_longitude, notes, id);
