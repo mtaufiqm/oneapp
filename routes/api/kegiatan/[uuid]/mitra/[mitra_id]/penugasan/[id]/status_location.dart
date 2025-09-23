@@ -2,8 +2,10 @@ import 'package:dart_frog/dart_frog.dart';
 import 'package:my_first/blocs/datetime_helper.dart';
 import 'package:my_first/blocs/response_helper.dart';
 import 'package:my_first/models/kegiatan_mitra_penugasan.dart';
+import 'package:my_first/models/penugasan_photo.dart';
 import 'package:my_first/models/user.dart';
 import 'package:my_first/repository/kegiatan_mitra_penugasan_repository.dart';
+import 'package:my_first/repository/penugasan_photo_repository.dart';
 
 Future<Response> onRequest(
   RequestContext context,
@@ -26,10 +28,11 @@ Future<Response> onRequest(
 //3 : Selesai
 Future<Response> onPost(RequestContext ctx,String uuid, String mitra_id,String id) async {
   KegiatanMitraPenugasanRepository kmpRepo = ctx.read<KegiatanMitraPenugasanRepository>();
+  PenugasanPhotoRepository photoRepo = ctx.read<PenugasanPhotoRepository>();
   User authUser = ctx.read<User>();
-
   try{
     KegiatanMitraPenugasanDetails objectDetails = await kmpRepo.getDetailsById(id);
+    PenugasanPhoto? photoDetails = await photoRepo.getByKmpUuid(objectDetails.uuid!);
 
     if(!(authUser.isContainOne(["SUPERADMIN","ADMIN","ADMIN_MITRA","KETUA_TIM"]) || authUser.username == objectDetails.mitra_username)){
       return RespHelper.unauthorized();
@@ -78,6 +81,10 @@ Future<Response> onPost(RequestContext ctx,String uuid, String mitra_id,String i
         return RespHelper.message(message: "Success");
       } else if(status == 3){
         //Jika status sedang dimulai dan ingin diakhir
+        //verifikasi jika belum ada photo return bad request
+        if((photoDetails == null) || (photoDetails!.photo1_loc == null) || (photoDetails!.photo2_loc == null) || (photoDetails!.photo3_loc == null)){
+          return RespHelper.badRequest(message: "Belum Ada Foto Kegiatan");
+        }
         var result = kmpRepo.updateLocationAndStatusAndNotes(status, objectDetails.started_time??"",DatetimeHelper.getCurrentMakassarTime(), location_latitude, location_longitude, notes, id);
         return RespHelper.message(message: "Success");
       }
@@ -95,6 +102,10 @@ Future<Response> onPost(RequestContext ctx,String uuid, String mitra_id,String i
         return RespHelper.badRequest(message: "Task have paused, cannot paused again");
       } else if(status == 3){
         //if have paused, and want to end it.
+        //verifikasi jika belum ada photo return bad request
+        if((photoDetails == null) || (photoDetails!.photo1_loc == null) || (photoDetails!.photo2_loc == null) || (photoDetails!.photo3_loc == null)){
+          return RespHelper.badRequest(message: "Belum Ada Foto Kegiatan");
+        }
         var result = await kmpRepo.updateLocationAndStatusAndNotes(status, objectDetails.started_time??"",objectDetails.ended_time??"", location_latitude, location_longitude, notes, id);
         return RespHelper.message(message: "Success");
       }
