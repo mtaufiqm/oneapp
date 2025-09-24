@@ -105,8 +105,8 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
     String extension = p.extension(file_name);
     String location = "";
     List<int> file_bytes = await files.readAsBytes();
-    if(file_bytes.length >= 1024 * 1024 * 3){
-      return RespHelper.badRequest(message: "Image Size Exceeded 3 Mb!");
+    if(file_bytes.length >= 1024 * 1024 * 8){
+      return RespHelper.badRequest(message: "Image Size Exceeded 8 Mb!");
     }
 
     //check if photo2 exists, delete old photo2 if there
