@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
+import 'package:image_compression/image_compression.dart';
 import 'package:my_first/blocs/response_helper.dart';
 import 'package:my_first/models/kegiatan.dart';
 import 'package:my_first/models/kegiatan_mitra_penugasan.dart';
@@ -139,7 +140,20 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
     } else{
       return RespHelper.badRequest(message: "Platform Not Supported");
     }
-
+    //try to compress uploaded file
+    try {
+      File savedFile = File(location);
+      if(savedFile.existsSync()){
+        var compressOutput = compress(ImageFileConfiguration(
+          input: ImageFile(filePath: savedFile.absolute.path, rawBytes: savedFile.absolute.readAsBytesSync())
+        ));
+        //write compressed file to exist file
+        savedFile.writeAsBytesSync(compressOutput.rawBytes);
+      }
+    } catch(err_compress){
+      //if failed to compress, still continue it.
+      print("Error ${err_compress}");
+    }
     //if there is no photo, insert new data
     if(photo == null) {
       var result = await photoRepo.create(

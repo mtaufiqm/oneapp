@@ -11,6 +11,7 @@ import 'package:my_first/repository/kegiatan_repository.dart';
 import 'package:my_first/repository/penugasan_photo_repository.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as p;
+import 'package:image_compression/image_compression.dart';
 
 Future<Response> onRequest(
   RequestContext context,
@@ -67,7 +68,7 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
   PenugasanPhotoRepository photoRepo = ctx.read<PenugasanPhotoRepository>();
   KegiatanRepository kegiatanRepo = ctx.read<KegiatanRepository>();
   User authUser = ctx.read<User>();
-  print(uuid);
+  //print(uuid);r
   try {
     KegiatanMitraPenugasanDetails kmp = await kmpRepo.getDetailsById(uuid);
     Kegiatan kegiatan = await kegiatanRepo.getById(kmp.kegiatan_uuid);
@@ -75,7 +76,7 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
       print("FORBIDDEN ${authUser.username}");
       return RespHelper.forbidden();
     }
-    print("LOG 1");
+    //print("LOG 1");
 
     //check if kmp (status : 1 - BELUM MULAI OR 3 - SELESAI), cannot upload photo
     if(kmp.status <= 0 ){
@@ -84,14 +85,14 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
       return RespHelper.badRequest(message: "Assignment Belum Dimulai");
     }
     if(kmp.status >= 3){
-      print("LOG 3");
+      //print("LOG 3");
       print("Sudah Selesai ${authUser.username}");
       return RespHelper.badRequest(message: "Assignment Telah Selesai");
     }
 
     //check if penugasan_photo data exist;
     PenugasanPhoto? photo = await photoRepo.getByKmpUuid(uuid);
-    print("LOG 4");
+    //print("LOG 4");
     //DIRECTORY FOR Windows is in app folder files/images
     //DIRECTORY FOR Linus is in /opt/files/images
     String windows_dir = "assignment\\images\\${kmp.kegiatan_uuid!}";
@@ -105,15 +106,13 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
     }
     String photo_uuid = kmp.uuid!;
     String file_name = files.name;
-    print("File Name : ${file_name}");
     String extension = p.extension(file_name);
     String location = "";
     List<int> file_bytes = await files.readAsBytes();
-    print("Ukuran File ${file_bytes.length/(1024*1024)}");
+    print("Ukuran File ${file_bytes.length/(1024*1024)} by ${authUser.username}");
     if(file_bytes.length >= 1024 * 1024 * 8){
       return RespHelper.badRequest(message: "Image Size Exceeded 8 Mb!");
     }
-
     //check if photo1 exists, delete old photo1 if there
     if((photo != null) && !(photo.photo1_loc == null || photo.photo1_loc!.trim().isEmpty)){
       File related_file = File("${photo.photo1_loc}");
@@ -143,7 +142,21 @@ Future<Response> onPost(RequestContext ctx, String uuid) async {
     } else{
       return RespHelper.badRequest(message: "Platform Not Supported");
     }
-
+    //try to compress uploaded file
+    try {
+      File savedFile = File(location);
+      if(savedFile.existsSync()){
+        var compressOutput = compress(ImageFileConfiguration(
+          input: ImageFile(filePath: savedFile.absolute.path, rawBytes: savedFile.absolute.readAsBytesSync())
+        ));
+        //write compressed file to exists file
+        savedFile.writeAsBytesSync(compressOutput.rawBytes);
+        print("SUCCESS COMPRESS PHOTO ${(compressOutput.sizeInBytes/(1024*1024)).toStringAsFixed(2)} MB");
+      }
+    } catch(err_compress){
+      //if failed to compress, still continue it.
+      print("Error ${err_compress}");
+    }
     //if there is no photo, insert new data
     if(photo == null) {
       var result = await photoRepo.create(
@@ -193,7 +206,6 @@ Future<Response> onDelete(RequestContext ctx, String uuid) async {
         } 
     }}
     return RespHelper.message(message: "Success Delete Photo 1");
-    
   } catch(err){
     return RespHelper.badRequest(message:"Error ${err}");
   }
